@@ -1,10 +1,22 @@
+<!--
+    INDEX.HTML LOADS WASM AND THE CONTENT GET OVERWRITTEN BY WASM.
+
+    IF USER IS ON AN UNSUPPORTED WEB BROWSER AND COULD NOT LOAD WASM
+    THIS PAGE WOULD BE LOADED FOR THEM AND NO OVERWRITING CONTENT.
+-->
+
 <!DOCTYPE html>
 <html>
     <head>
+        <link rel="stylesheet" href="index.css">
         <meta charset="utf-8">
         <title>URCL-rs</title>
     </head>
     <body>
-        <span>test</span><span>test</span><span>test</span><span>test</span><span>test</span>
+        <h2>Loading WASM</h2>
+        <h3>Cannot load?</h3>
+        <p>
+            Check if your browser supports WASM or if you have to enable it in your browser's experimental flags.
+        </p>
     </body>
 </html>
