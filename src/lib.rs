@@ -9,7 +9,15 @@ extern {
     pub fn out_err(text: &str);
 }
 
-#[wasm_bindgen()]
+#[wasm_bindgen]
 extern {
-    pub fn log(s: &str);
+    #[wasm_bindgen(js_namespace=console)]
+    fn _log(s: &str);
+}
+
+#[macro_export]
+macro_rules! jsprintln {
+    ($($arg:tt)*) => {{
+        _log(&format!($($arg)*).to_string());
+    }};
 }

@@ -21,5 +21,5 @@ export function output_registers(regs) {
 
 }
 init().then(() => { // all code should go in here
-    emulate();
+    emulate("\"string test\"\n .test\n'e'\n");
 })
