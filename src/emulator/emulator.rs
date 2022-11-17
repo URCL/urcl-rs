@@ -12,13 +12,13 @@ struct EmulatorState {
 #[allow(dead_code)]
 #[wasm_bindgen]
 pub fn emulate(src: &str) {
-    jsprintln!("emulate called");
     let toks = tokenise(src);
     for tok in toks {
         match tok {
             Token::Label(_) => jsprintln!("Label: {:#?}", tok),
             Token::String(_) => jsprintln!("String: {:#?}", tok),
             Token::Char(_) => jsprintln!("Char: {:#?}", tok),
+            Token::Instruction(_) => jsprintln!("Instruction: {:#?}", tok),
             _ => {}
         }
     }

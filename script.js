@@ -1,4 +1,4 @@
-import  init, {emulate}  from "./pkg/urcl_rs.js"
+import  init, {emulate, init_panic_hook}  from "./pkg/urcl_rs.js"
 
 export function out_text(text) {
     //
@@ -21,5 +21,6 @@ export function output_registers(regs) {
 
 }
 init().then(() => { // all code should go in here
-    emulate("\"string test\"\n .test\n'e'\n");
-})
+    init_panic_hook();
+    emulate("\"string test\"\n .test\n'e'\n  imm r69");
+});
