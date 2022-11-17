@@ -1,8 +1,16 @@
 use wasm_bindgen::prelude::*;
 mod emulator;
+extern crate wee_alloc;
+
+
 
 extern crate console_error_panic_hook;
 use std::panic;
+
+// Use `wee_alloc` as the global allocator.
+#[global_allocator]
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
 
 #[wasm_bindgen(raw_module="../script.js")]
 extern {
