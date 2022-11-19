@@ -11,7 +11,7 @@ fn is_whitespace(c: char) -> bool {
 
 fn enough_space(src: &Vec<char>, idx: usize, space: usize, err: &str) {
     if src.len()-1 >= idx+space { return; }
-    out_err(format!("ERROR: Invalid Syntax, {}", err).to_string().as_str());
+    out_err(format!("ERROR: Invalid Syntax, {}", err).as_str());
 }
 
 fn make_word(src: &str, mut idx: usize) -> String {
@@ -19,7 +19,7 @@ fn make_word(src: &str, mut idx: usize) -> String {
     let indexable_src: Vec<char> = src.chars().collect();
     while is_whitespace(indexable_src[idx]) && idx != src.len()-1 { idx += 1; }
     while !is_whitespace(indexable_src[idx]) && idx != src.len()-1 {
-        ret += indexable_src[idx].to_string().as_str();
+        ret += &indexable_src[idx].to_string();
         idx += 1;
     }
     ret
@@ -32,8 +32,9 @@ pub fn tokenise(src: &str) -> Vec<Token> {
     let mut i = 0;
     let mut buf: String = String::new();
     let mut is_str = false;
-    let indexable_src: Vec<char> = src.chars().collect();
-
+    let mut indexable_src_tmp: Vec<char> = src.to_lowercase().chars().collect();
+    indexable_src_tmp.push(' '); // whitespace to fix annoying bug
+    let indexable_src = indexable_src_tmp.clone();
     while i < indexable_src.len()-1 {
         
         if indexable_src[i] == '\"' {
@@ -43,8 +44,8 @@ pub fn tokenise(src: &str) -> Vec<Token> {
             i += 1+1;
             continue;
         }
-        if is_str { buf += indexable_src[i].to_string().as_str(); i += 1; continue; }
-
+        if is_str { buf += &indexable_src[i].to_string(); i += 1; continue; }
+        
         if indexable_src[i] == '\'' {
             enough_space(&indexable_src, i, 2, "EOF Before char ends");
             if indexable_src[i+2] != '\'' {
@@ -66,13 +67,13 @@ pub fn tokenise(src: &str) -> Vec<Token> {
             continue;
         } else if indexable_src[i] == 'r' || indexable_src[i] == '$' {
             enough_space(&indexable_src, i, 1, "EOF Before address in register");
-            let mut j = 0;
-            let mut val = 0;
-            while indexable_src[i+j].is_numeric() && indexable_src.len()-1 < i+j {
-                val = val * 10 + indexable_src[i+j].to_string().parse::<i32>().unwrap();
-                j += 1;
+            let mut j = 1;
+            let mut val = String::new();
+            while indexable_src[i+j].is_ascii_digit() && indexable_src.len()-1 > i+j {
+                val += &indexable_src[i+j].to_string();
+                j = j+1;
             }
-            toks.push(Token::Register(val));
+            toks.push(Token::Register(val.parse::<i32>().unwrap()));
             i += j;
             continue;
         }
@@ -90,9 +91,8 @@ pub fn tokenise(src: &str) -> Vec<Token> {
     }
     toks
 }
-
 #[allow(dead_code)]
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Token {
     Label(String),
     Instruction(String),

@@ -1,15 +1,8 @@
 use wasm_bindgen::prelude::*;
 mod emulator;
-extern crate wee_alloc;
-
-
 
 extern crate console_error_panic_hook;
 use std::panic;
-
-// Use `wee_alloc` as the global allocator.
-#[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 
 #[wasm_bindgen(raw_module="../script.js")]
@@ -18,6 +11,7 @@ extern {
     pub fn out_graphics(x: u64, y: u64, colour: u64);
     pub fn in_text() -> String;
     pub fn out_err(text: &str);
+    pub fn out_html(text: &str);
 }
 
 #[wasm_bindgen]
@@ -29,7 +23,7 @@ extern {
 #[macro_export]
 macro_rules! jsprintln {
     ($($arg:tt)*) => {{
-        log(&format!($($arg)*).to_string());
+        out_html(&format!($($arg)*).to_string());
     }};
 }
 
