@@ -14,13 +14,13 @@ fn enough_space(src: &Vec<char>, idx: usize, space: usize, err: &str) {
     out_err(format!("ERROR: Invalid Syntax, {}", err).as_str());
 }
 
-fn make_word(src: &str, mut idx: usize) -> String {
+fn make_word(src: &str, idx: &mut usize) -> String {
     let mut ret = String::new();
     let indexable_src: Vec<char> = src.chars().collect();
-    while is_whitespace(indexable_src[idx]) && idx != src.len()-1 { idx += 1; }
-    while !is_whitespace(indexable_src[idx]) && idx != src.len()-1 {
-        ret += &indexable_src[idx].to_string();
-        idx += 1;
+    while is_whitespace(indexable_src[*idx]) && *idx != src.len()-1 { *idx += 1; }
+    while !is_whitespace(indexable_src[*idx]) && *idx != src.len()-1 {
+        ret += &indexable_src[*idx].to_string();
+        *idx += 1;
     }
     ret
 }
@@ -81,7 +81,7 @@ pub fn tokenise(src: &str) -> Vec<Token> {
         
 
         // INSTRUCTIONS
-        let word = make_word(src, i).to_lowercase();
+        let word = make_word(src, &mut i).to_lowercase();
         if word == "imm" || word == "rsh" || word == "lod" || word == "str" || word == "bge" 
             || word == "nor" || word == "jmp" { toks.push(Token::Instruction(word)); } 
         
