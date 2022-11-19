@@ -34,7 +34,8 @@ pub fn tokenise(src: &str) -> Vec<Token> {
     let mut is_str = false;
     let mut indexable_src_tmp: Vec<char> = src.to_lowercase().chars().collect();
     indexable_src_tmp.push(' '); // whitespace to fix annoying bug
-    let indexable_src = indexable_src_tmp.clone();
+    let indexable_src = indexable_src_tmp;
+    
     while i < indexable_src.len()-1 {
         
         if indexable_src[i] == '\"' {
