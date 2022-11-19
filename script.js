@@ -1,3 +1,4 @@
+import { clear } from "console";
 import  init, {emulate, init_panic_hook}  from "./pkg/urcl_rs.js"
 
 export function out_text(text) {
@@ -27,6 +28,9 @@ export function out_html(text) {
 export function output_registers(regs) {
 
 }
+
+
+
 init().then(() => { // all code should go in here
     init_panic_hook();
     
@@ -34,12 +38,5 @@ init().then(() => { // all code should go in here
     document.getElementById("green").onclick = function() {
         emulate(document.getElementById("stdin").value);
     };
-
-
-
-
-
-
-
 
 });

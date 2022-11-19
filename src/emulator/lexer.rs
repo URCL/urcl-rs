@@ -10,17 +10,18 @@ fn is_whitespace(c: char) -> bool {
 }
 
 fn enough_space(src: &Vec<char>, idx: usize, space: usize, err: &str) {
-    if src.len()-1 >= idx+space { return; }
+    if src.len() > idx+space { return; }
     out_err(format!("ERROR: Invalid Syntax, {}", err).as_str());
 }
 
 fn make_word(src: &str, idx: &mut usize) -> String {
     let mut ret = String::new();
     let indexable_src: Vec<char> = src.chars().collect();
-    while is_whitespace(indexable_src[*idx]) && *idx != src.len()-1 { *idx += 1; }
-    while !is_whitespace(indexable_src[*idx]) && *idx != src.len()-1 {
+    while *idx < src.len() && is_whitespace(indexable_src[*idx])  { *idx += 1; }
+    while *idx < src.len() && !is_whitespace(indexable_src[*idx]) {
         ret += &indexable_src[*idx].to_string();
         *idx += 1;
+        //logprintln!("{} {}", !is_whitespace(indexable_src[*idx]), *idx < src.len());
     }
     ret
 }
@@ -36,7 +37,7 @@ pub fn tokenise(src: &str) -> Vec<Token> {
     indexable_src_tmp.push(' '); // whitespace to fix annoying bug
     let indexable_src = indexable_src_tmp;
     
-    while i < indexable_src.len()-1 {
+    while i < indexable_src.len() {
         
         if indexable_src[i] == '\"' {
             is_str = !is_str;
@@ -59,7 +60,7 @@ pub fn tokenise(src: &str) -> Vec<Token> {
         } else if indexable_src[i] == '.' {
             let mut j = 0;
             let mut val = String::new();
-            while indexable_src[i+j] != ' ' && indexable_src[i+j] != '\r' && indexable_src[i+j] != '\t' && indexable_src[i+j] != '\n' && i <= indexable_src.len()-1 {
+            while i < indexable_src.len() && indexable_src[i+j] != ' ' && indexable_src[i+j] != '\r' && indexable_src[i+j] != '\t' && indexable_src[i+j] != '\n' {
                 val.push(indexable_src[i+j]);
                 j += 1;
             }
@@ -70,7 +71,7 @@ pub fn tokenise(src: &str) -> Vec<Token> {
             enough_space(&indexable_src, i, 1, "EOF Before address in register");
             let mut j = 1;
             let mut val = String::new();
-            while indexable_src[i+j].is_ascii_digit() && indexable_src.len()-1 > i+j {
+            while indexable_src.len() > i+j && indexable_src[i+j].is_ascii_digit()  {
                 val += &indexable_src[i+j].to_string();
                 j = j+1;
             }
@@ -88,7 +89,7 @@ pub fn tokenise(src: &str) -> Vec<Token> {
         
         i += 1;
         
-        while is_whitespace(indexable_src[i]) && i != indexable_src.len()-1 { i += 1; }
+        while  i < indexable_src.len() && is_whitespace(indexable_src[i]) { i += 1; }
     }
     toks
 }
