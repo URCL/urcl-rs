@@ -76,7 +76,7 @@ pub fn tokenise(src: &str) -> Vec<Token> {
                 j = j+1;
             }
             toks.push(Token::Register(val.parse::<i32>().unwrap()));
-            i += j;
+            i += j-1;
             continue;
         }
         
@@ -93,6 +93,7 @@ pub fn tokenise(src: &str) -> Vec<Token> {
     }
     toks
 }
+
 #[allow(dead_code)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Token {

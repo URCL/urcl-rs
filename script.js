@@ -1,4 +1,3 @@
-import { clear } from "console";
 import  init, {emulate, init_panic_hook}  from "./pkg/urcl_rs.js"
 
 export function out_text(text) {
