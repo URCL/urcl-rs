@@ -1,6 +1,8 @@
-use std::fmt::format;
+use std::{fmt::format, process::exit, vec};
 
-use super::*; 
+use super::*;
+
+use parse_int::parse;
 
 fn is_whitespace(c: char) -> bool {
     if c == ' ' || c == '\r' || c == '\n'|| c == '\t' {
@@ -9,9 +11,12 @@ fn is_whitespace(c: char) -> bool {
     false
 }
 
-fn enough_space(src: &Vec<char>, idx: usize, space: usize, err: &str) {
-    if src.len() > idx+space { return; }
-    out_err(format!("ERROR: Invalid Syntax, {}", err).as_str());
+fn enough_space(src: &Vec<char>, idx: usize, space: usize, err: &str) -> bool {
+    if src.len() < idx+space { 
+        out_html(format!("ERROR: Invalid Syntax, {}", err).as_str());
+        return false;
+    }
+    true
 }
 
 fn make_word(src: &str, idx: &mut usize) -> String {
@@ -42,14 +47,14 @@ pub fn tokenise(src: &str) -> Vec<Token> {
         if indexable_src[i] == '\"' {
             is_str = !is_str;
             if !is_str { toks.push(Token::String(buf.to_string())); }
-            enough_space(&indexable_src, i, 1, "EOF Before string ends.");
+            if !enough_space(&indexable_src, i, 1, "EOF Before string ends.") { return vec![]; }
             i += 1+1;
             continue;
         }
         if is_str { buf += &indexable_src[i].to_string(); i += 1; continue; }
         
         if indexable_src[i] == '\'' {
-            enough_space(&indexable_src, i, 2, "EOF Before char ends");
+            if !enough_space(&indexable_src, i, 1, "EOF Before string ends.") { return vec![]; }
             if indexable_src[i+2] != '\'' {
                 out_err("ERROR: Char does not have ending");
                 return vec![];
@@ -68,16 +73,39 @@ pub fn tokenise(src: &str) -> Vec<Token> {
             i += j+1;
             continue;
         } else if indexable_src[i] == 'r' || indexable_src[i] == '$' {
-            enough_space(&indexable_src, i, 1, "EOF Before address in register");
-            let mut j = 1;
+            if !enough_space(&indexable_src, i, 1, "EOF Before register ends.") { return vec![]; }
             let mut val = String::new();
-            while indexable_src.len() > i+j && indexable_src[i+j].is_ascii_digit()  {
+            let mut j: usize = 1;
+            jsprintln!("{}", val);
+            while indexable_src.len() > i+j && (indexable_src[i+j].is_ascii_digit() || indexable_src[i+2] == 'x' || indexable_src[i+2] == 'b' || indexable_src[i+2] == 'o') {
                 val += &indexable_src[i+j].to_string();
                 j = j+1;
             }
-            toks.push(Token::Register(val.parse::<i32>().unwrap()));
+            
+            if val.len() == 0 {
+                out_err("ERROR: Invalid Register");
+                return vec![];
+            }
+            toks.push(Token::Register(parse::<i32>(&val).unwrap()));
             i += j-1;
             continue;
+        }
+        
+
+        
+        // IMMEDIATES
+        
+        if indexable_src[i].is_ascii_digit() {
+            let mut val = String::new();
+            let mut j: usize = 0;
+
+
+
+            while indexable_src.len() > i+j && (indexable_src[i+j].is_ascii_digit() || indexable_src[i+1] == 'x' || indexable_src[i+1] == 'b' || indexable_src[i+1] == 'o') {
+                val += &indexable_src[i+j].to_string();
+                j = j+1;
+            }
+            toks.push(Token::Immediate(parse::<i32>(&val).unwrap()));
         }
         
 
@@ -85,7 +113,6 @@ pub fn tokenise(src: &str) -> Vec<Token> {
         let word = make_word(src, &mut i).to_lowercase();
         if word == "imm" || word == "rsh" || word == "lod" || word == "str" || word == "bge" 
             || word == "nor" || word == "jmp" { toks.push(Token::Instruction(word)); } 
-        
         
         i += 1;
         
