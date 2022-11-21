@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter+Tight:wght@900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300&display=swap");
+@import url("https://cdn.jsdelivr.net/gh/tonsky/FiraCode@1.207/distr/fira_code.css");
 
 html                    { overflow: hidden; overflow-y: scroll; scrollbar-width: none; }
 body::-webkit-scrollbar { display: none; }
@@ -12,17 +13,16 @@ body a       { text-shadow: 0px 0px 5px #0070F3; text-decoration: none; color: #
 body a:hover { text-shadow: 0px 0px 5px #3292FF; padding-left: 10px; padding-right: 10px; color: #3292FF; }
 body hr      { border: 0; border-top: 2px solid #202124; box-shadow: 0px 2px 10px #202124; }
 body button  { background-color: #A0A0A0; color: #202124; padding: 10px; border-radius: 7px; font-family: "Inter Tight", sans-serif; }
-#stdout {text-align: left; background-color: #1d1d1d; align-self: center; padding: 4px;}
-#stdin  {text-align: left; background-color: #1d1d1d; align-self: center; padding: 4px; color: #fff; font-family: monospace; text-align: left;
-border: 0px;}
-.io { border: 1px solid rgb(10, 10, 10); margin: 1rem; padding: 10px; text-align: center;}
-.io_div { display: inline-block; border: 1px solid #2b2b2b; padding: 10px; vertical-align: middle; size:inherit; }
+#stdout      { text-align: left; background-color: #1d1d1d; align-self: center; padding: 4px; font-family: 'Fira Code';}
+#stdin       { text-align: left; background-color: #1d1d1d; align-self: center; padding: 4px; color: #fff; font-family: 'Fira Code'; text-align: left; border: 0px;}
+.io          { border: 1px solid rgb(10, 10, 10); margin: 1rem; padding: 10px; text-align: center;}
+.io_div      { display: inline-block; border: 1px solid #2b2b2b; padding: 10px; vertical-align: middle; size:inherit; }
 
-nav { background-color: #202124; padding: 10px; text-align: center; }
-main { background-color: #121212; min-height: 100vh; text-align: center; }
+nav          { background-color: #202124; padding: 10px; text-align: center; }
+main         { background-color: #121212; min-height: 100vh; text-align: center; }
 
 #red     { background-color: #E57474; }
 #green   { background-color: #8CCf7E; }
-#blue    { background-color: #67B0E8; }
+#blue    { background-color: #67b0e8; }
 #yellow  { background-color: #E5C76B; }
 #magenta { background-color: #C47FD5; }

@@ -26,7 +26,6 @@ fn make_word(src: &str, idx: &mut usize) -> String {
     while *idx < src.len() && !is_whitespace(indexable_src[*idx]) {
         ret += &indexable_src[*idx].to_string();
         *idx += 1;
-        //logprintln!("{} {}", !is_whitespace(indexable_src[*idx]), *idx < src.len());
     }
     ret
 }
@@ -34,7 +33,7 @@ fn make_word(src: &str, idx: &mut usize) -> String {
 
 pub fn tokenise(src: &str) -> Vec<Token> {
     let mut toks: Vec<Token> = Vec::new();
-
+    
     let mut i = 0;
     let mut buf: String = String::new();
     let mut is_str = false;
@@ -76,10 +75,9 @@ pub fn tokenise(src: &str) -> Vec<Token> {
             if !enough_space(&indexable_src, i, 1, "EOF Before register ends.") { return vec![]; }
             let mut val = String::new();
             let mut j: usize = 1;
-            jsprintln!("{}", val);
             while indexable_src.len() > i+j && (indexable_src[i+j].is_ascii_digit() || indexable_src[i+2] == 'x' || indexable_src[i+2] == 'b' || indexable_src[i+2] == 'o') {
                 val += &indexable_src[i+j].to_string();
-                j = j+1;
+                j += 1;
             }
             
             if val.len() == 0 {
@@ -87,7 +85,7 @@ pub fn tokenise(src: &str) -> Vec<Token> {
                 return vec![];
             }
             toks.push(Token::Register(parse::<i32>(&val).unwrap()));
-            i += j-1;
+            i += j;
             continue;
         }
         
@@ -105,7 +103,8 @@ pub fn tokenise(src: &str) -> Vec<Token> {
                 val += &indexable_src[i+j].to_string();
                 j = j+1;
             }
-            toks.push(Token::Immediate(parse::<i32>(&val).unwrap()));
+            jsprintln!("{}", val);
+            toks.push(Token::Immediate(parse::<i32>(&val.to_lowercase()).unwrap()));
         }
         
 
