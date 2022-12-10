@@ -95,8 +95,6 @@ pub fn tokenise(src: &str) -> Vec<Token> {
             let mut val = String::new();
             let mut j: usize = 0;
 
-            jsprintln!("here");
-
             while indexable_src.len() > i+j && (indexable_src[i+j].is_ascii_digit() || indexable_src[i+1] == 'x' || indexable_src[i+1] == 'b' || indexable_src[i+1] == 'o') {
                 val += &indexable_src[i+j].to_string();
                 j = j+1;
