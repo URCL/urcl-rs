@@ -1,5 +1,3 @@
-use std::{fmt::format, process::exit, vec};
-
 use super::*;
 
 use parse_int::parse;
@@ -93,18 +91,19 @@ pub fn tokenise(src: &str) -> Vec<Token> {
         
         // IMMEDIATES
         
-        if indexable_src[i].is_ascii_digit() {
+        else if indexable_src[i].is_ascii_digit() { // this bit is shitting itself
             let mut val = String::new();
             let mut j: usize = 0;
 
-
+            jsprintln!("here");
 
             while indexable_src.len() > i+j && (indexable_src[i+j].is_ascii_digit() || indexable_src[i+1] == 'x' || indexable_src[i+1] == 'b' || indexable_src[i+1] == 'o') {
                 val += &indexable_src[i+j].to_string();
                 j = j+1;
             }
-            jsprintln!("{}", val);
             toks.push(Token::Immediate(parse::<i32>(&val.to_lowercase()).unwrap()));
+            i += j;
+            continue;
         }
         
 
