@@ -1,7 +1,5 @@
 use std::{iter::Peekable, str::CharIndices};
 
-use crate::scanner::{Scanner, Token};
-
 #[derive(Debug)]
 pub enum Kind {
     Unknown, White, Error, Name, Macro,
@@ -90,11 +88,11 @@ fn token_escape<'a>(s: &mut Scanner<'a, Kind>) {
 }
 
 impl Kind {
-    pub fn cssClass(&self){
+    pub fn cssClass(&self) -> &'static str {
         match self {
             Kind::Unknown => "unknown",
             Kind::White => "white",
-            Kind::Int => "int",
+            Kind::Int(_) => "int",
             Kind::LSquare => "left-square",
             Kind::RSquare => "right-square",
             Kind::String => "string",
@@ -105,7 +103,11 @@ impl Kind {
             Kind::Memory => "memory",
             Kind::Port => "port",
             Kind::Reg => "reg",
-            Kind::Name => "macro",
+            Kind::Name => "name",
+            Kind::Macro => "macro",
+            Kind::Eq => "comparison",
+            Kind::GE => "comparison",
+            Kind::LE => "comparison",
         }
     }
 }
