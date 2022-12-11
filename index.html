@@ -8,21 +8,21 @@
     </head>
     <body>
         <nav>
-            <button class="symbol" id="red">ERROR LOGS</button>
-            <button class="symbol" id="green">COMPILE/RUN</button>
-            <button class="symbol" id="blue">DOCUMENTATION</button>
-            <button class="symbol" id="yellow">EXAMPLES</button>
-            <button class="symbol" id="magenta">settings</button>
-            <button class="symbol">CLEAR</button>
+            <button class="symbol red">ERROR LOGS</button>
+            <button class="symbol green" id="emulate">COMPILE/RUN</button>
+            <button class="symbol blue">DOCUMENTATION</button>
+            <button class="symbol yellow">EXAMPLES</button>
+            <button class="symbol magenta">SETTINGS</button>
+            <button class="symbol" id="clear">CLEAR</button>
         </nav>
         <main>
             <div class="io">
                 <div class="io_div">
-                    <h2>emu input</h2>
+                    <h2>Input</h2>
                     <textarea name="stdin" id="stdin"></textarea>
                 </div>
                 <div class="io_div">
-                    <h2>tokens</h2>
+                    <h2>Tokens</h2>
                     <pre id="stdout"></pre>
                 </div>
             </div>

@@ -35,8 +35,8 @@ export function out_html(text) {
 export function out_span(text, class_name) {
     const span = document.createElement("span");
     span.textContent = text;
-    span.className = class_name
-    line.appendChild(span)
+    span.className = class_name;
+    line.appendChild(span);
 }
 
 export function out_lf() {
@@ -48,14 +48,21 @@ export function output_registers(regs) {
 
 }
 
-
+export function clear_span() {
+    htmlBuf = "";
+    stdout.innerHTML = "";
+}
 
 init().then(() => { // all code should go in here
     init_panic_hook();
     
     
-    document.getElementById("green").onclick = function() {
+    document.getElementById("emulate").onclick = function() {
         emulate(document.getElementById("stdin").value);
+    };
+    
+    document.getElementById("clear").onclick = function() {
+        clear_span();
     };
 
 });

@@ -14,6 +14,7 @@ extern {
     pub fn out_html(text: &str);
     pub fn out_span(text: &str, class_name: &str);
     pub fn out_lf();
+    pub fn clear_span();
 }
 
 #[wasm_bindgen]
