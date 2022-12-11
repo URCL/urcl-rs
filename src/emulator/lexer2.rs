@@ -28,6 +28,8 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
             '$' | 'r' | 'R' => {s._while(char::is_alphanumeric); s.create(Reg)},
             '@' => {s._while(char::is_alphanumeric); s.create(Macro)},
             '%' => {s._while(char::is_alphanumeric); s.create(Port)},
+            'a'..='z' | 'A'..='Z' => {s._while(char::is_alphanumeric); s.create(Name)},
+            '.' => {s._while(char::is_alphanumeric); s.create(Label)},
             '\'' => {
                 s.create(Char);
                 if let Some(c) = s.next() {
@@ -45,8 +47,6 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
                     }
                 }
             },
-            'a'..='z' | 'A'..='Z' => {s._while(char::is_alphanumeric); s.create(Name)},
-            '.' => {s._while(char::is_alphanumeric); s.create(Label)},
             '"' => {
                 s.create(String);
                 let mut has_text = false;
