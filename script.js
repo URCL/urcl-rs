@@ -49,7 +49,7 @@ export function output_registers(regs) {
 }
 
 export function clear_span() {
-    line.innerHTML = "";
+    stdout.innerHTML = "";
 }
 
 init().then(() => { // all code should go in here
