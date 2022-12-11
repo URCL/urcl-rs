@@ -49,6 +49,7 @@ export function output_registers(regs) {
 }
 
 export function clear_span() {
+    htmlBuf = "";
     stdout.innerHTML = "";
 }
 
