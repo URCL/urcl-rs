@@ -1,4 +1,5 @@
-import { out_err, out_html } from '../script.js';
+import { out_span } from '../script.js';
+import * as __wbg_star0 from '../script.js';
 
 let wasm;
 
@@ -112,18 +113,18 @@ function getInt32Memory0() {
     return cachedInt32Memory0;
 }
 /**
-*/
-export function init_panic_hook() {
-    wasm.init_panic_hook();
-}
-
-/**
 * @param {string} src
 */
 export function emulate(src) {
     const ptr0 = passStringToWasm0(src, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len0 = WASM_VECTOR_LEN;
     wasm.emulate(ptr0, len0);
+}
+
+/**
+*/
+export function init_panic_hook() {
+    wasm.init_panic_hook();
 }
 
 async function load(module, imports) {
@@ -181,12 +182,10 @@ function getImports() {
     imports.wbg.__wbindgen_object_drop_ref = function(arg0) {
         takeObject(arg0);
     };
-    imports.wbg.__wbg_outerr_2ec19f84474c782d = function(arg0, arg1) {
-        out_err(getStringFromWasm0(arg0, arg1));
+    imports.wbg.__wbg_outspan_5399aefa5a1964b5 = function(arg0, arg1, arg2, arg3) {
+        out_span(getStringFromWasm0(arg0, arg1), getStringFromWasm0(arg2, arg3));
     };
-    imports.wbg.__wbg_outhtml_d433dec52c9ed98d = function(arg0, arg1) {
-        out_html(getStringFromWasm0(arg0, arg1));
-    };
+    imports['../script.js'] = __wbg_star0;
 
     return imports;
 }
