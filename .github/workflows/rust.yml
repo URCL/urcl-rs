@@ -24,15 +24,14 @@ jobs:
       run: sudo apt install binaryen
     - name: Build
       run: make build
-    
     - uses: actions/upload-artifact@v3
       with:
         name: result
         path: pkg/
-
+        
     - name: Setup Pages
       uses: actions/configure-pages@v2
-    - name: Upload pages artifact
+    - name: Upload artifact
       uses: actions/upload-pages-artifact@v1
       with:
         path: '.'
