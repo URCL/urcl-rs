@@ -6,13 +6,14 @@ html                    { overflow: hidden; overflow-y: scroll; scrollbar-width:
 body::-webkit-scrollbar { display: none; }
 
 body         { background-color: #121212; font: 1.5rem "Source Sans Pro", sans-serif; line-height: 1.5; color: #FEFBF6; margin: 0px; }
-body h1      { background: -webkit-linear-gradient(#FEFBF6, #B0B0B0); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font: 3rem "Inter Tight", sans-serif; }
-body h2      { background: -webkit-linear-gradient(#FEFBF6, #B0B0B0); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font: 2.5rem "Inter Tight", sans-serif; }
+body h1      { color: #fff; font: 3rem "Inter Tight", sans-serif; }
+body h2      { color: #fff; font: 2.5rem "Inter Tight", sans-serif; }
 body h3      { font: 2rem "Inter Tight", sans-serif; color: #A0A0A0; }
 body a       { text-shadow: 0px 0px 5px #0070F3; text-decoration: none; color: #0070F3; transition: 200ms; }
 body a:hover { text-shadow: 0px 0px 5px #3292FF; padding-left: 10px; padding-right: 10px; color: #3292FF; }
 body hr      { border: 0; border-top: 2px solid #202124; box-shadow: 0px 2px 10px #202124; }
-body button  { background-color: transparent; color: #fff; padding: 10px; border-radius: 7px; font-family: "Inter Tight", sans-serif; border: 2.5px solid #fff; }
+body button  { --color: #fff; background-color: transparent; color: #fff; padding: 10px; border-radius: 7px; font-family: "Inter Tight", sans-serif; border: 2.5px solid var(--color); transition: 0.25s; }
+body button:hover { background-color: var(--color); color: #202124; }
 #stdout      { text-align: left; background-color: #1d1d1d; align-self: center; padding: 4px; font-family: 'Fira Code';}
 #stdin       { text-align: left; background-color: #1d1d1d; align-self: center; padding: 4px; color: #fff; font-family: 'Fira Code'; border: 0px;}
 .io          { border: 1px solid rgb(10, 10, 10); margin: 1rem; padding: 10px; text-align: center;}
@@ -21,8 +22,8 @@ body button  { background-color: transparent; color: #fff; padding: 10px; border
 nav          { background-color: #202124; padding: 10px; text-align: center; }
 main         { background-color: #121212; min-height: 100vh; text-align: center; }
 
-#red     { border-color: #E57474; }
-#green   { border-color: #8CCf7E; }
-#blue    { border-color: #67b0e8; }
-#yellow  { border-color: #E5C76B; }
-#magenta { border-color: #C47FD5; }
+#red     { --color: #E57474; }
+#green   { --color: #8CCf7E; }
+#blue    { --color: #67b0e8; }
+#yellow  { --color: #E5C76B; }
+#magenta { --color: #C47FD5; }
