@@ -48,9 +48,11 @@ export function output_registers(regs) {
 
 }
 
-export function clear_span() {
+export async function clear_span() {
     htmlBuf = "";
+    line.innerHTML = "";
     stdout.innerHTML = "";
+    stdout.appendChild(line);
 }
 
 init().then(() => { // all code should go in here
