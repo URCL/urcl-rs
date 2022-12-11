@@ -1,9 +1,35 @@
 import  init, {emulate, init_panic_hook}  from "./pkg/urcl_rs.js"
 
-/** @type {HTMLPreElement} */
-const stdout = document.getElementById("stdout");
+/**
+ * @template T
+ * @param {{new(...args: any): T}} clazz 
+ * @param {*} obj 
+ * @returns {T}
+ */
+function with_class(clazz, obj) {
+    if (obj instanceof clazz) {
+        return obj;
+    } else {
+        throw new Error(`expected ${clazz.name} but got ${obj?.constructor?.name}`);
+    }
+}
+
+/**
+ * @template {HTMLElement} T
+ * @param {{new(...args: any): T}} clazz 
+ * @param {string} name 
+ * @returns {T}
+ */
+function by_id(clazz, name) {
+    return with_class(clazz, document.getElementById(name));
+}
+
+const stdout = by_id(HTMLElement, "stdout");
 let line = document.createElement("div");
 stdout.appendChild(line);
+
+const stdin = by_id(HTMLTextAreaElement, "stdin");
+const auto_emulate = by_id(HTMLInputElement, "auto-emulate");
 
 export function out_text(text) {
     //
@@ -58,6 +84,11 @@ export async function clear_span() {
 init().then(() => { // all code should go in here
     init_panic_hook();
     
+    stdin.oninput = e => {
+        if (auto_emulate.checked) {
+            emulate(stdin.value);
+        }
+    }
     
     document.getElementById("emulate").onclick = function() {
         emulate(document.getElementById("stdin").value);
