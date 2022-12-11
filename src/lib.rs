@@ -12,6 +12,8 @@ extern {
     pub fn in_text() -> String;
     pub fn out_err(text: &str);
     pub fn out_html(text: &str);
+    pub fn out_span(text: &str, class_name: &str);
+    pub fn out_lf();
 }
 
 #[wasm_bindgen]

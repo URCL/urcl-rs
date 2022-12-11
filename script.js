@@ -1,5 +1,10 @@
 import  init, {emulate, init_panic_hook}  from "./pkg/urcl_rs.js"
 
+/** @type {HTMLPreElement} */
+const stdout = document.getElementById("stdout");
+let line = document.createElement("div");
+stdout.appendChild(line);
+
 export function out_text(text) {
     //
 }
@@ -21,7 +26,22 @@ let htmlBuf = "";
 
 export function out_html(text) {
     htmlBuf += text + '\n';
-    document.getElementById("stdout").innerText = htmlBuf;
+    stdout.innerText = htmlBuf;
+}
+/**
+ * @param {string} text 
+ * @param {string} clazz 
+ */
+export function out_span(text, class_name) {
+    const span = document.createElement("span");
+    span.textContent = text;
+    span.className = class_name
+    line.appendChild(span)
+}
+
+export function out_lf() {
+    line = document.createElement("div");
+    stdout.appendChild(line);
 }
 
 export function output_registers(regs) {

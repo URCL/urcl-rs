@@ -14,6 +14,6 @@ pub fn emulate(src: &str) {
     for tok in toks {
         let class = tok.kind.cssClass();
         // TODO: add out_highlight or something
-        out_html(&format!("<span class={}>{}</span>", class, tok.str));
+        out_span(tok.str, class);
     }
 }
