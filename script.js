@@ -48,7 +48,7 @@ export function output_registers(regs) {
 
 }
 
-export function remove_span() {
+export function clear_span() {
     line.innerHTML = "";
 }
 
@@ -58,6 +58,10 @@ init().then(() => { // all code should go in here
     
     document.getElementById("emulate").onclick = function() {
         emulate(document.getElementById("stdin").value);
+    };
+    
+    document.getElementById("clear").onclick = function() {
+        clear_span();
     };
 
 });
