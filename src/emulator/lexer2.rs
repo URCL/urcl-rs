@@ -3,7 +3,7 @@ use std::{iter::Peekable, str::CharIndices};
 #[derive(Debug)]
 pub enum Kind {
     Unknown, White, Error, Name, Macro,
-    Int(u64), Memory, Port, Reg,
+    Int(u64), Memory, Port, Reg, Label,
     Eq, GE, LE,
     LSquare, RSquare, String, Char, Text, Escape(char),
 }
@@ -43,26 +43,29 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
                     }
                 }
             },
+            'a'..='z' | 'A'..='Z' => {s._while(char::is_alphanumeric); s.create(Name)},
+            '.' => {s._while(char::is_alphanumeric); s.create(Label)},
             '"' => {
                 s.create(String);
                 let mut has_text = false;
-                while let Some(c) = s.next() {
+                while let Some(c) = s.peek() {
                     match c {
                         '\\' => {
                             if has_text {s.create(Text);}
+                            s.next();
                             has_text = false;
                             token_escape(&mut s);
                         },
                         '"' => {
                             if has_text {s.create(Text);}
+                            s.next();
                             s.create(String);
                             break;
                         },
-                        _ => {has_text = true;}
+                        _ => {s.next(); has_text = true;}
                     }
                 }
             },
-            'a'..='z' | 'A'..='Z' => {s._while(char::is_alphanumeric); s.create(Name)},
             _ => {s.create(Unknown)}
         }
     }
@@ -108,6 +111,7 @@ impl Kind {
             Kind::Eq => "comparison",
             Kind::GE => "comparison",
             Kind::LE => "comparison",
+            Kind::Label => "label",
         }
     }
 }
