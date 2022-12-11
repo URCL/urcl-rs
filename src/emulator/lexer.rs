@@ -37,13 +37,13 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
                         token_escape(&mut s);
                     } else {
                         s.create(Text);
-                        if let Some(c) = s.next() {
-                            if c == '\'' {
-                                s.create(Char);
-                            } else {
-                                s.create(Error)
-                            }
-                        } 
+                    }
+                    if let Some(c) = s.next() {
+                        if c == '\'' {
+                            s.create(Char);
+                        } else {
+                            s.create(Error)
+                        }
                     }
                 }
             },
