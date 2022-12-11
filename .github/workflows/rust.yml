@@ -19,7 +19,7 @@ jobs:
     - name: Get wasm-pack
       run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
     - name: Build
-      run: make
+      run: make build
     - uses: actions/upload-artifact@v3
       with:
         name: result
