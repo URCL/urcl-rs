@@ -1,5 +1,5 @@
 pub mod ast;
 pub mod emulator;
-pub mod lexer2;
+pub mod lexer;
 
 use super::*;

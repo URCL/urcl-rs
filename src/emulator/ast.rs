@@ -1,4 +1,4 @@
-use super::{*, lexer2::{Token, Kind, UToken}};
+use super::{*, lexer::{Token, Kind, UToken}};
 
 struct TokenBuffer<'a> {
     index: usize,

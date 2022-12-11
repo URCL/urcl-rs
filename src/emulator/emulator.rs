@@ -1,5 +1,5 @@
 use wasm_bindgen::prelude::*;
-use super::{*, lexer2};
+use super::{*, lexer};
 
 struct EmulatorState {
     regs: Vec<i64>,
@@ -10,7 +10,7 @@ struct EmulatorState {
 #[allow(dead_code)]
 #[wasm_bindgen]
 pub fn emulate(src: &str) {
-    let toks = lexer2::lex(src);
+    let toks = lexer::lex(src);
     for tok in toks {
         let class = tok.kind.cssClass();
         // TODO: add out_highlight or something
