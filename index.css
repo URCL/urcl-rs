@@ -12,12 +12,20 @@ body h3      { font: 2rem "Inter Tight", sans-serif; color: #A0A0A0; }
 body a       { text-shadow: 0px 0px 5px #0070F3; text-decoration: none; color: #0070F3; transition: 200ms; }
 body a:hover { text-shadow: 0px 0px 5px #3292FF; padding-left: 10px; padding-right: 10px; color: #3292FF; }
 body hr      { border: 0; border-top: 2px solid #202124; box-shadow: 0px 2px 10px #202124; }
-body button  { --color: #fff; background-color: transparent; color: #fff; padding: 10px; border-radius: 7px; font-family: "Inter Tight", sans-serif; border: 2.5px solid var(--color); transition: 0.25s; }
-body button:hover { background-color: var(--color); color: #202124; }
-#stdout      { text-align: left; background-color: #1d1d1d; align-self: center; padding: 4px; font-family: 'Fira Code';}
-#stdin       { text-align: left; background-color: #1d1d1d; align-self: center; padding: 4px; color: #fff; font-family: 'Fira Code'; border: 0px; outline: 0; }
+body button  { --color: #fff; background-color: transparent; color: #fff; padding: 10px; border-radius: 7px; font-family: "Inter Tight", sans-serif; border: 2.5px solid var(--color); transition: 0.25s; cursor: pointer; }
+body button > input[type="checkbox"]    { margin: 0 0 0 .25rem; }
+body button:hover   { background-color: var(--color); color: #202124; }
+body textarea       { resize: none; }
+body input[type="checkbox"]         { accent-color: #fff; transition: 0.25s; }
+body input[type="checkbox"]:checked { accent-color: #8CCf7E; }
+body button:hover > input[type="checkbox"], body input[type="checkbox"]:hover   { accent-color: #202124; }
+#stdout      { text-align: left; background-color: #1d1d1d; padding: 4px; font-family: 'Fira Code'; width: 47.5vw; height: 75vh; }
+#stdin       { text-align: left; background-color: #1d1d1d; padding: 4px; color: #fff; font-family: 'Fira Code'; border: 0px; outline: 0; width: 47.5vw; height: 75vh; }
 .io          { border: 1px solid rgb(10, 10, 10); margin: 1rem; padding: 10px; text-align: center;}
-.io_div      { display: inline-block; border: 1px solid #2b2b2b; padding: 10px; vertical-align: middle; size:inherit; }
+.io_div      { display: inline-block; border: 1px solid #2b2b2b; padding: 10px; vertical-align: middle; position: absolute; bottom: 0; top: 5rem;}
+
+.io_div.left    { left: 0; right: 50%; }
+.io_div.right   { left: 50%; right: 0; }
 
 nav          { background-color: #202124; padding: 10px; text-align: center; }
 main         { background-color: #121212; min-height: 100vh; text-align: center; }
@@ -27,3 +35,14 @@ main         { background-color: #121212; min-height: 100vh; text-align: center;
 .blue    { --color: #67b0e8; }
 .yellow  { --color: #E5C76B; }
 .magenta { --color: #C47FD5; }
+
+span.white, span.unknown, span.left-square, span.right-sqare, span.comparison   { color: #FFFFFF; }
+span.string, span.char, span.text   { color: #e08f43; }
+span.port, span.int                 { color: #8CCf7E; }
+span.memory     { color: #79B1EB; }
+span.escape     { color: #d8b542; }
+span.error      { color: #da351f; }
+span.reg        { color: #FFAB70; }
+span.name       { color: #E57474; }
+span.macro      { color: #d980f0; }
+span.label      { color: #E5C76B; }

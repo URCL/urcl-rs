@@ -97,5 +97,10 @@ init().then(() => { // all code should go in here
     document.getElementById("clear").onclick = function() {
         clear_span();
     };
+    
+    document.getElementsByTagName("body")[0].onbeforeunload = function() {
+        localStorage.setItem("auto_emulate", auto_emulate.checked ? "t" : "f");
+    }
 
+    auto_emulate.checked = localStorage.getItem("auto_emulate") == "t" ? true : false;
 });
