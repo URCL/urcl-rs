@@ -35,12 +35,8 @@ export function out_html(text) {
 export function out_span(text, class_name) {
     const span = document.createElement("span");
     span.textContent = text;
-    span.className = class_name
-    line.appendChild(span)
-}
-
-export function remove_span() {
-    line.innerHTML = "";
+    span.className = class_name;
+    line.appendChild(span);
 }
 
 export function out_lf() {
@@ -52,7 +48,9 @@ export function output_registers(regs) {
 
 }
 
-
+export function remove_span() {
+    line.innerHTML = "";
+}
 
 init().then(() => { // all code should go in here
     init_panic_hook();
