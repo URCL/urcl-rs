@@ -1,6 +1,8 @@
 use std::{iter::Peekable, str::CharIndices};
 
-#[derive(Debug)]
+pub type UToken<'a> = Token<'a, Kind>;
+
+#[derive(Debug, Clone)]
 pub enum Kind {
     Unknown, White, Error, Name, Macro,
     Int(u64), Memory, Port, Reg, Label,
@@ -117,7 +119,7 @@ impl Kind {
 }
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token<'a, T> {
     pub kind: T,
     pub str: &'a str,

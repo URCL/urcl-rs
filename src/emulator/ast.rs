@@ -1,13 +1,12 @@
-use super::{*, lexer::Token};
+use super::{*, lexer2::{Token, Kind, UToken}};
 
-
-struct TokenBuffer {
+struct TokenBuffer<'a> {
     index: usize,
-    toks: Vec<Token>
+    toks: Vec<UToken<'a>>
 }
-impl TokenBuffer {
+impl <'a> TokenBuffer<'a> {
     #[inline]
-    pub fn new() -> TokenBuffer {
+    pub fn new() -> Self {
         TokenBuffer {
             toks: vec![],
             index: 0,
@@ -22,26 +21,26 @@ impl TokenBuffer {
         self.index += 1;
     }
     #[inline]
-    pub fn next(&mut self) -> Token {
+    pub fn next(&mut self) -> UToken<'a> {
         self.index += 1;
         self.toks[self.index].clone()
     }
     #[inline]
-    pub fn current(&self) -> Token {
+    pub fn current(&self) -> UToken<'a> {
         self.toks[self.index].clone()
     }
 }
 
-pub fn gen_ast(toks: Vec<Token>) {
+pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) {
     let mut token_buffer: TokenBuffer = TokenBuffer::new();
 }
 
 
-pub enum Node {
+pub enum Node<'a> {
     AddNote {
-        opperands: Vec<Token>
+        opperands: Vec<UToken<'a>>
     },
     ImmNode {
-        opperands: Vec<Token>
+        opperands: Vec<UToken<'a>>
     },
 }
