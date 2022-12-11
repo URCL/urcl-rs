@@ -30,15 +30,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Install rust
-        steps:
-          - "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
-      - name: Install wasm-pack
-        steps:
-          - "curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh"
-      - name: Make WASM
-        steps:
-          - "make"
       - name: Setup Pages
         uses: actions/configure-pages@v2
       - name: Upload artifact
