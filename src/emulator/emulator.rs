@@ -10,6 +10,7 @@ struct EmulatorState {
 #[allow(dead_code)]
 #[wasm_bindgen]
 pub fn emulate(src: &str) {
+    remove_span();
     let toks = lexer::lex(src);
     for tok in toks {
         let class = tok.kind.cssClass();

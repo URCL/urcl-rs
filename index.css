@@ -22,8 +22,8 @@ body button:hover { background-color: var(--color); color: #202124; }
 nav          { background-color: #202124; padding: 10px; text-align: center; }
 main         { background-color: #121212; min-height: 100vh; text-align: center; }
 
-#red     { --color: #E57474; }
-#green   { --color: #8CCf7E; }
-#blue    { --color: #67b0e8; }
-#yellow  { --color: #E5C76B; }
-#magenta { --color: #C47FD5; }
+.red     { --color: #E57474; }
+.green   { --color: #8CCf7E; }
+.blue    { --color: #67b0e8; }
+.yellow  { --color: #E5C76B; }
+.magenta { --color: #C47FD5; }

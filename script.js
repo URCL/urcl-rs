@@ -39,6 +39,10 @@ export function out_span(text, class_name) {
     line.appendChild(span)
 }
 
+export function remove_span() {
+    line.innerHTML = "";
+}
+
 export function out_lf() {
     line = document.createElement("div");
     stdout.appendChild(line);
@@ -54,7 +58,7 @@ init().then(() => { // all code should go in here
     init_panic_hook();
     
     
-    document.getElementById("green").onclick = function() {
+    document.getElementById("emulate").onclick = function() {
         emulate(document.getElementById("stdin").value);
     };
 
