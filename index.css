@@ -27,3 +27,6 @@ main         { background-color: #121212; min-height: 100vh; text-align: center;
 .blue    { --color: #67b0e8; }
 .yellow  { --color: #E5C76B; }
 .magenta { --color: #C47FD5; }
+
+span.label      { color: #FFFA44; }
+span.port       { color: #57E32C; }
