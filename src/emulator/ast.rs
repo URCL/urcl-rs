@@ -1,3 +1,5 @@
+use std::fs::OpenOptions;
+
 use super::{*, lexer::{Token, Kind, UToken}};
 
 struct TokenBuffer<'a> {
@@ -31,16 +33,57 @@ impl <'a> TokenBuffer<'a> {
     }
 }
 
-pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) {
-    let mut token_buffer: TokenBuffer = TokenBuffer::new();
+pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
+    let mut ret = Program::new();
+    let mut buf = TokenBuffer::new();
+
+    while buf.has_next() {
+        match buf.current().kind {
+            Kind::White => buf.advance(),
+            _ => panic!("Unhandled token type"),
+        }
+    }
+
+    ret
 }
 
 
-pub enum Node<'a> {
-    AddNote {
-        opperands: Vec<UToken<'a>>
-    },
-    ImmNode {
-        opperands: Vec<UToken<'a>>
-    },
+pub struct Program {
+    headers: Headers,
+    instructions: Vec<Inst>
+}
+
+impl Program {
+    pub fn new() -> Self {
+        Program { headers: Headers::new(), instructions: Vec::new() }
+    }
+}
+
+pub enum Operand {
+    Imm(u64),
+    Reg(u64)
+}
+
+pub struct Headers {
+    bits: u64,
+    minheap: u64,
+    minstack: u64,
+    minram: u64,
+    minreg: u64
+}
+
+impl Headers {
+    pub fn new() -> Self {
+        Headers { bits: 8, minheap: 16, minstack: 16, minram: 16, minreg: 8 }
+    }
+}
+
+pub enum Inst {
+    IMM(Operand, Operand),
+    ADD(Operand, Operand, Operand),
+    RSH(Operand, Operand),
+    LOD(Operand, Operand),
+    STR(Operand, Operand),
+    BGE(Operand, Operand, Operand),
+    NOR(Operand, Operand, Operand),
 }
