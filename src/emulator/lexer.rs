@@ -4,7 +4,8 @@ pub type UToken<'a> = Token<'a, Kind>;
 
 #[derive(Debug, Clone)]
 pub enum Kind {
-    Unknown, White, Error, Name, Macro,
+    Unknown, Error, Comment,
+    White, Name, Macro, 
     Int(u64), Memory, Port, Reg, Label,
     Eq, GE, LE,
     LSquare, RSquare, String, Char, Text, Escape(char),
@@ -13,7 +14,7 @@ pub enum Kind {
 pub fn lex(src: &str) -> Vec<Token<Kind>>{
     use Kind::*;
     let mut s = Scanner::<Kind>::new(src);
-    
+
     while let Some(c) = s.next() {
         match c {
             '[' => {s.create(LSquare)},
@@ -30,6 +31,15 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
             '%' => {s._while(char::is_alphanumeric); s.create(Port)},
             'a'..='z' | 'A'..='Z' => {s._while(char::is_alphanumeric); s.create(Name)},
             '.' => {s._while(char::is_alphanumeric); s.create(Label)},
+            '/' => {if s._if(|c| c == '/') {
+                s._while(|c| c != '\n');
+                s.create(Comment)
+            } else if s._if(|c| c == '*') {
+                while s.next().map_or(false, |c| c != '*') || s.next().map_or(false, |c| c != '/'){}
+                s.create(Comment)
+            } else {
+                s.create(Error)
+            }},
             '\'' => {
                 s.create(Char);
                 if let Some(c) = s.next() {
@@ -114,6 +124,7 @@ impl Kind {
             Kind::GE => "comparison",
             Kind::LE => "comparison",
             Kind::Label => "label",
+            Kind::Comment => "comment",
         }
     }
 }
@@ -142,7 +153,7 @@ impl <'a, T> Scanner<'a, T> {
     }
     #[inline]
     pub fn _while<F: Fn(char) -> bool>(&mut self, f: F){
-        while self.chars.next_if(|(_, c)| f(*c)).is_some() {}
+        while self._if(|c| f(c)) {}
     }
     #[inline]
     pub fn _if<F: Fn(char) -> bool>(&mut self, f: F) -> bool {
