@@ -107,6 +107,10 @@ init().then(() => { // all code should go in here
         emulate(code_input.value);
     };
 
+    document.getElementById("document_link").onclick = function() {
+        window.open("https://github.com/ModPunchtree/URCL/releases/download/V1.5.0/URCL.V1.5.0.pdf", "_blank");
+    };
+
     document.getElementById("clear").onclick = function() {
         clear_text();
     };
