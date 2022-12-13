@@ -1,4 +1,4 @@
-import  init, {emulate, init_panic_hook}  from "./pkg/urcl_rs.js"
+import init, {output_highlight_span, init_panic_hook, emulate}  from "./pkg/urcl_rs.js"
 
 /**
  * @template T
@@ -84,14 +84,20 @@ export async function clear_span() {
 init().then(() => { // all code should go in here
     init_panic_hook();
     
-    stdin.oninput = e => {
-        if (auto_emulate.checked) {
-            emulate(stdin.value);
+    code_input.oninput = e => { /*if (auto_emulate.checked)*/ output_highlight_span(code_input.value); }
+    
+    code_input.onkeydown = e => {
+        if (e.key == 'Tab') {
+            e.preventDefault();
+            code_input.value = code_input.value.substring(0, code_input.selectionStart) + "\t" + code_input.value.substring(code_input.selectionEnd);
+            code_input.selectionStart = code_input.selectionEnd = code_input.selectionStart + 1;
+            /*if (auto_emulate.checked)*/ output_highlight_span(code_input.value);
         }
     }
     
     document.getElementById("emulate").onclick = function() {
-        emulate(document.getElementById("stdin").value);
+        /*output_highlight_span(document.getElementById("code_input").value);*/
+        emulate(code_input.value);
     };
     
     document.getElementById("clear").onclick = function() {
@@ -103,4 +109,5 @@ init().then(() => { // all code should go in here
     }
 
     auto_emulate.checked = localStorage.getItem("auto_emulate") == "t" ? true : false;
+    output_highlight_span(code_input.value);
 });
