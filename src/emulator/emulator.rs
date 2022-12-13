@@ -25,11 +25,7 @@ pub fn output_highlight_span(src: &str) {
     clear_span();
     let toks = lexer::lex(src);
     for tok in toks {
-        if tok.str == "\n" {
-            out_lf();
-        } else {
-            let class = tok.kind.cssClass();
-            out_span(tok.str, class);
-        }
+        let class = tok.kind.cssClass();
+        out_span(tok.str, class);
     }
 }
