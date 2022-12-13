@@ -30,5 +30,5 @@ pub fn output_highlight_span(src: &str) {
         let class = tok.kind.cssClass();
         out_span(tok.str, class);
     }
-    out_span("\n\n", Kind::white);
+    out_span("\n\n", "");
 }
