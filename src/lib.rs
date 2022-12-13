@@ -7,13 +7,16 @@ use std::panic;
 
 #[wasm_bindgen(raw_module="../script.js")]
 extern {
-    pub fn out_text(text: &str);
     pub fn out_graphics(x: u64, y: u64, colour: u64);
+
+    pub fn clear_text();
     pub fn in_text() -> String;
+    pub fn out_text(text: &str);
+
     pub fn out_err(text: &str);
+    
     pub fn out_html(text: &str);
     pub fn out_span(text: &str, class_name: &str);
-    pub fn out_lf();
     pub fn clear_span();
 }
 

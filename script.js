@@ -28,10 +28,6 @@ const stdout = by_id(HTMLElement, "stdout");
 const code_input = by_id(HTMLTextAreaElement, "code_input");
 const auto_emulate = by_id(HTMLInputElement, "auto-emulate");
 
-export function out_text(text) {
-    //
-}
-
 export function out_graphics(x, y, colour) {
     // 
 }
@@ -40,8 +36,16 @@ export function out_err(text) {
     //
 }
 
+export function clear_text() {
+    stdout.innerText = "";
+}
+
 export function in_text() { // needs to have a null terminate character if null terminate box is pressed
     // like stdin
+}
+
+export function out_text(text) {
+    stdout.innerText = stdout.innerText + text;
 }
 
 let htmlBuf = "";
@@ -60,10 +64,6 @@ export function out_span(text, class_name) {
     span.textContent = text;
     span.className = class_name;
     highlight.appendChild(span);
-}
-
-export function out_lf() {
-    out_span("\n", "white");
 }
 
 export function output_registers(regs) {
@@ -90,12 +90,11 @@ init().then(() => { // all code should go in here
     };
     
     document.getElementById("emulate").onclick = function() {
-        // output_highlight_span(document.getElementById("code_input").value);
-        // emulate(code_input.value);
+        emulate(code_input.value);
     };
 
     document.getElementById("clear").onclick = function() {
-        clear_span();
+        clear_text();
     };
 
     document.getElementById("settings").onclick = function() {
