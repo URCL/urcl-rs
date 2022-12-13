@@ -40,7 +40,7 @@ main         { background-color: #121212; text-align: center; padding: 0; displa
 
 span.white, span.unknown, span.left-square, span.right-sqare, span.comparison   { color: #FFFFFF; }
 span.string, span.char, span.text   { color: #e08f43; }
-span.port, span.int                 { color: #8CCf7E; }
+span.port, span.int, span.relative  { color: #8CCf7E; }
 span.memory     { color: #79B1EB; }
 span.escape     { color: #d8b542; }
 span.error      { color: #da351f; }

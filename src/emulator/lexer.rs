@@ -6,7 +6,7 @@ pub type UToken<'a> = Token<'a, Kind>;
 pub enum Kind {
     Unknown, Error, Comment,
     White, Name, Macro, 
-    Int(u64), Memory, Port, Reg, Label,
+    Int(u64), Memory, Port, Reg, Label, Relative(i64),
     Eq, GE, LE,
     LSquare, RSquare, String, Char, Text, Escape(char),
 }
@@ -22,8 +22,13 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
             ' ' | '\x09'..='\x0d' => {s._while(char::is_whitespace); s.create(White);},
             '-' | '+' | '0'..='9' => {
                 s._while(|c|c.is_ascii_digit());
-                let value = s.str().parse().unwrap();
+                let value = s.str().parse().unwrap_or(0);
                 s.create(Int(value))
+            },
+            '~' => {
+                s._while(|c|c.is_ascii_digit() || c == '-' || c == '+');
+                let value = s.str().parse().unwrap_or(0);
+                s.create(Relative(value))
             },
             '#' | 'm' | 'M' => {s._while(char::is_alphanumeric); s.create(Memory)},
             '$' | 'r' | 'R' => {s._while(char::is_alphanumeric); s.create(Reg)},
@@ -125,6 +130,7 @@ impl Kind {
             Kind::LE => "comparison",
             Kind::Label => "label",
             Kind::Comment => "comment",
+            Kind::Relative(_) => "relative",
         }
     }
 }
