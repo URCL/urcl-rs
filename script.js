@@ -25,6 +25,7 @@ function by_id(clazz, name) {
 }
 
 const stdout = by_id(HTMLElement, "stdout");
+const highlight = by_id(HTMLElement, "highlight");
 const code_input = by_id(HTMLTextAreaElement, "code_input");
 const auto_emulate = by_id(HTMLInputElement, "auto-emulate");
 
@@ -75,6 +76,13 @@ export async function clear_span() {
     highlight.innerHTML = "";
 }
 
+export function resync_highlight() {
+    highlight.style.top      = code_input.getBoundingClientRect().top + "px";
+    highlight.style.left     = code_input.getBoundingClientRect().left + "px";
+    highlight.style.width    = (code_input.getBoundingClientRect().width  - parseFloat(getComputedStyle(highlight).fontSize)) + "px";
+    highlight.style.height   = (code_input.getBoundingClientRect().height - parseFloat(getComputedStyle(highlight).fontSize)) + "px";
+}
+
 init().then(() => { // all code should go in here
     init_panic_hook();
     
@@ -88,6 +96,12 @@ init().then(() => { // all code should go in here
             output_highlight_span(code_input.value);
         }
     };
+
+    code_input.onscroll = e => {
+        highlight.scrollTo(0, code_input.scrollTop);
+    };
+
+    resync_highlight();
     
     document.getElementById("emulate").onclick = function() {
         emulate(code_input.value);
@@ -111,14 +125,13 @@ init().then(() => { // all code should go in here
         }, 250);
     };
 
-    document.getElementById("highlight").style.top      = code_input.getBoundingClientRect().top + "px";
-    document.getElementById("highlight").style.bottom   = code_input.getBoundingClientRect().bottom + "px";
-    document.getElementById("highlight").style.left     = code_input.getBoundingClientRect().left + "px";
-    document.getElementById("highlight").style.right    = code_input.getBoundingClientRect().right + "px";
-
     document.getElementsByTagName("body")[0].onbeforeunload = function() {
         localStorage.setItem("auto_emulate", auto_emulate.checked ? "t" : "f");
-    }
+    };
+
+    document.getElementsByTagName("body")[0].onresize = function() {
+        resync_highlight();
+    };
 
     auto_emulate.checked = localStorage.getItem("auto_emulate") == "t" ? true : false;
     output_highlight_span(code_input.value);
