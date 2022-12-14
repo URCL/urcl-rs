@@ -46,11 +46,11 @@ export function in_text() { // needs to have a null terminate character if null 
 }
 
 export function out_text(text) {
-    stdout.innerText = stdout.innerText + text;
+    stdout.innerText += text;
 }
 
 export function out_debug(text) {
-    stdout.innerText += text + "\n";
+    out_text(text + "\n");
 }
 /**
  * @param {string} text 
