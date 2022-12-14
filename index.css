@@ -5,6 +5,8 @@
 html                    { overflow-y: hidden; scrollbar-width: none; }
 body::-webkit-scrollbar { display: none; }
 
+*::selection { background-color: #1b5754; }
+
 body         { background-color: #121212; font: 1.25rem "Source Sans Pro", sans-serif; line-height: 1.5; color: #fff; margin: 0px; overflow: hidden; }
 body h1      { color: #fff; font: 3rem   "Inter Tight", sans-serif; }
 body h2      { color: #fff; font: 2.5rem "Inter Tight", sans-serif; }
@@ -23,7 +25,7 @@ body input[type="checkbox"]:hover       { accent-color: var(--color); }
 .section input[type="checkbox"]         { width: 1rem; height: 1rem; }
 #stdout      { border-radius: .35rem; text-align: left; background-color: #1d1d1d; margin: 2rem 2rem 2rem 0; padding: .5rem; height: 83vh; font: 1rem 'Fira Code'; grid-area: o; overflow: auto; word-break: break-all; white-space: pre-wrap; tab-size: 4; }
 #code_input  { border-radius: .35rem; text-align: left; background-color: #1d1d1d; margin: 2rem 0 2rem 2rem; padding: .5rem; height: 83vh; font: 1rem 'Fira Code'; grid-area: c; overflow: auto; word-break: break-all; color: transparent; caret-color: #fff; border: none; outline: none; overflow: auto; }
-#code_input::selection  { color: transparent; background-color: #1b5754; }
+#code_input::selection  { color: transparent; }
 #highlight   { font: 1rem 'Fira Code'; position: absolute; padding: .5rem; pointer-events: none; white-space: pre-wrap; tab-size: 4; overflow: hidden; word-break: break-all; }
 
 nav          { background-color: #202124; padding: 10px; text-align: center; }
