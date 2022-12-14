@@ -1,4 +1,4 @@
-use std::{str::{Chars}};
+use std::{iter::Peekable, str::CharIndices};
 
 pub type UToken<'a> = Token<'a, Kind>;
 
@@ -159,54 +159,20 @@ pub struct Token<'a, T> {
     pub str: &'a str,
 }
 
-const EOF: char = '\x00';
-
 pub struct Scanner <'a, T> {
     src: &'a str,
-    chars: Chars<'a>,
+    chars: Peekable<CharIndices<'a>>,
     start: usize,
     tokens: Vec<Token<'a, T>>,
 }
 
 impl <'a, T> Scanner<'a, T> {
     pub fn new(src: &'a str) -> Self {
-        Self {src, chars: src.chars(), start: 0, tokens: Vec::new()}
+        Self {src, chars: src.char_indices().peekable(), start: 0, tokens: Vec::new()}
     }
-
-    #[inline]
-    pub fn pos(&self) -> usize {
-        self.chars.as_str().len() - self.src.len()
-    }
-    #[inline]
-    pub fn eof(&self) -> bool {
-        self.chars.as_str().len() == 0
-    }
-
-    #[inline]
-    pub fn has_next(&self) -> bool {
-        self.chars.as_str().len() != 0
-    }
-
-    #[inline]
-    pub fn next(&mut self) -> Option<char> {
-        self.chars.next()
-    }
-
-    #[inline]
-    pub fn first(&mut self) -> char {
-        self.chars.clone().next().unwrap_or(EOF)
-    }
-
-    #[inline]
-    pub fn second(&mut self) -> char {
-        let mut chars = self.chars.clone();
-        chars.next();
-        chars.next().unwrap_or(EOF)
-    }
-    
     #[inline]
     pub fn peek(&mut self) -> Option<char>{
-        self.chars.clone().next()
+        self.chars.peek().map(|(_, c)| {*c})
     }
     #[inline]
     pub fn _while<F: Fn(char) -> bool>(&mut self, f: F){
@@ -214,16 +180,12 @@ impl <'a, T> Scanner<'a, T> {
     }
     #[inline]
     pub fn _if<F: Fn(char) -> bool>(&mut self, f: F) -> bool {
-        if self.peek().map_or(false, f) {
-            self.next();
-            return true;
-        }
-        return false;
+        self.chars.next_if(|(_, c)| f(*c)).is_some()
     }
     #[inline]
     pub fn create(&mut self, kind: T) {
         let start = self.start;
-        let end = self.pos();
+        let end = self.chars.peek().map(|(i, _)| *i).unwrap_or(self.src.len());
         self.start = end;
 
         let str = &self.src[start..end];
@@ -232,10 +194,18 @@ impl <'a, T> Scanner<'a, T> {
     #[inline]
     pub fn str(&mut self) -> &'a str{
         let start = self.start;
-        let end = self.pos();
+        let end = self.chars.peek().map(|(i, _)| *i).unwrap_or(self.src.len());
         &self.src[start..end]
     }
     pub fn tokens(self) -> Vec<Token<'a, T>> {
         self.tokens
+    }
+}
+impl <'a, T> Iterator for Scanner<'a, T> {
+    type Item = char;
+
+    #[inline]
+    fn next(&mut self) -> Option<Self::Item> {
+        self.chars.next().map(|(_, c)| c)
     }
 }
