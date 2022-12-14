@@ -15,3 +15,7 @@ parse_int = "0.6.0"
 
 [profile.release]
 lto = true
+overflow-checks = false
+
+[profile.dev]
+overflow-checks = false
