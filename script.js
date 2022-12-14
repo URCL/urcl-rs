@@ -50,15 +50,11 @@ export function in_text() { // needs to have a null terminate character if null 
 }
 
 export function out_text(text) {
-    stdout.innerText = stdout.innerText + text;
+    stdout.innerText += text;
 }
 
-let htmlBuf = "";
-
-
-export function out_html(text) {
-    htmlBuf += text + '\n';
-    highlight.innerText = htmlBuf;
+export function out_debug(text) {
+    out_text(text + "\n");
 }
 /**
  * @param {string} text 
@@ -76,7 +72,6 @@ export function output_registers(regs) {
 }
 
 export async function clear_span() {
-    htmlBuf = "";
     highlight.innerHTML = "";
 }
 

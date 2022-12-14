@@ -159,6 +159,7 @@ fn token_escape<'a>(s: &mut Scanner<'a, Kind>) {
             'r' => s.create(Escape('\r')),
             'n' => s.create(Escape('\n')),
             '"' => s.create(Escape('\"')),
+            '\\' => s.create(Escape('\\')),
             '\'' => s.create(Escape('\'')),
             _ => s.create(Error),
         }
