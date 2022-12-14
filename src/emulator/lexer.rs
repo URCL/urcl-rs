@@ -6,7 +6,7 @@ pub type UToken<'a> = Token<'a, Kind>;
 pub enum Kind {
     Unknown, Error, Comment,
     White, Name, Macro, 
-    Int(u64), Memory, Port, Reg, Label, Relative(i64),
+    Int(i64), Memory, Port, Reg, Label, Relative(i64),
     Eq, GE, LE,
     LSquare, RSquare, String, Char, Text, Escape(char),
 }
@@ -27,15 +27,25 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
             },
             '~' => {
                 s._while(|c|c.is_ascii_digit() || c == '-' || c == '+');
-                let value = s.str().parse().unwrap_or(0);
-                s.create(Relative(value))
+                let mut a = s.str().to_string(); a.remove(0);
+                s.create(Relative(a.parse().unwrap_or(0)))
             },
-            '#' | 'm' | 'M' => {s._while(char::is_alphanumeric); s.create(Memory)},
-            '$' | 'r' | 'R' => {s._while(char::is_alphanumeric); s.create(Reg)},
+            '#' | 'm' | 'M' => {
+                if s.peek().unwrap_or(' ').is_ascii_digit() {
+                    s._while(char::is_alphanumeric); s.create(Memory);
+                } else {
+                    s._while(char::is_alphanumeric); s.create(Name);
+                }},
+            '$' | 'r' | 'R' => {
+                if s.peek().unwrap_or(' ').is_ascii_digit() {
+                    s._while(char::is_alphanumeric); s.create(Reg);
+                } else {
+                    s._while(char::is_alphanumeric); s.create(Name);
+                }},
             '@' => {s._while(char::is_alphanumeric); s.create(Macro)},
             '%' => {s._while(char::is_alphanumeric); s.create(Port)},
             'a'..='z' | 'A'..='Z' => {s._while(char::is_alphanumeric); s.create(Name)},
-            '.' => {s._while(char::is_alphanumeric); s.create(Label)},
+            '.' => {s._while(|c|c != ' ' && c != '\n' && c != '\t'); s.create(Label)},
             '/' => {if s._if(|c| c == '/') {
                 s._while(|c| c != '\n');
                 s.create(Comment)
@@ -79,13 +89,20 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
                             s.create(String);
                             break;
                         },
-                        _ => {s.next(); has_text = true;}
+                        '\n' => {
+                            s.create(Error);
+                            break;
+                        },
+                        _ => {
+                            s.next(); has_text = true;
+                        }
                     }
                 }
             },
             _ => {s.create(Unknown)}
         }
     }
+    s.create(Error);
 
     s.tokens()
 }
@@ -108,7 +125,7 @@ fn token_escape<'a>(s: &mut Scanner<'a, Kind>) {
 }
 
 impl Kind {
-    pub fn cssClass(&self) -> &'static str {
+    pub fn css_class(&self) -> &'static str {
         match self {
             Kind::Unknown => "unknown",
             Kind::White => "white",
