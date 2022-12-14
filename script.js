@@ -29,6 +29,10 @@ const highlight = by_id(HTMLElement, "highlight");
 const code_input = by_id(HTMLTextAreaElement, "code_input");
 const auto_emulate = by_id(HTMLInputElement, "auto-emulate");
 
+export function now() {
+    return performance.now();
+}
+
 export function out_graphics(x, y, colour) {
     // 
 }

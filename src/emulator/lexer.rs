@@ -1,14 +1,19 @@
-use std::{iter::Peekable, str::CharIndices};
+use std::{str::{Chars}};
 
 pub type UToken<'a> = Token<'a, Kind>;
 
 #[derive(Debug, Clone)]
 pub enum Kind {
     Unknown, Error, Comment,
-    White, Name, Macro, 
+    White, LF, 
+    Name, Macro, 
     Int(i64), Memory, Port, Reg, Label, Relative(i64),
     Eq, GE, LE,
     LSquare, RSquare, String, Char, Text, Escape(char),
+}
+
+pub fn is_inline_white(c: char) -> bool {
+    c.is_whitespace() && c != '\n'
 }
 
 pub fn lex(src: &str) -> Vec<Token<Kind>>{
@@ -19,7 +24,8 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
         match c {
             '[' => {s.create(LSquare)},
             ']' => {s.create(RSquare);}
-            ' ' | '\x09'..='\x0d' => {s._while(char::is_whitespace); s.create(White);},
+            ' ' | '\x09' | '\x0b'..='\x0d' => {s._while(is_inline_white); s.create(White);},
+            '\n' => s.create(LF),
             '0' => {
                 match s.peek().unwrap_or('0') {
                     '0'..='9' => {
@@ -61,8 +67,8 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
             },
             '~' => {
                 s._while(|c|c.is_ascii_digit() || c == '-' || c == '+');
-                let mut a = s.str().to_string(); a.remove(0);
-                s.create(Relative(a.parse().unwrap_or(0)))
+                let value = s.str_after(1).parse().unwrap_or(0);
+                s.create(Relative(value));
             },
             '#' | 'm' | 'M' => {
                 if s.peek().unwrap_or(' ').is_ascii_digit() {
@@ -79,6 +85,9 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
             '@' => {s._while(char::is_alphanumeric); s.create(Macro)},
             '%' => {s._while(char::is_alphanumeric); s.create(Port)},
             'a'..='z' | 'A'..='Z' => {s._while(char::is_alphanumeric); s.create(Name)},
+            '>' => {s._if(|c|c=='='); s.create(GE)} // TODO: error if no = lol
+            '<' => {s._if(|c|c=='='); s.create(LE)} // TODO: error if no = lol
+            '=' => {s._if(|c|c=='='); s.create(Eq)} // TODO: error if no = lol
             '.' => {s._while(|c|c != ' ' && c != '\n' && c != '\t'); s.create(Label)},
             '/' => {if s._if(|c| c == '/') {
                 s._while(|c| c != '\n');
@@ -164,6 +173,7 @@ impl Kind {
         match self {
             Kind::Unknown => "unknown",
             Kind::White => "white",
+            Kind::LF => "white",
             Kind::Int(_) => "int",
             Kind::LSquare => "left-square",
             Kind::RSquare => "right-square",
@@ -196,18 +206,23 @@ pub struct Token<'a, T> {
 
 pub struct Scanner <'a, T> {
     src: &'a str,
-    chars: Peekable<CharIndices<'a>>,
+    chars: Chars<'a>,
     start: usize,
     tokens: Vec<Token<'a, T>>,
 }
 
 impl <'a, T> Scanner<'a, T> {
     pub fn new(src: &'a str) -> Self {
-        Self {src, chars: src.char_indices().peekable(), start: 0, tokens: Vec::new()}
+        Self {src, chars: src.chars(), start: 0, tokens: Vec::new()}
     }
     #[inline]
-    pub fn peek(&mut self) -> Option<char>{
-        self.chars.peek().map(|(_, c)| {*c})
+    pub fn pos(&self) -> usize {
+        self.src.len() - self.chars.as_str().len()
+    }
+
+    #[inline]
+    pub fn peek(&self) -> Option<char>{
+        self.chars.clone().next()
     }
     #[inline]
     pub fn _while<F: Fn(char) -> bool>(&mut self, f: F){
@@ -215,21 +230,31 @@ impl <'a, T> Scanner<'a, T> {
     }
     #[inline]
     pub fn _if<F: Fn(char) -> bool>(&mut self, f: F) -> bool {
-        self.chars.next_if(|(_, c)| f(*c)).is_some()
+        if self.peek().map_or(false, f) {
+            self.next();
+            return true;
+        }
+        return false;
     }
     #[inline]
     pub fn create(&mut self, kind: T) {
         let start = self.start;
-        let end = self.chars.peek().map(|(i, _)| *i).unwrap_or(self.src.len());
+        let end = self.pos();
         self.start = end;
 
         let str = &self.src[start..end];
         self.tokens.push(Token { kind, str });
     }
     #[inline]
-    pub fn str(&mut self) -> &'a str{
+    pub fn str(&self) -> &'a str{
         let start = self.start;
-        let end = self.chars.peek().map(|(i, _)| *i).unwrap_or(self.src.len());
+        let end = self.pos();
+        &self.src[start..end]
+    }
+    #[inline]
+    pub fn str_after(&self, start: usize) -> &'a str{
+        let start = self.start + start;
+        let end = self.pos();
         &self.src[start..end]
     }
     pub fn tokens(self) -> Vec<Token<'a, T>> {
@@ -241,6 +266,6 @@ impl <'a, T> Iterator for Scanner<'a, T> {
 
     #[inline]
     fn next(&mut self) -> Option<Self::Item> {
-        self.chars.next().map(|(_, c)| c)
+        self.chars.next()
     }
 }

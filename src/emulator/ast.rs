@@ -1,4 +1,4 @@
-use std::fs::OpenOptions;
+use std::collections::HashMap;
 
 use super::{*, lexer::{Token, Kind, UToken}};
 
@@ -8,9 +8,9 @@ struct TokenBuffer<'a> {
 }
 impl <'a> TokenBuffer<'a> {
     #[inline]
-    pub fn new() -> Self {
+    pub fn new(toks: Vec<UToken<'a>>) -> Self {
         TokenBuffer {
-            toks: vec![],
+            toks: toks,
             index: 0,
         }
     }
@@ -35,7 +35,7 @@ impl <'a> TokenBuffer<'a> {
 
 pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
     let mut ret = Program::new();
-    let mut buf = TokenBuffer::new();
+    let mut buf = TokenBuffer::new(toks);
 
     while buf.has_next() {
         match buf.current().kind {
@@ -50,12 +50,13 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
 
 pub struct Program {
     headers: Headers,
-    instructions: Vec<Inst>
+    instructions: Vec<Inst>,
+    labels: HashMap<&'static str, u64>
 }
 
 impl Program {
     pub fn new() -> Self {
-        Program { headers: Headers::new(), instructions: Vec::new() }
+        Program { headers: Headers::new(), instructions: Vec::new(), labels: HashMap::new() }
     }
 }
 
