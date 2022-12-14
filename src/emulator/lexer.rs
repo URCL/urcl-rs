@@ -5,10 +5,15 @@ pub type UToken<'a> = Token<'a, Kind>;
 #[derive(Debug, Clone)]
 pub enum Kind {
     Unknown, Error, Comment,
-    White, Name, Macro, 
+    White, LF, 
+    Name, Macro, 
     Int(i64), Memory, Port, Reg, Label, Relative(i64),
     Eq, GE, LE,
     LSquare, RSquare, String, Char, Text, Escape(char),
+}
+
+pub fn is_inline_white(c: char) -> bool {
+    c.is_whitespace() && c != '\n'
 }
 
 pub fn lex(src: &str) -> Vec<Token<Kind>>{
@@ -19,7 +24,8 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
         match c {
             '[' => {s.create(LSquare)},
             ']' => {s.create(RSquare);}
-            ' ' | '\x09'..='\x0d' => {s._while(char::is_whitespace); s.create(White);},
+            ' ' | '\x09' | '\x0b'..='\x0d' => {s._while(is_inline_white); s.create(White);},
+            '\n' => s.create(LF),
             '0' => {
                 match s.peek().unwrap_or('0') {
                     '0'..='9' => {
@@ -163,6 +169,7 @@ impl Kind {
         match self {
             Kind::Unknown => "unknown",
             Kind::White => "white",
+            Kind::LF => "white",
             Kind::Int(_) => "int",
             Kind::LSquare => "left-square",
             Kind::RSquare => "right-square",
