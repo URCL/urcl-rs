@@ -10,13 +10,6 @@ struct EmulatorState {
 #[allow(dead_code)]
 #[wasm_bindgen]
 pub fn emulate(src: &str) {
-    /*clear_span();
-    let toks = lexer::lex(src);
-    for tok in toks {
-        let class = tok.kind.cssClass();
-        out_span(tok.str, class);
-    }*/
-
     clear_text();
     out_text("Hello world!");
 }
@@ -27,7 +20,7 @@ pub fn output_highlight_span(src: &str) {
     clear_span();
     let toks = lexer::lex(src);
     for tok in toks {
-        let class = tok.kind.cssClass();
+        let class = tok.kind.css_class();
         out_span(tok.str, class);
     }
     out_span("\n\n", "");

@@ -6,7 +6,7 @@ pub type UToken<'a> = Token<'a, Kind>;
 pub enum Kind {
     Unknown, Error, Comment,
     White, Name, Macro, 
-    Int(u64), Memory, Port, Reg, Label, Relative(i64),
+    Int(i64), Memory, Port, Reg, Label, Relative(i64),
     Eq, GE, LE,
     LSquare, RSquare, String, Char, Text, Escape(char),
 }
@@ -27,8 +27,8 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
             },
             '~' => {
                 s._while(|c|c.is_ascii_digit() || c == '-' || c == '+');
-                let value = s.str().parse().unwrap_or(0);
-                s.create(Relative(value))
+                let mut a = s.str().to_string(); a.remove(0);
+                s.create(Relative(a.parse().unwrap_or(0)))
             },
             '#' | 'm' | 'M' => {
                 if s.peek().unwrap_or(' ').is_ascii_digit() {
@@ -125,7 +125,7 @@ fn token_escape<'a>(s: &mut Scanner<'a, Kind>) {
 }
 
 impl Kind {
-    pub fn cssClass(&self) -> &'static str {
+    pub fn css_class(&self) -> &'static str {
         match self {
             Kind::Unknown => "unknown",
             Kind::White => "white",
