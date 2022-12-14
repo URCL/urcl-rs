@@ -91,8 +91,9 @@ init().then(() => { // all code should go in here
     code_input.onkeydown = e => {
         if (e.key == 'Tab') {
             e.preventDefault();
+            let a = code_input.selectionStart+1;
             code_input.value = code_input.value.substring(0, code_input.selectionStart) + "\t" + code_input.value.substring(code_input.selectionEnd);
-            code_input.selectionStart = code_input.selectionEnd = code_input.selectionStart + 1;
+            code_input.setSelectionRange(a, a);
             output_highlight_span(code_input.value);
         }
     };

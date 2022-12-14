@@ -35,7 +35,7 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
             '@' => {s._while(char::is_alphanumeric); s.create(Macro)},
             '%' => {s._while(char::is_alphanumeric); s.create(Port)},
             'a'..='z' | 'A'..='Z' => {s._while(char::is_alphanumeric); s.create(Name)},
-            '.' => {s._while(char::is_alphanumeric); s.create(Label)},
+            '.' => {s._while(|c|c != ' ' && c != '\n' && c != '\t'); s.create(Label)},
             '/' => {if s._if(|c| c == '/') {
                 s._while(|c| c != '\n');
                 s.create(Comment)
@@ -79,13 +79,20 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
                             s.create(String);
                             break;
                         },
-                        _ => {s.next(); has_text = true;}
+                        '\n' => {
+                            s.create(Error);
+                            break;
+                        },
+                        _ => {
+                            s.next(); has_text = true;
+                        }
                     }
                 }
             },
             _ => {s.create(Unknown)}
         }
     }
+    s.create(Error);
 
     s.tokens()
 }
