@@ -30,8 +30,18 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
                 let value = s.str().parse().unwrap_or(0);
                 s.create(Relative(value))
             },
-            '#' | 'm' | 'M' => {s._while(char::is_alphanumeric); s.create(Memory)},
-            '$' | 'r' | 'R' => {s._while(char::is_alphanumeric); s.create(Reg)},
+            '#' | 'm' | 'M' => {
+                if s.peek().unwrap_or(' ').is_ascii_digit() {
+                    s._while(char::is_alphanumeric); s.create(Memory);
+                } else {
+                    s._while(char::is_alphanumeric); s.create(Name);
+                }},
+            '$' | 'r' | 'R' => {
+                if s.peek().unwrap_or(' ').is_ascii_digit() {
+                    s._while(char::is_alphanumeric); s.create(Reg);
+                } else {
+                    s._while(char::is_alphanumeric); s.create(Name);
+                }},
             '@' => {s._while(char::is_alphanumeric); s.create(Macro)},
             '%' => {s._while(char::is_alphanumeric); s.create(Port)},
             'a'..='z' | 'A'..='Z' => {s._while(char::is_alphanumeric); s.create(Name)},
