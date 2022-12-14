@@ -18,9 +18,43 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
     while let Some(c) = s.next() {
         match c {
             '[' => {s.create(LSquare)},
-            ']'=> {s.create(RSquare);}
+            ']' => {s.create(RSquare);}
             ' ' | '\x09'..='\x0d' => {s._while(char::is_whitespace); s.create(White);},
-            '-' | '+' | '0'..='9' => {
+            '0' => {
+                match s.peek().unwrap_or('0') {
+                    '0'..='9' => {
+                        s.next();
+                        s._while(|c|c.is_ascii_digit());
+                        let value = s.str().parse().unwrap_or(0);
+                        s.create(Int(value));
+                    },
+                    'b' => {
+                        s.next();
+                        s._while(|c|c == '0' || c == '1');
+                        if s.str().len() <= 2 { s.create(Error); continue; }
+                        let value = i64::from_str_radix(s.str(), 2).unwrap_or(0);
+                        s.create(Int(value));
+                    },
+                    'o' => {
+                        s.next();
+                        s._while(|c|c.is_ascii_digit() && c != '8' && c != '9');
+                        if s.str().len() <= 2 { s.create(Error); continue; }
+                        let value = i64::from_str_radix(s.str(), 8).unwrap_or(0);
+                        s.create(Int(value));
+                    },
+                    'x' => {
+                        s.next();
+                        s._while(|c|c.is_ascii_hexdigit());
+                        if s.str().len() <= 2 { s.create(Error); continue; }
+                        let value = i64::from_str_radix(&s.str()[2..s.str().len()], 16).unwrap_or(0);
+                        s.create(Int(value));
+                    },
+                    _ => {
+                        s.create(Int(0));
+                    }
+                }
+            },
+            '-' | '+' | '1'..='9' => {
                 s._while(|c|c.is_ascii_digit());
                 let value = s.str().parse().unwrap_or(0);
                 s.create(Int(value))
@@ -48,12 +82,12 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
             '.' => {s._while(|c|c != ' ' && c != '\n' && c != '\t'); s.create(Label)},
             '/' => {if s._if(|c| c == '/') {
                 s._while(|c| c != '\n');
-                s.create(Comment)
+                s.create(Comment);
             } else if s._if(|c| c == '*') {
                 while s.next().map_or(false, |c| c != '*') || s.next().map_or(false, |c| c != '/'){}
-                s.create(Comment)
+                s.create(Comment);
             } else {
-                s.create(Error)
+                s.create(Error);
             }},
             '\'' => {
                 s.create(Char);
@@ -67,7 +101,7 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
                         if c == '\'' {
                             s.create(Char);
                         } else {
-                            s.create(Error)
+                            s.create(Error);
                         }
                     }
                 }
