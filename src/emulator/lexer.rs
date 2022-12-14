@@ -61,8 +61,8 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
             },
             '~' => {
                 s._while(|c|c.is_ascii_digit() || c == '-' || c == '+');
-                let mut a = s.str().to_string(); a.remove(0);
-                s.create(Relative(a.parse().unwrap_or(0)))
+                let value = s.str_after(1).parse().unwrap_or(0);
+                s.create(Relative(value));
             },
             '#' | 'm' | 'M' => {
                 if s.peek().unwrap_or(' ').is_ascii_digit() {
@@ -235,8 +235,14 @@ impl <'a, T> Scanner<'a, T> {
         self.tokens.push(Token { kind, str });
     }
     #[inline]
-    pub fn str(&mut self) -> &'a str{
+    pub fn str(&self) -> &'a str{
         let start = self.start;
+        let end = self.pos();
+        &self.src[start..end]
+    }
+    #[inline]
+    pub fn str_after(&self, start: usize) -> &'a str{
+        let start = self.start + start;
         let end = self.pos();
         &self.src[start..end]
     }
