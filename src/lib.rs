@@ -15,9 +15,10 @@ extern {
 
     pub fn out_err(text: &str);
     
-    pub fn out_html(text: &str);
     pub fn out_span(text: &str, class_name: &str);
     pub fn clear_span();
+    
+    pub fn out_debug(text: &str);
 }
 
 #[wasm_bindgen]
@@ -29,7 +30,7 @@ extern {
 #[macro_export]
 macro_rules! jsprintln {
     ($($arg:tt)*) => {{
-        out_html(&format!($($arg)*).to_string());
+        out_debug(&format!($($arg)*).to_string());
     }};
 }
 
