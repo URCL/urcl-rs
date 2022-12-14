@@ -1,5 +1,4 @@
 use std::{iter::Peekable, str::CharIndices};
-use super::*;
 
 pub type UToken<'a> = Token<'a, Kind>;
 
