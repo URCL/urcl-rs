@@ -134,25 +134,25 @@ fn parse_prefixed_number<'a>(s: &mut Scanner<'a, Kind>) -> Option<i64> {
         '0'..='9' => {
             s.next();
             s._while(|c|c.is_ascii_digit());
-            return s.str().parse().unwrap_or(0);
+            return s.str().parse();
         },
         'b' => {
             s.next();
             s._while(|c|c == '0' || c == '1');
             if s.str().len() <= 2 { s.create(Error); return None; }
-            return i64::from_str_radix(s.str(), 2).unwrap_or(0);
+            return i64::from_str_radix(s.str(), 2);
         },
         'o' => {
             s.next();
             s._while(|c|c.is_ascii_digit() && c != '8' && c != '9');
             if s.str().len() <= 2 { s.create(Error); return None; }
-            return i64::from_str_radix(s.str(), 8).unwrap_or(0);
+            return i64::from_str_radix(s.str(), 8);
         },
         'x' => {
             s.next();
             s._while(|c|c.is_ascii_hexdigit());
             if s.str().len() <= 2 { s.create(Error); return None; }
-            return i64::from_str_radix(&s.str()[2..s.str().len()], 16).unwrap_or(0);
+            return i64::from_str_radix(&s.str()[2..s.str().len()], 16);
         },
         _ => Some(0)
     }
