@@ -26,7 +26,10 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
             ']' => {s.create(RSquare);}
             ' ' | '\x09' | '\x0b'..='\x0d' => {s._while(is_inline_white); s.create(White);},
             '\n' => s.create(LF),
-            '0' => s.create(Int(parse_prefixed_number(&mut s))),
+            '0' => {
+                let a = parse_prefixed_number(&mut s);
+                if a != None {s.create(Int(a.unwrap()));}
+            },
             '-' | '+' | '1'..='9' => {
                 s._while(|c|c.is_ascii_digit());
                 let value = s.str().parse().unwrap_or(0);
