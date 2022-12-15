@@ -145,7 +145,7 @@ init().then(() => { // all code should go in here
     };
 
     for (let i = 0; i < document.getElementsByClassName("example_link").length; i++) {
-        document.getElementsByClassName("example_link")[i].onclick = () => location = this.dataset["link"];
+        document.getElementsByClassName("example_link")[i].onclick = function() {location = this.dataset["link"]};
     };
 
     auto_emulate.checked = localStorage.getItem("auto_emulate") != "f";
