@@ -7,7 +7,7 @@ pub enum Kind {
     Unknown, Error, Comment,
     White, LF, 
     Name, Macro, 
-    Int(i64), Memory(u64), Port, Reg, Label, Relative(i64),
+    Int(i64), Memory(u64), Port, Reg(u64), Label, Relative(i64),
     Eq, GE, LE,
     LSquare, RSquare, String, Char, Text, Escape(char),
 }
@@ -44,15 +44,17 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
                     s._while(char::is_alphanumeric); s.create(Memory(s.str_after(1).parse().unwrap_or(0)));
                 } else {
                     s._while(char::is_alphanumeric); s.create(Name);
-                }},
+                }
+            },
             '$' | 'r' | 'R' => {
                 if s.peek().unwrap_or(' ') == '0' {
-                    s.create(Reg(parse_prefixed_number(&mut s) as u64))
+                    s.create(Reg(parse_prefixed_number(&mut s) as u64));
                 } else if s.peek().unwrap_or(' ').is_ascii_digit() {
                     s._while(char::is_alphanumeric); s.create(Reg(s.str_after(1).parse().unwrap_or(0)));
                 } else {
                     s._while(char::is_alphanumeric); s.create(Name);
-                }},
+                }
+            },
             '@' => {s._while(char::is_alphanumeric); s.create(Macro)},
             '%' => {s._while(char::is_alphanumeric); s.create(Port)},
             'a'..='z' | 'A'..='Z' => {s._while(char::is_alphanumeric); s.create(Name)},
@@ -181,9 +183,9 @@ impl Kind {
             Kind::Text => "text",
             Kind::Escape(_) => "escape",
             Kind::Error => "error",
-            Kind::Memory => "memory",
+            Kind::Memory(_) => "memory",
             Kind::Port => "port",
-            Kind::Reg => "reg",
+            Kind::Reg(_) => "reg",
             Kind::Name => "name",
             Kind::Macro => "macro",
             Kind::Eq => "comparison",
