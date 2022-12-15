@@ -100,14 +100,14 @@ init().then(() => { // all code should go in here
         };
     };
 
-    code_input.oninput                                  = () => output_highlight_span(code_input.value);
-    code_input.onscroll                                 = () => highlight.scrollTo(0, code_input.scrollTop);
-    document.getElementById("document_link").onclick    = () => window.open("https://github.com/ModPunchtree/URCL/releases/latest", "_blank");
-    document.getElementById("emulate").onclick          = () => emulate(code_input.value);
-    document.getElementById("clear").onclick            = () => clear_text();
-    document.getElementById("debug_option").onchange    = () => update_debug_buttons(this.checked);
-    document.getElementById("tab_size").onchange        = () => document.querySelector(":root").style.setProperty("--tab-size", this.value);
-    document.getElementsByTagName("body")[0].onresize   = () => resync_highlight();
+    code_input.oninput                                  = function() { output_highlight_span(this.value) };
+    code_input.onscroll                                 = function() { highlight.scrollTo(0, code_input.scrollTop); };
+    document.getElementById("document_link").onclick    = function() { window.open("https://github.com/ModPunchtree/URCL/releases/latest", "_blank"); };
+    document.getElementById("emulate").onclick          = function() { emulate(code_input.value); };
+    document.getElementById("clear").onclick            = function() { clear_text(); };
+    document.getElementById("debug_option").onchange    = function() { update_debug_buttons(this.checked); };
+    document.getElementById("tab_size").onchange        = function() { document.querySelector(":root").style.setProperty("--tab-size", this.value); };
+    document.getElementsByTagName("body")[0].onresize   = function() { resync_highlight(); };
 
 
     document.getElementById("settings").onclick = function() {
