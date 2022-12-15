@@ -8,10 +8,10 @@
     </head>
     <body>
         <nav>
-            <button class="symbol red">ERROR LOGS</button>
+            <button class="symbol red debug_only">DEBUG TOOLS</button>
             <button class="symbol green" id="emulate">COMPILE/RUN </button>
             <button class="symbol blue" id="document_link">DOCUMENTATION</button>
-            <button class="symbol yellow">EXAMPLES</button>
+            <button class="symbol yellow" id="examples">EXAMPLES</button>
             <button class="symbol magenta" id="settings">SETTINGS</button>
             <button class="symbol" id="clear">CLEAR</button>
         </nav>
@@ -20,13 +20,42 @@
             <div id="stdout"></div>
         </main>
         <div id="highlight"></div>
-        <div id="settings_sec">
+        <div id="settings_sec" class="section">
             <nav>
                 <button class="symbol red" id="exit_settings">Exit Settings</button>
             </nav>
-            <div class="section">
-                <h4>Auto emulating <input class="green" id="auto-emulate" type="checkbox" checked="true"></h4>
+            <div class="card">
+                <div class="card-title">
+                    <h4>Auto emulating</h4>
+                    <input class="card-option green" id="auto_emulate" type="checkbox">
+                </div>
                 <p>Enabling this will automatically emulate your code as you type.</p>
+            </div>
+            <div class="card">
+                <div class="card-title">
+                    <h4>Tab size</h4>
+                    <input class="card-option green" class="green" id="tab_size" type="number">
+                </div>
+                <p>Adjust the tab size in characters.</p>
+            </div>
+            <div class="card">
+                <div class="card-title">
+                    <h4>Debug options</h4>
+                    <input class="card-option green" id="debug_option" type="checkbox">
+                </div>
+                <p>Enabling this will display more buttons on the navigation bar used for debugging.</p>
+            </div>
+        </div>
+        <div id="example_sec" class="section">
+            <nav>
+                <button class="symbol red" id="exit_examples">Exit Examples</button>
+            </nav>
+            <div class="card">
+                <div class="card-title">
+                    <h4>Hello World</h4>
+                    <button class="example_link card-option green" data-link=".?from-examples">Open</button>
+                </div>
+                <p>Prints "Hello World!" to the console.</p>
             </div>
         </div>
     </body>
