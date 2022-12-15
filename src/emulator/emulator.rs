@@ -1,5 +1,5 @@
 use wasm_bindgen::prelude::*;
-use super::{*, lexer};
+use super::{*, lexer, ast};
 
 struct EmulatorState {
     regs: Vec<i64>,
@@ -11,7 +11,7 @@ struct EmulatorState {
 #[wasm_bindgen]
 pub fn emulate(src: &str) {
     clear_text();
-    out_text("Hello world!");
+    out_text(format!("{:#?}", ast::gen_ast(lexer::lex(src))).as_str());
 }
 
 #[allow(dead_code)]

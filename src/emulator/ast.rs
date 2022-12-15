@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use std::collections::HashMap; // hi
 
-use super::{*, lexer::{Token, Kind, UToken}};
+use super::{*, lexer::{Token, Kind, UToken}, errorcontext::ErrorContext};
 
 struct TokenBuffer<'a> {
     index: usize,
@@ -21,33 +21,73 @@ impl <'a> TokenBuffer<'a> {
     #[inline]
     pub fn advance(&mut self) {
         self.index += 1;
+        while self.current().kind == Kind::White {
+            self.index += 1;
+        }
     }
     #[inline]
     pub fn next(&mut self) -> UToken<'a> {
-        self.index += 1;
+        self.advance();
         self.toks[self.index].clone()
     }
     #[inline]
     pub fn current(&self) -> UToken<'a> {
-        self.toks[self.index].clone()
+        if self.has_next() {
+            self.toks[self.index].clone()
+        } else{
+            Token {kind: Kind::EOF, str: ""}
+        }
     }
+}
+
+struct Parser<'a> {
+    buf: TokenBuffer<'a>,
+    err: ErrorContext,
+    ast: Program
+}
+
+fn remove_first(s: &str) -> Option<&str> {
+    s.chars().next().map(|c| &s[c.len_utf8()..])
 }
 
 pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
-    let mut ret = Program::new();
+    let mut err = ErrorContext::new();
+    let mut ast = Program::new();
     let mut buf = TokenBuffer::new(toks);
+    let mut p = Parser {buf, err, ast};
 
-    while buf.has_next() {
-        match buf.current().kind {
-            Kind::White => buf.advance(),
-            _ => panic!("Unhandled token type"),
+    while p.buf.has_next() {
+        match p.buf.current().kind {
+            Kind::Name => { // removes first char
+                match p.buf.current().str {
+                    "imm" | "IMM" => {
+                        
+                        let op1 = remove_first(p.buf.next().str).unwrap().parse::<u64>().unwrap(); // yes
+                        let op2 = p.buf.next().str.parse::<u64>().unwrap();
+                        //lets put it in the lexer then
+                        p.ast.instructions.push(
+                            Inst::IMM(Operand::Reg(op1), Operand::Imm(op2))
+                        );
+                        p.buf.advance();
+                    }
+                    _ => { jsprintln!("unhandled name"); p.buf.advance(); },
+                }
+            } // yes
+            Kind::White => p.buf.advance(),
+            _ => { logprintln!("Unhandled token type: {:#?}", p.buf.current());  p.buf.advance(); },
         }
     }
 
-    ret
+    p.ast
 }
 
+// impl Parser { // bram if i commit this can i go to sleep
+    // fn operand(&mut self) -> Option<Operand> {
+    //     // let op = self.buf.current().
+    // }
+// }
 
+#[derive(Debug)]
 pub struct Program {
     headers: Headers,
     instructions: Vec<Inst>,
@@ -60,11 +100,13 @@ impl Program {
     }
 }
 
+#[derive(Debug)]
 pub enum Operand {
     Imm(u64),
-    Reg(u64)
+    Reg(u64),
 }
 
+#[derive(Debug)]
 pub struct Headers {
     bits: u64,
     minheap: u64,
@@ -79,6 +121,7 @@ impl Headers {
     }
 }
 
+#[derive(Debug)]
 pub enum Inst {
     IMM(Operand, Operand),
     ADD(Operand, Operand, Operand),
