@@ -85,9 +85,9 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
             '@' => {s._while(char::is_alphanumeric); s.create(Macro)},
             '%' => {s._while(char::is_alphanumeric); s.create(Port)},
             'a'..='z' | 'A'..='Z' => {s._while(char::is_alphanumeric); s.create(Name)},
-            '>' => {s._if(|c|c=='='); s.create(GE)} // TODO: error if no = lol
-            '<' => {s._if(|c|c=='='); s.create(LE)} // TODO: error if no = lol
-            '=' => {s._if(|c|c=='='); s.create(Eq)} // TODO: error if no = lol
+            '>' => {if s._if(|c|c=='=') {s.create(GE);} else {s.create(Error);}}
+            '<' => {if s._if(|c|c=='=') {s.create(LE);} else {s.create(Error);}}
+            '=' => {if s._if(|c|c=='=') {s.create(Eq);} else {s.create(Error);}}
             '.' => {s._while(|c|c != ' ' && c != '\n' && c != '\t'); s.create(Label)},
             '/' => {if s._if(|c| c == '/') {
                 s._while(|c| c != '\n');
