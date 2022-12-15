@@ -126,6 +126,7 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
 }
 
 fn parse_prefixed_number<'a>(s: &mut Scanner<'a, Kind>) -> Option<i64> {
+    use Kind::*;
     match s.peek().unwrap_or('0') {
         '0'..='9' => {
             s.next();
