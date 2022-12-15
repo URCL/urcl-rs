@@ -134,7 +134,7 @@ fn parse_prefixed_number<'a>(s: &mut Scanner<'a, Kind>) -> Option<i64> {
         '0'..='9' => {
             s.next();
             s._while(|c|c.is_ascii_digit());
-            return s.str().parse();
+            return Some(s.str().parse().unwrap_or(0));
         },
         'b' => {
             s.next();
