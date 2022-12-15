@@ -7,7 +7,7 @@ pub enum Kind {
     Unknown, Error, Comment,
     White, LF, 
     Name, Macro, 
-    Int(i64), Memory, Port, Reg, Label, Relative(i64),
+    Int(i64), Memory(u64), Port, Reg, Label, Relative(i64),
     Eq, GE, LE,
     LSquare, RSquare, String, Char, Text, Escape(char),
 }
@@ -26,40 +26,7 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
             ']' => {s.create(RSquare);}
             ' ' | '\x09' | '\x0b'..='\x0d' => {s._while(is_inline_white); s.create(White);},
             '\n' => s.create(LF),
-            '0' => {
-                match s.peek().unwrap_or('0') {
-                    '0'..='9' => {
-                        s.next();
-                        s._while(|c|c.is_ascii_digit());
-                        let value = s.str().parse().unwrap_or(0);
-                        s.create(Int(value));
-                    },
-                    'b' => {
-                        s.next();
-                        s._while(|c|c == '0' || c == '1');
-                        if s.str().len() <= 2 { s.create(Error); continue; }
-                        let value = i64::from_str_radix(s.str(), 2).unwrap_or(0);
-                        s.create(Int(value));
-                    },
-                    'o' => {
-                        s.next();
-                        s._while(|c|c.is_ascii_digit() && c != '8' && c != '9');
-                        if s.str().len() <= 2 { s.create(Error); continue; }
-                        let value = i64::from_str_radix(s.str(), 8).unwrap_or(0);
-                        s.create(Int(value));
-                    },
-                    'x' => {
-                        s.next();
-                        s._while(|c|c.is_ascii_hexdigit());
-                        if s.str().len() <= 2 { s.create(Error); continue; }
-                        let value = i64::from_str_radix(&s.str()[2..s.str().len()], 16).unwrap_or(0);
-                        s.create(Int(value));
-                    },
-                    _ => {
-                        s.create(Int(0));
-                    }
-                }
-            },
+            '0' => s.create(Int(parse_prefixed_number(&mut s))),
             '-' | '+' | '1'..='9' => {
                 s._while(|c|c.is_ascii_digit());
                 let value = s.str().parse().unwrap_or(0);
@@ -71,14 +38,18 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
                 s.create(Relative(value));
             },
             '#' | 'm' | 'M' => {
-                if s.peek().unwrap_or(' ').is_ascii_digit() {
-                    s._while(char::is_alphanumeric); s.create(Memory);
+                if s.peek().unwrap_or(' ') == '0' {
+                    s.create(Memory(parse_prefixed_number(&mut s) as u64));
+                } else if s.peek().unwrap_or(' ').is_ascii_digit() {
+                    s._while(char::is_alphanumeric); s.create(Memory(s.str_after(1).parse().unwrap_or(0)));
                 } else {
                     s._while(char::is_alphanumeric); s.create(Name);
                 }},
             '$' | 'r' | 'R' => {
-                if s.peek().unwrap_or(' ').is_ascii_digit() {
-                    s._while(char::is_alphanumeric); s.create(Reg);
+                if s.peek().unwrap_or(' ') == '0' {
+                    s.create(Reg(parse_prefixed_number(&mut s) as u64))
+                } else if s.peek().unwrap_or(' ').is_ascii_digit() {
+                    s._while(char::is_alphanumeric); s.create(Reg(s.str_after(1).parse().unwrap_or(0)));
                 } else {
                     s._while(char::is_alphanumeric); s.create(Name);
                 }},
@@ -150,6 +121,34 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
     s.tokens()
 }
 
+fn parse_prefixed_number<'a>(s: &mut Scanner<'a, Kind>) -> i64 {
+    match s.peek().unwrap_or('0') {
+        '0'..='9' => {
+            s.next();
+            s._while(|c|c.is_ascii_digit());
+            return s.str().parse().unwrap_or(0);
+        },
+        'b' => {
+            s.next();
+            s._while(|c|c == '0' || c == '1');
+            if s.str().len() <= 2 { s.create(Error); continue; }
+            return i64::from_str_radix(s.str(), 2).unwrap_or(0);
+        },
+        'o' => {
+            s.next();
+            s._while(|c|c.is_ascii_digit() && c != '8' && c != '9');
+            if s.str().len() <= 2 { s.create(Error); continue; }
+            return i64::from_str_radix(s.str(), 8).unwrap_or(0);
+        },
+        'x' => {
+            s.next();
+            s._while(|c|c.is_ascii_hexdigit());
+            if s.str().len() <= 2 { s.create(Error); continue; }
+            return i64::from_str_radix(&s.str()[2..s.str().len()], 16).unwrap_or(0);
+        },
+        _ => 0
+    }
+}
 
 fn token_escape<'a>(s: &mut Scanner<'a, Kind>) {
     use Kind::*;
