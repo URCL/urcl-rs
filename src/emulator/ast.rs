@@ -118,6 +118,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                         p.ast.instructions.push(
                             Inst::BGE(op1, op2, op3)
                         );
+
                         p.buf.advance();
                     },
                     "NOR" => {
