@@ -62,7 +62,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                 match p.buf.current().str.to_uppercase().as_str() {
                     "IMM" => {
                         let op1 = match p.buf.next().kind {Kind::Reg(v) => v, _ => {continue;}}; // TODO: Add error
-                        let op2 = match p.buf.next().kind {Kind::Imm(v) => v as u64, _ => {continue;}};
+                        let op2 = match p.buf.next().kind {Kind::Int(v) => v as u64, _ => {continue;}};
 
                         p.ast.instructions.push(
                             Inst::IMM(Operand::Reg(op1), Operand::Imm(op2))
