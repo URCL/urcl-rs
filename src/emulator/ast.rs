@@ -139,6 +139,9 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                             jsprintln!("Redefined label: {}", p.buf.current().str);
                         },
                         Some(Label::Undefined(v)) => {
+                            // for i in v.iter() {
+                            //     p.ast.instructions[*i]
+                            // }
                             jsprintln!("Defined label {} too late lol I didnt impl that", p.buf.current().str);
                         },
                         None => {
@@ -150,7 +153,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                 }
                 p.buf.advance();
             },
-            Kind::White => p.buf.advance(),
+            Kind::White | Kind::Comment | Kind::LF => p.buf.advance(),
             _ => { logprintln!("Unhandled token type: {:#?}", p.buf.current());  p.buf.advance(); },
         }
     }
@@ -173,7 +176,7 @@ pub enum Label {
 fn label_to_operand<'a>(tok: &UToken<'a>, p: &mut Parser) -> Operand {
     if (*tok).kind != Kind::Label {return Operand::Imm(0);}
 
-    match p.ast.labels.get((*tok).str) {
+    match p.ast.labels.get(tok.str) {
         Some(Label::Undefined(v)) => {
             let mut a = v.clone();
             a.push(p.ast.instructions.len());
