@@ -31,7 +31,8 @@ extern {
 #[macro_export]
 macro_rules! jsprintln {
     ($($arg:tt)*) => {{
-        out_text(&format!($($arg)*).to_string());
+        // out_text wont add new line
+        out_debug(&format!($($arg)*).to_string());
     }};
 }
 

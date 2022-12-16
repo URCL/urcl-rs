@@ -58,18 +58,17 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
 
     while p.buf.has_next() {
         match p.buf.current().kind {
-            Kind::Name => { // removes first char
-                match p.buf.current().str {
-                    "imm" => {
+                match p.buf.current().str.to_uppercase().as_str() {
+                    "IMM" => {
                         let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
                         let op2 = match p.buf.next().kind { Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
-                        //lets put it in the lexer then
+                        
                         p.ast.instructions.push(
                             Inst::IMM(op1, op2)
                         );
                         p.buf.advance();
                     },
-                    "mov" => {
+                    "MOV" => {
                         let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
                         let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
                         p.ast.instructions.push(
@@ -77,7 +76,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                         );
                         p.buf.advance();
                     },
-                    "add" => {
+                    "ADD" => {
                         let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
                         let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
                         let op3 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
@@ -86,7 +85,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                         );
                         p.buf.advance();
                     }
-                    "rsh" => {
+                    "RSH" => {
                         let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
                         let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
                         p.ast.instructions.push(
@@ -94,7 +93,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                         );
                         p.buf.advance();
                     }
-                    "lod" => {
+                    "LOD" => {
                         let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
                         let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Memory(v) => Operand::Mem(v as u64), _ => {continue;} };
                         p.ast.instructions.push(
@@ -102,7 +101,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                         );
                         p.buf.advance();
                     }
-                    "str" => {
+                    "STR" => {
                         let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Memory(v) => Operand::Mem(v as u64), _ => {continue;} };
                         let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
                         p.ast.instructions.push(
@@ -116,7 +115,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                         p.buf.advance();
                         p.buf.advance();
                     }
-                    "nor" => {
+                    "NOR" => {
                         let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
                         let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
                         let op3 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
@@ -125,9 +124,9 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                         );
                         p.buf.advance();
                     }
-                    _ => { jsprintln!("unhandled name"); p.buf.advance(); },
+                    _ => { jsprintln!("Unhandled name: {:#?}", p.buf.current().str); p.buf.advance(); },
                 }
-            } // yes
+            }
             Kind::White => p.buf.advance(),
             _ => { logprintln!("Unhandled token type: {:#?}", p.buf.current());  p.buf.advance(); },
         }
