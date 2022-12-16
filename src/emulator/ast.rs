@@ -163,7 +163,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
 
 // impl Parser { // bram if i commit this can i go to sleep
     // fn operand(&mut self) -> Option<Operand> {
-    //     // let op = self.buf.current().
+    //      let op = self.buf.current().
     // }
 // }
 
@@ -180,7 +180,8 @@ fn label_to_operand<'a>(tok: &UToken<'a>, p: &mut Parser) -> Operand {
         Some(Label::Undefined(v)) => {
             let mut a = v.clone();
             a.push(p.ast.instructions.len());
-            p.ast.labels.insert((*tok).str.to_string(), Label::Undefined(a)); Operand::Imm(0)
+            p.ast.labels.insert((*tok).str.to_string(), Label::Undefined(a));
+            Operand::Label(tok.str.to_string())
         },
         Some(Label::Defined(v)) => Operand::Imm(*v as u64),
         None => {
@@ -209,6 +210,7 @@ pub enum Operand {
     Imm(u64),
     Reg(u64),
     Mem(u64),
+    Label(String),
 }
 
 #[derive(Debug)]
