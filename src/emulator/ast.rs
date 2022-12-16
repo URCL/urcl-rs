@@ -1,4 +1,4 @@
-use std::collections::HashMap; // hi
+use std::collections::HashMap;
 
 use super::{*, lexer::{Token, Kind, UToken}, errorcontext::ErrorContext};
 
@@ -141,7 +141,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                         // }
                         jsprintln!("Defined label {} too late lol I didnt impl that", p.buf.current().str);
                     },
-                    None => p.ast.labels.insert(p.buf.current().str.to_string(), Label::Defined(p.ast.instructions.len())),
+                    None => { p.ast.labels.insert(p.buf.current().str.to_string(), Label::Defined(p.ast.instructions.len())); },
                 }
                 p.buf.advance();
             },
