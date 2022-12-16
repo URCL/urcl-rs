@@ -58,6 +58,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
 
     while p.buf.has_next() {
         match p.buf.current().kind {
+            Kind::Name => {
                 match p.buf.current().str.to_uppercase().as_str() {
                     "IMM" => {
                         let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
@@ -84,7 +85,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                             Inst::ADD(op1, op2, op3)
                         );
                         p.buf.advance();
-                    }
+                    },
                     "RSH" => {
                         let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
                         let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
@@ -92,7 +93,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                             Inst::RSH(op1, op2)
                         );
                         p.buf.advance();
-                    }
+                    },
                     "LOD" => {
                         let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
                         let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Memory(v) => Operand::Mem(v as u64), _ => {continue;} };
@@ -100,7 +101,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                             Inst::LOD(op1, op2)
                         );
                         p.buf.advance();
-                    }
+                    },
                     "STR" => {
                         let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Memory(v) => Operand::Mem(v as u64), _ => {continue;} };
                         let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
@@ -108,13 +109,13 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                             Inst::STR(op1, op2)
                         );
                         p.buf.advance();
-                    }
-                    "bge" => {
+                    },
+                    "BGE" => {
                         p.buf.advance(); // TODO: add labels
                         p.buf.advance();
                         p.buf.advance();
                         p.buf.advance();
-                    }
+                    },
                     "NOR" => {
                         let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
                         let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
@@ -123,10 +124,10 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                             Inst::NOR(op1, op2, op3)
                         );
                         p.buf.advance();
-                    }
+                    },
                     _ => { jsprintln!("Unhandled name: {:#?}", p.buf.current().str); p.buf.advance(); },
                 }
-            }
+            },
             Kind::White => p.buf.advance(),
             _ => { logprintln!("Unhandled token type: {:#?}", p.buf.current());  p.buf.advance(); },
         }
