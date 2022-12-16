@@ -60,13 +60,68 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
         match p.buf.current().kind {
             Kind::Name => { // removes first char
                 match p.buf.current().str {
-                    "imm" | "IMM" => {
-                        
-                        let op1 = remove_first(p.buf.next().str).unwrap().parse::<u64>().unwrap(); // yes
-                        let op2 = p.buf.next().str.parse::<u64>().unwrap();
+                    "imm" => {
+                        let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
+                        let op2 = match p.buf.next().kind { Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
                         //lets put it in the lexer then
                         p.ast.instructions.push(
-                            Inst::IMM(Operand::Reg(op1), Operand::Imm(op2))
+                            Inst::IMM(op1, op2)
+                        );
+                        p.buf.advance();
+                    },
+                    "mov" => {
+                        let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
+                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
+                        p.ast.instructions.push(
+                            Inst::MOV(op1, op2)
+                        );
+                        p.buf.advance();
+                    },
+                    "add" => {
+                        let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
+                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
+                        let op3 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
+                        p.ast.instructions.push(
+                            Inst::ADD(op1, op2, op3)
+                        );
+                        p.buf.advance();
+                    }
+                    "rsh" => {
+                        let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
+                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
+                        p.ast.instructions.push(
+                            Inst::RSH(op1, op2)
+                        );
+                        p.buf.advance();
+                    }
+                    "lod" => {
+                        let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
+                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Memory(v) => Operand::Mem(v as u64), _ => {continue;} };
+                        p.ast.instructions.push(
+                            Inst::LOD(op1, op2)
+                        );
+                        p.buf.advance();
+                    }
+                    "str" => {
+                        let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Memory(v) => Operand::Mem(v as u64), _ => {continue;} };
+                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
+                        p.ast.instructions.push(
+                            Inst::STR(op1, op2)
+                        );
+                        p.buf.advance();
+                    }
+                    "bge" => {
+                        p.buf.advance(); // TODO: add labels
+                        p.buf.advance();
+                        p.buf.advance();
+                        p.buf.advance();
+                    }
+                    "nor" => {
+                        let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
+                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
+                        let op3 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
+                        p.ast.instructions.push(
+                            Inst::NOR(op1, op2, op3)
                         );
                         p.buf.advance();
                     }
@@ -104,6 +159,7 @@ impl Program {
 pub enum Operand {
     Imm(u64),
     Reg(u64),
+    Mem(u64),
 }
 
 #[derive(Debug)]
@@ -130,4 +186,5 @@ pub enum Inst {
     STR(Operand, Operand),
     BGE(Operand, Operand, Operand),
     NOR(Operand, Operand, Operand),
+    MOV(Operand, Operand),
 }
