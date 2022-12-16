@@ -111,9 +111,12 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                         p.buf.advance();
                     },
                     "BGE" => {
-                        p.buf.advance(); // TODO: add labels
                         p.buf.advance();
-                        p.buf.advance();
+
+                        let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), Kind::Label => label_to_operand(&p.buf.current(), &mut p), _ => {continue;} };;
+                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
+                        let op3 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
+                    
                         p.buf.advance();
                     },
                     "NOR" => {
@@ -127,6 +130,19 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                     },
                     _ => { jsprintln!("Unhandled name: {:#?}", p.buf.current().str); p.buf.advance(); },
                 }
+            },
+            Kind::Label => {
+                if p.ast.labels.get(p.buf.current().str) != None {
+                    match *p.ast.labels.get(p.buf.current().str).unwrap() {
+                        Label::Defined(_) => {
+                            jsprintln!("Redefined label: {}", p.buf.current().str);
+                        },
+                        _ => {}
+                    }
+                } else {
+                    p.ast.labels.insert(p.buf.current().str.to_string(), Label::Defined(p.ast.instructions.len()));
+                }
+                p.buf.advance();
             },
             Kind::White => p.buf.advance(),
             _ => { logprintln!("Unhandled token type: {:#?}", p.buf.current());  p.buf.advance(); },
@@ -142,11 +158,35 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
     // }
 // }
 
+#[derive(Debug, PartialEq)]
+pub enum Label {
+    Undefined(Vec<usize>),
+    Defined(usize),
+}
+
+fn label_to_operand<'a>(tok: &UToken<'a>, p: &mut Parser) -> Operand {
+    if (*tok).kind != Kind::Label {return Operand::Imm(0);}
+
+    match p.ast.labels.get((*tok).str) {
+        Some(Label::Undefined(v)) => {
+            let mut a = v.clone();
+            a.push(p.ast.instructions.len());
+            p.ast.labels.insert((*tok).str.to_string(), Label::Undefined(a)); Operand::Imm(0)
+        },
+        Some(Label::Defined(_)) => {
+            todo!()
+        },
+        None => {
+            todo!()
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct Program {
     headers: Headers,
     instructions: Vec<Inst>,
-    labels: HashMap<&'static str, u64>
+    labels: HashMap<String, Label>
 }
 
 impl Program {
