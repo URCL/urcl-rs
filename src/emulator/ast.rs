@@ -133,23 +133,15 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                 }
             },
             Kind::Label => {
-                if p.ast.labels.get(p.buf.current().str) != None {
-                    match p.ast.labels.get(p.buf.current().str) {
-                        Some(Label::Defined(_)) => {
-                            jsprintln!("Redefined label: {}", p.buf.current().str);
-                        },
-                        Some(Label::Undefined(v)) => {
-                            // for i in v.iter() {
-                            //     p.ast.instructions[*i]
-                            // }
-                            jsprintln!("Defined label {} too late lol I didnt impl that", p.buf.current().str);
-                        },
-                        None => {
-                            p.ast.labels.insert(p.buf.current().str.to_string(), Label::Defined(p.ast.instructions.len()));
-                        }
-                    }
-                } else {
-                    p.ast.labels.insert(p.buf.current().str.to_string(), Label::Defined(p.ast.instructions.len()));
+                match p.ast.labels.get(p.buf.current().str) {
+                    Some(Label::Defined(_)) => jsprintln!("Redefined label: {}", p.buf.current().str),
+                    Some(Label::Undefined(v)) => {
+                        // for i in v.iter() {
+                        //     p.ast.instructions[*i]
+                        // }
+                        jsprintln!("Defined label {} too late lol I didnt impl that", p.buf.current().str);
+                    },
+                    None => p.ast.labels.insert(p.buf.current().str.to_string(), Label::Defined(p.ast.instructions.len())),
                 }
                 p.buf.advance();
             },
