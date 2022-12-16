@@ -69,7 +69,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                         );
                         p.buf.advance();
                     }
-                    _ => { jsprintln!("unhandled name: {:#?}", p.buf.current().str); p.buf.advance(); },
+                    _ => { jsprintln!("Unhandled name: {:#?}", p.buf.current().str); p.buf.advance(); },
                 }
             }
             Kind::White => p.buf.advance(),
