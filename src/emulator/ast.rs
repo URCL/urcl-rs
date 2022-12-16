@@ -71,7 +71,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                     }
                     _ => { jsprintln!("unhandled name: {:#?}", p.buf.current().str); p.buf.advance(); },
                 }
-            } // yes
+            }
             Kind::White => p.buf.advance(),
             _ => { logprintln!("Unhandled token type: {:#?}", p.buf.current());  p.buf.advance(); },
         }
