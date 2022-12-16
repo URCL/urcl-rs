@@ -58,13 +58,12 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
 
     while p.buf.has_next() {
         match p.buf.current().kind {
-            Kind::Name => { // removes first char
-                match p.buf.current().str {
-                    "imm" | "IMM" => {
-                        
-                        let op1 = remove_first(p.buf.next().str).unwrap().parse::<u64>().unwrap(); // yes
-                        let op2 = p.buf.next().str.parse::<u64>().unwrap();
-                        //lets put it in the lexer then
+            Kind::Name => {
+                match p.buf.current().str.to_uppercase().as_str() {
+                    "IMM" => {
+                        let op1 = match p.buf.next().kind {Reg(v) => v, _ => continue;}; // TODO: Add error
+                        let op2 = match p.buf.next().kind {Imm(v) => v as u64, _ => continue;};
+
                         p.ast.instructions.push(
                             Inst::IMM(Operand::Reg(op1), Operand::Imm(op2))
                         );
