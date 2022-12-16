@@ -173,11 +173,11 @@ fn label_to_operand<'a>(tok: &UToken<'a>, p: &mut Parser) -> Operand {
             a.push(p.ast.instructions.len());
             p.ast.labels.insert((*tok).str.to_string(), Label::Undefined(a)); Operand::Imm(0)
         },
-        Some(Label::Defined(_)) => {
-            todo!()
-        },
+        Some(Label::Defined(v)) => Operand::Imm(*v as u64),
         None => {
-            todo!()
+            let mut a = Vec::new();
+            a.push(p.ast.instructions.len());
+            p.ast.labels.insert((*tok).str.to_string(), Label::Undefined(a)); Operand::Imm(0)
         }
     }
 }
