@@ -111,12 +111,13 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                         p.buf.advance();
                     },
                     "BGE" => {
-                        p.buf.advance();
-
-                        let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), Kind::Label => label_to_operand(&p.buf.current(), &mut p), _ => {continue;} };;
+                        let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), Kind::Label => label_to_operand(&p.buf.current(), &mut p), _ => {continue;} };
                         let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
                         let op3 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
-                    
+                        
+                        p.ast.instructions.push(
+                            Inst::BGE(op1, op2, op3)
+                        );
                         p.buf.advance();
                     },
                     "NOR" => {
@@ -133,11 +134,16 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
             },
             Kind::Label => {
                 if p.ast.labels.get(p.buf.current().str) != None {
-                    match *p.ast.labels.get(p.buf.current().str).unwrap() {
-                        Label::Defined(_) => {
+                    match p.ast.labels.get(p.buf.current().str) {
+                        Some(Label::Defined(_)) => {
                             jsprintln!("Redefined label: {}", p.buf.current().str);
                         },
-                        _ => {}
+                        Some(Label::Undefined(v)) => {
+                            jsprintln!("Defined label {} too late lol I didnt impl that", p.buf.current().str);
+                        },
+                        None => {
+                            p.ast.labels.insert(p.buf.current().str.to_string(), Label::Defined(p.ast.instructions.len()));
+                        }
                     }
                 } else {
                     p.ast.labels.insert(p.buf.current().str.to_string(), Label::Defined(p.ast.instructions.len()));
