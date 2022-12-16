@@ -27,8 +27,8 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
             ' ' | '\x09' | '\x0b'..='\x0d' => {s._while(is_inline_white); s.create(White);},
             '\n' => s.create(LF),
             '0' => {
-                let a = parse_prefixed_number(&mut s);
-                if a != None {s.create(Int(a.unwrap()));}
+                let a = parse_prefixed_number(&mut s, 0);
+                if a != None {s.create(Int(a.unwrap()));} else {s.create(Error);};
             },
             '-' | '+' | '1'..='9' => {
                 s._while(|c|c.is_ascii_digit());
@@ -42,8 +42,9 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
             },
             '#' | 'm' | 'M' => {
                 if s.peek().unwrap_or(' ') == '0' {
-                    let a = parse_prefixed_number(&mut s);
-                    if a != None {s.create(Memory(a.unwrap() as u64))};
+                    s.next();
+                    let a = parse_prefixed_number(&mut s, 1);
+                    if a != None {s.create(Memory(a.unwrap() as u64))} else {s.create(Error)};
                 } else if s.peek().unwrap_or(' ').is_ascii_digit() {
                     s._while(char::is_alphanumeric); s.create(Memory(s.str_after(1).parse().unwrap_or(0)));
                 } else {
@@ -52,8 +53,9 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
             },
             '$' | 'r' | 'R' => {
                 if s.peek().unwrap_or(' ') == '0' {
-                    let a = parse_prefixed_number(&mut s);
-                    if a != None {s.create(Reg(a.unwrap() as u64))};
+                    s.next();
+                    let a = parse_prefixed_number(&mut s, 1);
+                    if a != None {s.create(Reg(a.unwrap() as u64))} else {s.create(Error)};
                 } else if s.peek().unwrap_or(' ').is_ascii_digit() {
                     s._while(char::is_alphanumeric); s.create(Reg(s.str_after(1).parse().unwrap_or(0)));
                 } else {
@@ -128,8 +130,9 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
     s.tokens()
 }
 
-fn parse_prefixed_number<'a>(s: &mut Scanner<'a, Kind>) -> Option<i64> {
-    use Kind::*;
+fn parse_prefixed_number<'a>(s: &mut Scanner<'a, Kind>, pref_len: usize) -> Option<i64> {
+    let total_pref_len = pref_len + 2;
+
     match s.peek().unwrap_or(' ') {
         '0'..='9' => {
             s.next();
@@ -139,20 +142,20 @@ fn parse_prefixed_number<'a>(s: &mut Scanner<'a, Kind>) -> Option<i64> {
         'b' => {
             s.next();
             s._while(|c|c == '0' || c == '1');
-            if s.str().len() <= 2 { s.create(Error); return None; }
-            Some(i64::from_str_radix(s.str(), 2).unwrap_or(0))
+            if s.str().len() <= total_pref_len { return None; }
+            Some(i64::from_str_radix(&s.str()[total_pref_len..s.str().len()], 2).unwrap_or(0))
         },
         'o' => {
             s.next();
             s._while(|c|c.is_ascii_digit() && c != '8' && c != '9');
-            if s.str().len() <= 2 { s.create(Error); return None; }
-            Some(i64::from_str_radix(s.str(), 8).unwrap_or(0))
+            if s.str().len() <= total_pref_len { return None; }
+            Some(i64::from_str_radix(&s.str()[total_pref_len..s.str().len()], 8).unwrap_or(0))
         },
         'x' => {
             s.next();
             s._while(|c|c.is_ascii_hexdigit());
-            if s.str().len() <= 2 { s.create(Error); return None; }
-            Some(i64::from_str_radix(&s.str()[2..s.str().len()], 16).unwrap_or(0))
+            if s.str().len() <= total_pref_len { return None; }
+            Some(i64::from_str_radix(&s.str()[total_pref_len..s.str().len()], 16).unwrap_or(0))
         },
         _ => Some(0)
     }

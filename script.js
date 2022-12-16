@@ -97,10 +97,15 @@ init().then(() => { // all code should go in here
             let a = code_input.selectionStart+1;
             code_input.value = code_input.value.substring(0, code_input.selectionStart) + "\t" + code_input.value.substring(code_input.selectionEnd);
             code_input.setSelectionRange(a, a);
+            output_highlight_span(this.value);
         };
     };
 
-    code_input.oninput                                  = function() { output_highlight_span(this.value) };
+    code_input.oninput = () => {
+        output_highlight_span(code_input.value);
+        if (auto_emulate.checked) emulate(code_input.value);
+    };
+
     code_input.onscroll                                 = function() { highlight.scrollTo(0, code_input.scrollTop); };
     document.getElementById("document_link").onclick    = function() { window.open("https://github.com/ModPunchtree/URCL/releases/latest", "_blank"); };
     document.getElementById("emulate").onclick          = function() { emulate(code_input.value); };
