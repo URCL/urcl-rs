@@ -153,8 +153,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                         p.buf.advance();
                     },
                     "bits" => {
-                        match p.buf.next().kind { Kind::GE | Kind::LE | Kind::Eq => {p.buf.advance();}, _ => {} };
-                        p.ast.headers.bits = match p.buf.current().kind {Kind::Int(v) => v as u64, _ => {continue;}};
+                        p.ast.headers.bits = match p.buf.next().kind { Kind::Int(v) => v as u64, _ => match p.buf.next().kind {Kind::Int(v) => v as u64, _ => continue} };
                         p.buf.advance();
                     },
                     "minreg" => {
@@ -170,16 +169,17 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                         p.buf.advance();
                     },
                     "out" => {
-                        let a = get_imm(&mut p).unwrap();
-                        let b = get_imm(&mut p).unwrap();
+                        let a = match p.buf.next().kind {Kind::Reg(v) => Operator::Reg(v), _ => {match get_imm(&mut p} {Some(v) => v, None => continue,}};
+                        let b = match p.buf.next().kind {Kind::Reg(v) => Operator::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}};
+
                         p.ast.instructions.push(Inst::OUT(a, b));
                     },
                     "in" => {
-                        let a = get_imm(&mut p).unwrap();
-                        let b = get_imm(&mut p).unwrap();
+                        let b = match p.buf.next().kind {Kind::Reg(v) => Operator::Reg(v), _ => continue,};
+                        let b = match p.buf.next().kind {Kind::Reg(v) => Operator::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}};
                         p.ast.instructions.push(Inst::IN(a, b));
                     }, 
-                    _ => { jsprintln!("Unhandled name: {:#?}", p.buf.current().str); p.buf.advance(); },
+                    _ => { jsprintln!("Unhandled name: {:#?}", p..current().str); p.buf.advance(); },
                 }
             },
             Kind::Label => {
