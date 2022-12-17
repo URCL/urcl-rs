@@ -60,14 +60,16 @@ impl EmulatorState {
     }
     // maybe instead of f64 use Duration but what ever will do for now
     // yeah but idk how to do ins
-    pub fn burst(&mut self, max_time: Duration) -> StepResult {
+    pub fn run_for(&mut self, max_time: Duration) -> StepResult {
+        const BURST_LENGTH: u32 = 1024;
         let start = now();
         let end = start + max_time.as_secs_f64() * 1000.0;
-        // TODO: actually burst so we don't have to call now() on every instruction
         while now() < end {
-            let result = self.step();
-            if result != StepResult::Continue {
-                return result;
+            for _ in 0..BURST_LENGTH {
+                let result = self.step();
+                if result != StepResult::Continue {
+                    return result;
+                }
             }
         }
         StepResult::Continue
@@ -167,7 +169,7 @@ pub fn emulate(src: &str) {
     // i can add more insts while you guys do that
     // also please do the too late label thing
     // we need to get some web workers out 👷‍♂️
-    let result = emu.burst(Duration::from_millis(1000));
+    let result = emu.run_for(Duration::from_millis(1000));
     if result == StepResult::Continue {
         jsprintln!("Program took too long");
     } else {
