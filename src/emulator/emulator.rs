@@ -1,11 +1,125 @@
+use std::time::Duration;
+use devices::DeviceHost;
+
 use wasm_bindgen::prelude::*;
-use super::{*, lexer, ast::{self, Inst}};
+use super::{*, lexer, ast::{self, Inst, Program, Operand}};
+#[derive(Debug)]
 struct EmulatorState {
-    regs: Vec<i64>,
-    heap: Vec<i64>,
-    pc: i64,
+    regs: Vec<u64>,
+    heap: Vec<u64>,
+    pc: usize,
+    program: Program,
+    devices: DeviceHost,
 }
 
+#[derive(Debug, PartialEq, Eq)]
+enum StepResult {
+    Continue, HLT, Input,
+}
+
+impl EmulatorState {
+    pub fn new(program: Program, devices: DeviceHost) -> Self {
+        let regs = vec![0; program.headers.minreg as usize];
+        let heap = vec![0; (program.headers.minheap + program.headers.minstack) as usize];
+        EmulatorState { regs, heap, pc: 0, program, devices }
+    }
+    
+    fn get(&self, operand: &Operand) -> u64 {
+        match operand {
+            Operand::Imm(v) => *v,
+            Operand::Reg(v) => self.regs[*v as usize],
+            _ => panic!("Unsupported operand {:?}", operand)
+        }
+    }
+    fn set(&mut self, operand: &Operand, value: u64) {
+        match operand {
+            Operand::Imm(v) => {}, // do nothing assume it is r0
+            Operand::Reg(v) => {
+                self.regs[*v as usize] = value;
+            },
+            _ => panic!("Unsupported target operand {:?}", operand)
+        }
+    }
+    
+    fn getm(&self, operand: &Operand) -> u64 {
+        let index = self.get(operand) as usize;
+        self.heap[index]
+    }
+    fn setm(&mut self, operand: &Operand, value: u64) {
+        let index = self.get(operand) as usize;
+        self.heap[index] = value;
+    }
+    
+    pub fn run(&mut self) -> StepResult {
+        loop {
+            let result = self.step();
+            if result != StepResult::Continue {
+                return result;
+            }
+        }
+    }
+    // maybe instead of f64 use Duration but what ever will do for now
+    // yeah but idk how to do ins
+    pub fn burst(&mut self, max_time: Duration) -> StepResult {
+        let start = now();
+        let end = start + max_time.as_secs_f64() / 1000.0;
+        // actually let keep it simple for now
+        while now() < end {
+            let result = self.step();
+            if result != StepResult::Continue {
+                return result;
+            }
+        }
+        StepResult::Continue
+    }
+    // or maybe we just run on a sepperate thread 🤔 good idea
+    // lets implement that
+    
+    // now how did multitrheading work on the web again lol
+    // is there some cargo library for that or should we just do some Worker schenenigans
+    
+
+    pub fn step(&mut self) -> StepResult {
+        // safety: pc is bounds checked here 
+        if self.pc >= self.program.instructions.len() {
+            return StepResult::HLT;
+        }
+        use Inst::*;
+        // safety: pc has to bounds checked before hand
+        match unsafe{fuck_borrow_checker(self.program.instructions.get_unchecked(self.pc))} {
+            HLT => return StepResult::HLT,
+            IMM(a, b) => self.set(a, self.get(b)),
+            ADD(op1, op2, op3) => {
+                self.set(op1, self.get(op2)+self.get(op3));
+            },
+            RSH(a, b) => self.set(a, self.get(a) >> self.get(b)),
+            LOD(a, b) => self.set(a, self.getm(b)),
+            STR(a, b) => self.setm(a, self.get(b)),
+            BGE(a, b, c) => {
+                if self.get(b) >= self.get(c) {
+                    self.pc = self.get(a) as usize - 1;
+                }
+            },
+            NOR(a, b, c) => self.set(a, u64::MAX - (self.get(b) | self.get(c))),
+            MOV(a, b) => self.set(a, self.get(b)),
+            INC(a, b) => self.set(a, self.get(b)+1),
+            DEC(a, b) => self.set(a, self.get(b)-1),
+            OUT(a, b) => {
+
+            },
+            IN(a,b) => todo!(),
+            _ => jsprintln!("Unimplimented instruction."),
+        }
+        self.pc += 1;
+
+        StepResult::Continue
+    }
+}
+// should we maybe do it differently then lol
+#[inline]
+unsafe fn fuck_borrow_checker<T>(a: *const T) -> &'static T { // no its perfect
+    &*a
+}
 struct InstBuffer {
     index: usize,
     insts: Vec<Inst>
@@ -45,8 +159,25 @@ impl InstBuffer {
 #[wasm_bindgen]
 pub fn emulate(src: &str) {
     clear_text();
-    let toks =  lexer::lex(src);
+    let toks = lexer::lex(src);
     let program = ast::gen_ast(toks);
-    let mut regs: Vec<u64> = Vec::with_capacity(program.headers.minreg as usize);
     jsprintln!("{:#?}", program);
+
+    let mut host = DeviceHost::new();
+    let mut emu = EmulatorState::new(program, host);
+
+    // i can add more insts while you guys do that
+    // also please do the too late label thing
+    // we need to get some web workers out 👷‍♂️
+    let result = emu.burst(Duration::from_millis(1000));
+    if result == StepResult::Continue {
+        jsprintln!("Program took too long");
+    }
+
+    for _ in 0..100 {
+        jsprintln!("{:?}: {:?}", emu.pc, emu.regs);
+        if emu.step() != StepResult::Continue {
+            break;
+        }
+    }
 }

@@ -7,3 +7,5 @@ build:
 	wasm-opt -O3 -o ./pkg/urcl_rs_bg.wasm ./pkg/urcl_rs_tmp.wasm
 	rm ./pkg/.gitignore
 	rm ./pkg/urcl_rs_tmp.wasm
+
+#	esbuild --bundle worker.js --outdir=out

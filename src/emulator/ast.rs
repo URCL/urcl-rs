@@ -79,8 +79,8 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                     },
                     "add" => {
                         let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
-                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
-                        let op3 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
+                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}} };
+                        let op3 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}} };
                         p.ast.instructions.push(
                             Inst::ADD(op1, op2, op3)
                         );
@@ -88,7 +88,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                     },
                     "rsh" => {
                         let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
-                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
+                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}} };
                         p.ast.instructions.push(
                             Inst::RSH(op1, op2)
                         );
@@ -104,16 +104,16 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                     },
                     "str" => {
                         let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Memory(v) => Operand::Mem(v as u64), _ => {continue;} };
-                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
+                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}} };
                         p.ast.instructions.push(
                             Inst::STR(op1, op2)
                         );
                         p.buf.advance();
                     },
                     "bge" => {
-                        let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), Kind::Label => label_to_operand(&p.buf.current(), &mut p), _ => {continue;} };
-                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
-                        let op3 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
+                        let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}} };
+                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}} };
+                        let op3 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}} };
                         
                         p.ast.instructions.push(
                             Inst::BGE(op1, op2, op3)
@@ -123,13 +123,29 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                     },
                     "nor" => {
                         let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
-                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
-                        let op3 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Int(v) => Operand::Imm(v as u64), _ => {continue;} };
+                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}} };
+                        let op3 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}} };
                         p.ast.instructions.push(
                             Inst::NOR(op1, op2, op3)
                         );
                         p.buf.advance();
                     },
+                    "inc" => {
+                        let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
+                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}} };
+                        p.ast.instructions.push(
+                            Inst::INC(op1, op2)
+                        );
+                        p.buf.advance();
+                    },
+                    "dec" => {
+                        let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
+                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}} };
+                        p.ast.instructions.push(
+                            Inst::DEC(op1, op2)
+                        );
+                        p.buf.advance();
+                    }
                     "hlt" => {
                         p.ast.instructions.push(
                             Inst::HLT
@@ -137,7 +153,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                         p.buf.advance();
                     },
                     "bits" => {
-                        p.buf.advance();
+                        match p.buf.current().kind { Kind::Int(_) => (), _ => p.buf.advance() };
                         p.ast.headers.bits = match p.buf.next().kind {Kind::Int(v) => v as u64, _ => {continue;}};
                         p.buf.advance();
                     },
@@ -160,9 +176,12 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                 match p.ast.labels.get(p.buf.current().str) {
                     Some(Label::Defined(_)) => jsprintln!("Redefined label: {}", p.buf.current().str),
                     Some(Label::Undefined(v)) => {
-                        // for i in v.iter() {
-                        //     p.ast.instructions[*i]
-                        // }
+                        for i in v.iter() {
+                            match p.ast.instructions[*i] {
+                                _ => continue,
+                            } // yeah changes in my fork idk how to impl too-late labels but this is good enough for now
+                        }
+
                         jsprintln!("Defined label {} too late lol I didnt impl that", p.buf.current().str);
                     },
                     None => { p.ast.labels.insert(p.buf.current().str.to_string(), Label::Defined(p.ast.instructions.len())); },
@@ -177,11 +196,14 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
     p.ast
 }
 
-// impl Parser { // bram if i commit this can i go to sleep
-    // fn operand(&mut self) -> Option<Operand> {
-    //      let op = self.buf.current().
-    // }
-// }
+fn get_imm(p: &mut Parser) -> Option<Operand> {
+    match p.buf.next().kind {
+        Kind::Reg(v) => Some(Operand::Reg(v)),
+        Kind::Int(v) => Some(Operand::Imm(v as u64)),
+        Kind::Label  => Some(label_to_operand(&p.buf.current(), p)),
+        _ => None
+    }
+}
 
 #[derive(Debug, PartialEq)]
 pub enum Label {
@@ -222,13 +244,32 @@ impl Program {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone)] // cant copy because of the String
 pub enum Operand {
     Imm(u64),
-    Reg(u64),
+    Reg(u64),// it gets changed to immediates, try it out
     Mem(u64),
     Label(String),
 }
+
+// kind (imm, reg, mem, label) 1 byte
+// start: 4/8bytes, capacity: 4/8bytes, length: 4/8bytes
+// 8*4 = 32 bytes
+// but it only has to be 16 bytes
+// or even better, we could pack the bytes but that has other diadvantages
+// unless... we put the opcodes in a sepperate buffer like this
+// but idk what that will do for performance it could make it better it could not matter at all
+// we should benchmark our different options
+// cant we get it working and then optimize
+struct EmuProgram {
+    opcodes: Vec<Opcode>, // only 1 byte per instruction instead of the 8 bytes because we don't need to allign it with the immediate 
+    // oh right the operands aren't just emmediates... 🤔
+    // they can also be registers
+    // maybe should just try and se how fast your current implementation is 😌
+    immediates: Vec<u64>
+}
+
+enum Opcode {}
 
 #[derive(Debug)]
 pub struct Headers {
@@ -240,7 +281,7 @@ pub struct Headers {
 
 impl Headers {
     pub fn new() -> Self {
-        Headers { bits: 8, minheap: 16, minstack: 16, minreg: 8 }
+        Headers { bits: 8, minheap: 16, minstack: 16, minreg: 8 } // replace all r0 with 0
     }
 }
 
@@ -254,5 +295,15 @@ pub enum Inst {
     BGE(Operand, Operand, Operand),
     NOR(Operand, Operand, Operand),
     MOV(Operand, Operand),
+    INC(Operand, Operand),
+    DEC(Operand, Operand),
+    OUT(Operand, Operand),
+    IN(Operand, Operand),
     HLT,
 }
+
+
+// pub trait Port {
+//     fn port_out(&mut self, data: u64);
+//     fn port_in(&mut self) -> u64;
+// }
