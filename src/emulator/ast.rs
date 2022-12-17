@@ -169,14 +169,14 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                         p.buf.advance();
                     },
                     "out" => {
-                        let a = match p.buf.next().kind {Kind::Reg(v) => Operator::Reg(v), _ => {match get_imm(&mut p} {Some(v) => v, None => continue,}};
-                        let b = match p.buf.next().kind {Kind::Reg(v) => Operator::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}};
+                        let a = match p.buf.next().kind {Kind::Reg(v) => Operator::Reg(v), _ => {match get_imm(&mut p} {Some(v) => v, None => continue,}}};
+                        let b = match p.buf.next().kind {Kind::Reg(v) => Operator::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}}};
 
                         p.ast.instructions.push(Inst::OUT(a, b));
                     },
                     "in" => {
-                        let b = match p.buf.next().kind {Kind::Reg(v) => Operator::Reg(v), _ => continue,};
-                        let b = match p.buf.next().kind {Kind::Reg(v) => Operator::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}};
+                        let a = match p.buf.next().kind {Kind::Reg(v) => Operator::Reg(v), _ => continue,};
+                        let b = match p.buf.next().kind {Kind::Reg(v) => Operator::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}}};
                         p.ast.instructions.push(Inst::IN(a, b));
                     }, 
                     _ => { jsprintln!("Unhandled name: {:#?}", p..current().str); p.buf.advance(); },
