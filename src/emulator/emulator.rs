@@ -48,5 +48,5 @@ pub fn emulate(src: &str) {
     let toks =  lexer::lex(src);
     let program = ast::gen_ast(toks);
     let mut regs: Vec<u64> = Vec::with_capacity(program.headers.minreg as usize);
-
+    jsprintln!("{:#?}", program);
 }
