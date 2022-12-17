@@ -180,7 +180,8 @@ fn label_to_operand<'a>(tok: &UToken<'a>, p: &mut Parser) -> Operand {
         None => {
             let mut a = Vec::new();
             a.push(p.ast.instructions.len());
-            p.ast.labels.insert((*tok).str.to_string(), Label::Undefined(a)); Operand::Imm(0)
+            p.ast.labels.insert((*tok).str.to_string(), Label::Undefined(a));
+            Operand::Label(tok.str.to_string())
         }
     }
 }
