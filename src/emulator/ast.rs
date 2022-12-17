@@ -153,7 +153,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                         p.buf.advance();
                     },
                     "bits" => {
-                        match p.buf.current().kind { Kind::Int(_) => (), _ => p.buf.advance() };
+                        match p.buf.next().kind { Kind::Int(_) => (), _ => p.buf.advance() };
                         p.ast.headers.bits = match p.buf.next().kind {Kind::Int(v) => v as u64, _ => {continue;}};
                         p.buf.advance();
                     },
@@ -207,7 +207,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
 }
 
 fn get_imm(p: &mut Parser) -> Option<Operand> {
-    match p.buf.next().kind {
+    match p.buf.current().kind {
         Kind::Reg(v) => Some(Operand::Reg(v)),
         Kind::Int(v) => Some(Operand::Imm(v as u64)),
         Kind::Label  => Some(label_to_operand(&p.buf.current(), p)),
