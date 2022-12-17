@@ -1,10 +1,9 @@
 use super::Device;
 use super::DeviceHost;
 
-struct Console {
+pub struct Console { // console::console::console::console::console::console::console::console::console
     output: String
 }
-
 impl Console {
     pub fn new() -> Self {
         Self { output: String::new() }

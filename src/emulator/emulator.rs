@@ -62,8 +62,8 @@ impl EmulatorState {
     // yeah but idk how to do ins
     pub fn burst(&mut self, max_time: Duration) -> StepResult {
         let start = now();
-        let end = start + max_time.as_secs_f64() / 1000.0;
-        // actually let keep it simple for now
+        let end = start + max_time.as_secs_f64() * 1000.0;
+        // TODO: actually burst so we don't have to call now() on every instruction
         while now() < end {
             let result = self.step();
             if result != StepResult::Continue {
@@ -104,9 +104,7 @@ impl EmulatorState {
             MOV(a, b) => self.set(a, self.get(b)),
             INC(a, b) => self.set(a, self.get(b)+1),
             DEC(a, b) => self.set(a, self.get(b)-1),
-            OUT(a, b) => {
-
-            },
+            OUT(a, b) => self.devices.out(self.get(a), self.get(b)),
             IN(a,b) => todo!(),
             _ => jsprintln!("Unimplimented instruction."),
         }
@@ -115,9 +113,9 @@ impl EmulatorState {
         StepResult::Continue
     }
 }
-// should we maybe do it differently then lol
+
 #[inline]
-unsafe fn fuck_borrow_checker<T>(a: *const T) -> &'static T { // no its perfect
+unsafe fn fuck_borrow_checker<T>(a: *const T) -> &'static T { // no 
     &*a
 }
 struct InstBuffer {
@@ -172,12 +170,15 @@ pub fn emulate(src: &str) {
     let result = emu.burst(Duration::from_millis(1000));
     if result == StepResult::Continue {
         jsprintln!("Program took too long");
+    } else {
+        jsprintln!("Program Halted");
     }
+    emu.devices.show();
 
-    for _ in 0..100 {
-        jsprintln!("{:?}: {:?}", emu.pc, emu.regs);
-        if emu.step() != StepResult::Continue {
-            break;
-        }
-    }
+    // for _ in 0..100 {
+    //     jsprintln!("{:?}: {:?}", emu.pc, emu.regs);
+    //     if emu.step() != StepResult::Continue {
+    //         break;
+    //     }
+    // }
 }

@@ -169,6 +169,16 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                         p.ast.headers.minstack = match p.buf.next().kind {Kind::Int(v) => v as u64, _ => {continue;}};
                         p.buf.advance();
                     },
+                    "out" => {
+                        let a = get_imm(&mut p).unwrap();
+                        let b = get_imm(&mut p).unwrap();
+                        p.ast.instructions.push(Inst::OUT(a, b));
+                    },
+                    "in" => {
+                        let a = get_imm(&mut p).unwrap();
+                        let b = get_imm(&mut p).unwrap();
+                        p.ast.instructions.push(Inst::IN(a, b));
+                    }, 
                     _ => { jsprintln!("Unhandled name: {:#?}", p.buf.current().str); p.buf.advance(); },
                 }
             },

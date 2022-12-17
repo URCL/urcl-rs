@@ -1,11 +1,13 @@
 mod console;
-
+use console::Console;
+use super::super::*;
 
 pub trait Device {
     fn connect(&mut self, host: &mut DeviceHost) -> ();
 }
 
 pub struct DeviceHost {
+    console: console::Console,
     // out_ports: Vec<fn(host: Device, u64)>,
     // in_ports: Vec<Box<dyn Fn() -> u64>>,
 }//rip
@@ -24,6 +26,20 @@ impl DeviceHost {
     // pub fn add_in<'a, F: 'a + Fn() -> u64>(&'a mut self, port_number: u8, f: F) {
     //     self.in_ports[port_number as usize] = Box::new(f);
     // }
+        
+    pub fn out(&mut self, port: u64, value: u64) {
+        match port {
+            1 => self.console.outtext(value),
+            2 => self.console.outnumb(value),
+            27 => self.console.outint(value),
+            _ => {todo!("unsupported port {}", port)}
+        }
+    }
+    // its good enough
+    pub fn show(&self) {
+        jsprintln!("{}", self.console.get_output());
+    }
+
     pub fn new() -> Self {
         // let mut out_ports: Vec<Box<dyn Fn(u64)>> = Vec::new();
         // out_ports.resize_with(256, || Box::new(|_: u64| {}));
@@ -32,6 +48,6 @@ impl DeviceHost {
         // in_ports.resize_with(256, || Box::new(|| {0}));
 
         // Self { out_ports, in_ports }
-        Self {  }
+        Self { console: Console::new()  }
     }
 }
