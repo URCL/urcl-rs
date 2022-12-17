@@ -153,7 +153,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                         p.buf.advance();
                     },
                     "bits" => {
-                        match p.buf.next().kind { Kind::GE | Kind::LE | Kind::Eq, _ => p.buf.advance(), _ => () };
+                        match p.buf.next().kind { Kind::GE | Kind::LE | Kind::Eq => p.buf.advance(), _ => () };
                         p.ast.headers.bits = match p.buf.next().kind {Kind::Int(v) => v as u64, _ => {continue;}};
                         p.buf.advance();
                     },
