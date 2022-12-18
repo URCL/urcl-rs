@@ -25,6 +25,7 @@ impl Screen {
         self.y = value as usize;
     }
     pub fn out_color(&mut self, value: u64) {
+        if self.x >= self.width || self.y >= self.height {return;}
         self.pixels[self.x + self.y * self.width] = ((value as u32) << 8u32).to_be() | 0xff_00_00_00;
     }
     pub fn pixels(&self) -> &[u32] {
