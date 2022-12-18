@@ -7,7 +7,8 @@ pub enum Kind {
     Unknown, Error, Comment,
     White, LF, EOF,
     Name, Macro, 
-    Int(i64), Memory(u64), Port, Reg(u64), Label, Relative(i64),
+    Int(i64), Memory(u64), Reg(u64), Label, Relative(i64),
+    Port, PortNum(u64),
     Eq, GE, LE,
     LSquare, RSquare, String, Char, Text, Escape(char),
 }
@@ -63,7 +64,18 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
                 }
             },
             '@' => {s._while(char::is_alphanumeric); s.create(Macro)},
-            '%' => {s._while(char::is_alphanumeric); s.create(Port)},
+            '%' => {
+                if s._if(|c|c.is_ascii_digit()) {
+                    s._while(|c|c.is_ascii_digit());
+                    match s.str_after(1).parse::<u64>() {
+                        Ok(value) => s.create(PortNum(value)),
+                        Err(err) => s.create(Error),
+                    }
+
+                } else {
+                    s._while(char::is_alphanumeric); s.create(Port)
+                }
+            },
             'a'..='z' | 'A'..='Z' => {s._while(char::is_alphanumeric); s.create(Name)},
             '>' => {if s._if(|c|c=='=') {s.create(GE);} else {s.create(Error);}}
             '<' => {if s._if(|c|c=='=') {s.create(LE);} else {s.create(Error);}}
@@ -204,6 +216,7 @@ impl Kind {
             Kind::Label => "label",
             Kind::Comment => "comment",
             Kind::Relative(_) => "relative",
+            Kind::PortNum(_) => "port",
         }
     }
 }

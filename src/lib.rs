@@ -20,6 +20,9 @@ extern {
     
     pub fn now() -> f64;
     pub fn out_debug(text: &str);
+
+    pub fn out_screen(width: usize, height: usize, pixels: &[u32]);
+    pub fn clear_screen();
 }
 
 #[wasm_bindgen]

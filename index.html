@@ -11,7 +11,8 @@
     <body>
         <nav>
             <button class="symbol red debug_only">DEBUG TOOLS</button>
-            <button class="symbol green" id="emulate">COMPILE/RUN </button>
+            <button class="symbol green" id="emulate">COMPILE/RUN</button>
+            <button class="symbol yellow" id="pause">DONE</button>
             <button class="symbol blue" id="document_link">DOCUMENTATION</button>
             <button class="symbol yellow" id="examples">EXAMPLES</button>
             <button class="symbol magenta" id="settings">SETTINGS</button>
@@ -19,7 +20,10 @@
         </nav>
         <main>
             <textarea name="code_input" id="code_input" spellcheck="false"></textarea>
-            <div id="stdout"></div>
+            <div>
+                <canvas style="height: 200px; image-rendering: crisp-edges;" id="screen"></canvas>
+                <div id="stdout"></div>
+            </div>
         </main>
         <div id="highlight"></div>
         <div id="settings_sec" class="section">

@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, str::FromStr};
 
-use super::{*, lexer::{Token, Kind, UToken}, errorcontext::ErrorContext};
+use super::{*, lexer::{Token, Kind, UToken}, errorcontext::ErrorContext, devices::IOPort};
 
 struct TokenBuffer<'a> {
     index: usize,
@@ -180,7 +180,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                         let b = match p.buf.next().kind {Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}}};
                         p.ast.instructions.push(Inst::IN(a, b));
                         p.buf.advance();
-                    }, 
+                    },
                     _ => { jsprintln!("Unhandled name: {:#?}", p.buf.current().str); p.buf.advance(); },
                 }
             },
@@ -212,6 +212,16 @@ fn get_imm(p: &mut Parser) -> Option<Operand> {
     match p.buf.current().kind {
         Kind::Reg(v) => Some(Operand::Reg(v)),
         Kind::Int(v) => Some(Operand::Imm(v as u64)),
+        Kind::PortNum(v) => Some(Operand::Imm(v)),
+        Kind::Port => {
+            match IOPort::from_str(&p.buf.current().str[1..].to_uppercase()) {
+                Ok(port) => {Some(Operand::Imm(port as u64))},
+                Err(err) => {
+                    jsprintln!("{:#}", err);
+                    None
+                } // TODO: report error
+            }
+        }
         Kind::Label  => Some(label_to_operand(&p.buf.current(), p)),
         _ => None
     }

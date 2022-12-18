@@ -64,11 +64,16 @@ impl EmulatorState {
             }
         }
     }
-    // maybe instead of f64 use Duration but what ever will do for now
-    // yeah but idk how to do ins
     fn run_for(&mut self, max_time: Duration) -> StepResult {
         return self.run_for_ms(max_time.as_secs_f64() * 1000.0);
     }
+    pub fn show(&mut self) {
+        clear_text();
+        self.devices.show();
+        jsprintln!("{:#?}", self.program);
+        jsprintln!("Regs: {:?}", self.regs);
+    }
+    
     pub fn run_for_ms(&mut self, max_time_ms: f64) -> StepResult {
         const BURST_LENGTH: u32 = 1024;
         let start = now();
@@ -77,16 +82,13 @@ impl EmulatorState {
             for _ in 0..BURST_LENGTH {
                 let result = self.step();
                 if result != StepResult::Continue {
-                    clear_text();
-                    self.devices.show();
-                    jsprintln!("Regs: {:?}", self.regs);
+                    self.show();
                     return result;
                 }
             }
         }
         clear_text();
-        self.devices.show();
-        jsprintln!("Regs: {:?}", self.regs);
+        self.show();
         StepResult::Continue
     }
     // or maybe we just run on a sepperate thread 🤔 good idea
@@ -174,9 +176,10 @@ impl InstBuffer {
 
 #[allow(dead_code)]
 #[wasm_bindgen]
-pub fn emulate(src: &str) -> EmulatorState {
+pub fn emulate(src: &str) -> EmulatorState { // wifi died
     clear_text();
     let toks = lexer::lex(src);
+
     let program = ast::gen_ast(toks);
     jsprintln!("{:#?}", program);
 

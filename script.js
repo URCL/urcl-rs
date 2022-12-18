@@ -19,12 +19,13 @@ function with_class(clazz, obj) {
  * @param {{new(...args: any): T}} clazz 
  * @param {string} name 
  * @returns {T}
- */
+*/
 function by_id(clazz, name) {
     return with_class(clazz, document.getElementById(name));
 }
 
 const stdout = by_id(HTMLElement, "stdout");
+const pause_button = by_id(HTMLButtonElement, "pause");
 const highlight = by_id(HTMLElement, "highlight");
 const code_input = by_id(HTMLTextAreaElement, "code_input");
 const auto_emulate = by_id(HTMLInputElement, "auto_emulate");
@@ -50,7 +51,13 @@ export function in_text() { // needs to have a null terminate character if null 
 }
 
 export function out_text(text) {
+    const do_scroll = stdout.scrollTop === stdout.scrollHeight - stdout.clientHeight
+    
     stdout.innerText += text;
+    
+    if (do_scroll) {
+        stdout.scrollTop = stdout.scrollHeight*2;
+    }
 }
 
 export function out_debug(text) {
@@ -65,6 +72,28 @@ export function out_span(text, class_name) {
     span.textContent = text;
     span.className = class_name;
     highlight.appendChild(span);
+}
+
+const screen_canvas = by_id(HTMLCanvasElement, "screen");
+const screen_ctx = screen_canvas.getContext("2d");
+
+export function clear_screen() {
+    screen_ctx.clearRect(0, 0, screen_canvas.width, screen_canvas.height);
+}
+
+/**
+ * 
+ * @param {number} width 
+ * @param {number} height 
+ * @param {Uint32Array} pixels 
+ */
+export function out_screen(width, height, pixels) {
+    if (screen_canvas.width !== width || screen_canvas.height !== height) {
+        screen_canvas.width = width;
+        screen_canvas.height = height;
+    }
+    const image_data = new ImageData(new Uint8ClampedArray(pixels.buffer, pixels.byteOffset, pixels.byteLength), width, height);
+    screen_ctx.putImageData(image_data, 0, 0);
 }
 
 export function output_registers(regs) {
@@ -107,18 +136,38 @@ function start_emulation(source) {
 }
 
 function continue_emulation() {
-    if (frame_id) {
-        cancelAnimationFrame(frame_id)
-    }
-    frame_id = undefined;
+    cancel_emulation();
     const result = emulator.run_for_ms(16);
     if (result === StepResult.Continue) {
         frame_id = requestAnimationFrame(continue_emulation);
+        pause_button.disabled = false;
+        pause_button.textContent = "PAUSE";
+    } else {
+        pause_button.disabled = true;
+        pause_button.textContent = "DONE";
+        emulator = undefined;
+    }
+}
+function cancel_emulation() {
+    if (frame_id !== undefined) {
+        cancelAnimationFrame(frame_id)
+        frame_id = undefined;
     }
 }
 
 init().then(() => { // all code should go in here
     init_panic_hook();
+
+    pause_button.onclick = () => {
+        console.log(frame_id, emulator);
+        if (frame_id) {
+            pause_button.textContent = "CONTINUE";
+            pause_button.disabled = false;
+            cancel_emulation();
+        } else if (emulator) {
+            continue_emulation();
+        }
+    }
     
     code_input.onkeydown = e => {
         if (e.key == 'Tab') {
