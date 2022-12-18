@@ -173,11 +173,13 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                         let b = match p.buf.next().kind {Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}}};
 
                         p.ast.instructions.push(Inst::OUT(a, b));
+                        p.buf.advance();
                     },
                     "in" => {
                         let a = match p.buf.next().kind {Kind::Reg(v) => Operand::Reg(v), _ => continue,};
                         let b = match p.buf.next().kind {Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}}};
                         p.ast.instructions.push(Inst::IN(a, b));
+                        p.buf.advance();
                     }, 
                     _ => { jsprintln!("Unhandled name: {:#?}", p.buf.current().str); p.buf.advance(); },
                 }

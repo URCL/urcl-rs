@@ -68,10 +68,12 @@ impl EmulatorState {
             for _ in 0..BURST_LENGTH {
                 let result = self.step();
                 if result != StepResult::Continue {
+                    jsprintln!("Regs: {:?}", self.regs);
                     return result;
                 }
             }
         }
+        jsprintln!("Regs: {:?}", self.regs);
         StepResult::Continue
     }
     // or maybe we just run on a sepperate thread 🤔 good idea
