@@ -111,7 +111,7 @@ function continue_emulation() {
         cancelAnimationFrame(frame_id)
     }
     frame_id = undefined;
-    const result = emulator.run_for_ms(100);
+    const result = emulator.run_for_ms(16);
     if (result === StepResult.Continue) {
         frame_id = requestAnimationFrame(continue_emulation);
     }

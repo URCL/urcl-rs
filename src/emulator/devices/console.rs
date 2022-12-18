@@ -29,6 +29,19 @@ impl Console {
     pub fn get_output(&self) -> &str {
         &self.output
     }
+
+    pub fn clear_output(&mut self, keep: usize) {
+        let mut new_output = String::new();
+        if keep > 0 {
+            let mut chars = self.output.chars();
+            while chars.as_str().len() > keep {
+                chars.next();
+            }
+            new_output = chars.as_str().to_owned();
+        }
+
+        self.output = new_output;
+    }
 }
 // epic rust
 

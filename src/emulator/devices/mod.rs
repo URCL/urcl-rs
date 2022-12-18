@@ -37,7 +37,8 @@ impl DeviceHost {
         }
     }
     // its good enough
-    pub fn show(&self) {
+    pub fn show(&mut self) {
+        self.console.clear_output(2000);
         jsprintln!("{}", self.console.get_output());
     }
 

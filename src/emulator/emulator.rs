@@ -77,11 +77,15 @@ impl EmulatorState {
             for _ in 0..BURST_LENGTH {
                 let result = self.step();
                 if result != StepResult::Continue {
+                    clear_text();
+                    self.devices.show();
                     jsprintln!("Regs: {:?}", self.regs);
                     return result;
                 }
             }
         }
+        clear_text();
+        self.devices.show();
         jsprintln!("Regs: {:?}", self.regs);
         StepResult::Continue
     }
