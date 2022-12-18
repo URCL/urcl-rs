@@ -3,8 +3,10 @@ use devices::DeviceHost;
 
 use wasm_bindgen::prelude::*;
 use super::{*, lexer, ast::{self, Inst, Program, Operand}};
+
+#[wasm_bindgen]
 #[derive(Debug)]
-struct EmulatorState {
+pub struct EmulatorState {
     regs: Vec<u64>,
     heap: Vec<u64>,
     pc: usize,
@@ -12,13 +14,17 @@ struct EmulatorState {
     devices: DeviceHost,
 }
 
+#[wasm_bindgen]
 #[derive(Debug, PartialEq, Eq)]
-enum StepResult {
+pub enum StepResult {
     Continue, HLT, Input,
 }
 
+// you cant bindgen impls i dont think
+#[wasm_bindgen]
 impl EmulatorState {
-    pub fn new(program: Program, devices: DeviceHost) -> Self {
+
+    fn new(program: Program, devices: DeviceHost) -> Self {
         let regs = vec![0; program.headers.minreg as usize];
         let heap = vec![0; (program.headers.minheap + program.headers.minstack) as usize];
         EmulatorState { regs, heap, pc: 0, program, devices }
@@ -60,10 +66,13 @@ impl EmulatorState {
     }
     // maybe instead of f64 use Duration but what ever will do for now
     // yeah but idk how to do ins
-    pub fn run_for(&mut self, max_time: Duration) -> StepResult {
+    fn run_for(&mut self, max_time: Duration) -> StepResult {
+        return self.run_for_ms(max_time.as_secs_f64() * 1000.0);
+    }
+    pub fn run_for_ms(&mut self, max_time_ms: f64) -> StepResult {
         const BURST_LENGTH: u32 = 1024;
         let start = now();
-        let end = start + max_time.as_secs_f64() * 1000.0;
+        let end = start + max_time_ms;
         while now() < end {
             for _ in 0..BURST_LENGTH {
                 let result = self.step();
@@ -161,7 +170,7 @@ impl InstBuffer {
 
 #[allow(dead_code)]
 #[wasm_bindgen]
-pub fn emulate(src: &str) {
+pub fn emulate(src: &str) -> EmulatorState {
     clear_text();
     let toks = lexer::lex(src);
     let program = ast::gen_ast(toks);
@@ -170,17 +179,18 @@ pub fn emulate(src: &str) {
     let mut host = DeviceHost::new();
     let mut emu = EmulatorState::new(program, host);
 
+    return emu;
     // i can add more insts while you guys do that
     // also please do the too late label thing
     // we need to get some web workers out 👷‍♂️
-    let result = emu.run_for(Duration::from_millis(1000));
-    if result == StepResult::Continue {
-        jsprintln!("Program took too long");
-    } else {
-        jsprintln!("Program Halted");
-    }
-    emu.devices.show();
-
+    // let result = emu.run_for(Duration::from_millis(1000));
+    // if result == StepResult::Continue {
+    //     jsprintln!("Program took too long");
+    // } else {
+    //     jsprintln!("Program Halted");
+    // }
+    // emu.devices.show();
+    // return emu;
     // for _ in 0..100 {
     //     jsprintln!("{:?}: {:?}", emu.pc, emu.regs);
     //     if emu.step() != StepResult::Continue {

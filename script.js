@@ -1,4 +1,4 @@
-import init, {output_highlight_span, init_panic_hook, emulate}  from "./pkg/urcl_rs.js"
+import init, {output_highlight_span, init_panic_hook, emulate, EmulatorState}  from "./pkg/urcl_rs.js"
 
 /**
  * @template T
@@ -88,6 +88,35 @@ export function update_debug_buttons(new_state) {
     }
 }
 
+/** @type {undefined | EmulatorState} */
+let emulator;
+/** @type {undefined | number} */
+let frame_id;
+
+const StepResult = {
+    Continue: 0, HLT: 1, Input: 2,
+};
+
+/**
+ * 
+ * @param {string} source 
+ */
+function start_emulation(source) {
+    emulator = emulate(source);
+    continue_emulation();  
+}
+
+function continue_emulation() {
+    if (frame_id) {
+        cancelAnimationFrame(frame_id)
+    }
+    frame_id = undefined;
+    const result = emulator.run_for_ms(100);
+    if (result === StepResult.Continue) {
+        frame_id = requestAnimationFrame(continue_emulation);
+    }
+}
+
 init().then(() => { // all code should go in here
     init_panic_hook();
     
@@ -103,12 +132,12 @@ init().then(() => { // all code should go in here
 
     code_input.oninput = () => {
         output_highlight_span(code_input.value);
-        if (auto_emulate.checked) emulate(code_input.value);
+        if (auto_emulate.checked) start_emulation(code_input.value);
     };
 
     code_input.onscroll                                 = function() { highlight.scrollTo(0, code_input.scrollTop); };
     document.getElementById("document_link").onclick    = function() { window.open("https://github.com/ModPunchtree/URCL/releases/latest", "_blank"); };
-    document.getElementById("emulate").onclick          = function() { emulate(code_input.value); };
+    document.getElementById("emulate").onclick          = function() { start_emulation(code_input.value); };
     document.getElementById("clear").onclick            = function() { clear_text(); };
     document.getElementById("debug_option").onchange    = function() { update_debug_buttons(this.checked); };
     document.getElementById("tab_size").onchange        = function() { document.querySelector(":root").style.setProperty("--tab-size", this.value); };
