@@ -140,7 +140,9 @@ impl InstBuffer {
     }
     #[inline]
     pub fn advance(&mut self) {
-        self.index += 1;
+        if self.has_next() {
+            self.index += 1;
+        }
     }
     #[inline]
     pub fn next(&mut self) -> Inst {
