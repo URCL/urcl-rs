@@ -2,6 +2,8 @@ use std::time::Duration;
 use devices::DeviceHost;
 
 use wasm_bindgen::prelude::*;
+use crate::emulator::ast::Parser;
+
 use super::{*, lexer, ast::{self, Inst, Program, Operand}};
 
 #[wasm_bindgen]
@@ -111,7 +113,7 @@ impl EmulatorState {
             ADD(op1, op2, op3) => {
                 self.set(op1, self.get(op2)+self.get(op3));
             },
-            RSH(a, b) => self.set(a, self.get(a) >> self.get(b)),
+            RSH(a, b) => self.set(a, self.get(b) >> 1),
             LOD(a, b) => self.set(a, self.getm(b)),
             STR(a, b) => self.setm(a, self.get(b)),
             BGE(a, b, c) => {
@@ -125,6 +127,10 @@ impl EmulatorState {
             DEC(a, b) => self.set(a, self.get(b)-1),
             OUT(a, b) => self.devices.out(self.get(a), self.get(b)),
             IN(a,b) => todo!(),
+            JMP(a) => self.pc = self.get(a) as usize - 1,
+            SUB(a, b, c) => self.set(a, self.get(b) - self.get(c)),
+            NOP => {},
+            LSH(a, b) => self.set(a, self.get(b) << 1),
             _ => jsprintln!("Unimplimented instruction."),
         }
         self.pc += 1;
@@ -176,17 +182,22 @@ impl InstBuffer {
 
 #[allow(dead_code)]
 #[wasm_bindgen]
-pub fn emulate(src: &str) -> EmulatorState { // wifi died
+pub fn emulate(src: &str) -> Option<EmulatorState> { // wifi died
     clear_text();
     let toks = lexer::lex(src);
 
-    let program = ast::gen_ast(toks);
+    let Parser {ast: program, err, ..} = ast::gen_ast(toks);
     jsprintln!("{:#?}", program);
+    
+    if err.has_error() {
+        jsprintln!("{}", err.to_string());
+        return None;
+    }
 
     let mut host = DeviceHost::new();
     let mut emu = EmulatorState::new(program, host);
 
-    return emu;
+    return Some(emu);
     // i can add more insts while you guys do that
     // also please do the too late label thing
     // we need to get some web workers out 👷‍♂️

@@ -1,6 +1,6 @@
 use std::{collections::HashMap, str::FromStr};
 
-use super::{*, lexer::{Token, Kind, UToken}, errorcontext::ErrorContext, devices::IOPort};
+use super::{*, lexer::{Token, Kind, UToken}, errorcontext::{ErrorContext, ErrorKind}, devices::IOPort};
 
 struct TokenBuffer<'a> {
     index: usize,
@@ -38,19 +38,26 @@ impl <'a> TokenBuffer<'a> {
             Token {kind: Kind::EOF, str: ""}
         }
     }
+    pub fn cur(&self) -> &UToken<'a> {
+        if self.has_next() {
+            &self.toks[self.index]
+        } else {
+            self.toks.last().unwrap()
+        }
+    }
 }
 
-struct Parser<'a> {
+pub struct Parser<'a> {
     buf: TokenBuffer<'a>,
-    err: ErrorContext,
-    ast: Program
+    pub err: ErrorContext<'a>,
+    pub ast: Program
 }
 
 fn remove_first(s: &str) -> Option<&str> {
     s.chars().next().map(|c| &s[c.len_utf8()..])
 }
 
-pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
+pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
     let mut err = ErrorContext::new();
     let mut ast = Program::new();
     let mut buf = TokenBuffer::new(toks);
@@ -79,8 +86,8 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                     },
                     "add" => {
                         let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
-                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}} };
-                        let op3 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}} };
+                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_operand(&mut p) {Some(v) => v, None => continue,}} };
+                        let op3 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_operand(&mut p) {Some(v) => v, None => continue,}} };
                         p.ast.instructions.push(
                             Inst::ADD(op1, op2, op3)
                         );
@@ -88,7 +95,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                     },
                     "rsh" => {
                         let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
-                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}} };
+                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_operand(&mut p) {Some(v) => v, None => continue,}} };
                         p.ast.instructions.push(
                             Inst::RSH(op1, op2)
                         );
@@ -104,16 +111,16 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                     },
                     "str" => {
                         let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), Kind::Memory(v) => Operand::Mem(v as u64), _ => {continue;} };
-                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}} };
+                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_operand(&mut p) {Some(v) => v, None => continue,}} };
                         p.ast.instructions.push(
                             Inst::STR(op1, op2)
                         );
                         p.buf.advance();
                     },
                     "bge" => {
-                        let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}} };
-                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}} };
-                        let op3 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}} };
+                        let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_operand(&mut p) {Some(v) => v, None => continue,}} };
+                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_operand(&mut p) {Some(v) => v, None => continue,}} };
+                        let op3 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_operand(&mut p) {Some(v) => v, None => continue,}} };
                         
                         p.ast.instructions.push(
                             Inst::BGE(op1, op2, op3)
@@ -123,8 +130,8 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                     },
                     "nor" => {
                         let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
-                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}} };
-                        let op3 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}} };
+                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_operand(&mut p) {Some(v) => v, None => continue,}} };
+                        let op3 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_operand(&mut p) {Some(v) => v, None => continue,}} };
                         p.ast.instructions.push(
                             Inst::NOR(op1, op2, op3)
                         );
@@ -132,7 +139,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                     },
                     "inc" => {
                         let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
-                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}} };
+                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_operand(&mut p) {Some(v) => v, None => continue,}} };
                         p.ast.instructions.push(
                             Inst::INC(op1, op2)
                         );
@@ -140,7 +147,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                     },
                     "dec" => {
                         let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
-                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}} };
+                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_operand(&mut p) {Some(v) => v, None => continue,}} };
                         p.ast.instructions.push(
                             Inst::DEC(op1, op2)
                         );
@@ -149,6 +156,33 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                     "hlt" => {
                         p.ast.instructions.push(
                             Inst::HLT
+                        );
+                        p.buf.advance();
+                    },
+                    "jmp" => {
+                        let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_operand(&mut p) {Some(v) => v, None => continue,}} };
+                        p.ast.instructions.push(
+                            Inst::JMP(op1)
+                        );
+                        p.buf.advance();
+                    },
+                    "sub" => {
+                        let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
+                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_operand(&mut p) {Some(v) => v, None => continue,}} };
+                        let op3 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_operand(&mut p) {Some(v) => v, None => continue,}} };
+                        p.ast.instructions.push(
+                            Inst::SUB(op1, op2, op3)
+                        );
+                        p.buf.advance();
+                    },
+                    "nop" => {
+                        p.ast.instructions.push(Inst::NOP);
+                    },
+                    "lsh" => {
+                        let op1 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {continue;} };
+                        let op2 = match p.buf.next().kind { Kind::Reg(v) => Operand::Reg(v), _ => {match get_operand(&mut p) {Some(v) => v, None => continue,}} };
+                        p.ast.instructions.push(
+                            Inst::LSH(op1, op2)
                         );
                         p.buf.advance();
                     },
@@ -169,18 +203,36 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
                         p.buf.advance();
                     },
                     "out" => {
-                        let a = match p.buf.next().kind {Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}}};
-                        let b = match p.buf.next().kind {Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}}};
+                        let a = match p.buf.next().kind {Kind::Reg(v) => Operand::Reg(v), _ => {match get_operand(&mut p) {Some(v) => v, None => continue,}}};
+                        let b = match p.buf.next().kind {Kind::Reg(v) => Operand::Reg(v), _ => {match get_operand(&mut p) {Some(v) => v, None => continue,}}};
 
                         p.ast.instructions.push(Inst::OUT(a, b));
                         p.buf.advance();
                     },
                     "in" => {
                         let a = match p.buf.next().kind {Kind::Reg(v) => Operand::Reg(v), _ => continue,};
-                        let b = match p.buf.next().kind {Kind::Reg(v) => Operand::Reg(v), _ => {match get_imm(&mut p) {Some(v) => v, None => continue,}}};
+                        let b = match p.buf.next().kind {Kind::Reg(v) => Operand::Reg(v), _ => {match get_operand(&mut p) {Some(v) => v, None => continue,}}};
                         p.ast.instructions.push(Inst::IN(a, b));
                         p.buf.advance();
                     },
+                    "psh" => {
+                        let Some(op) = p.get_imm() else {continue};
+                        p.assert_done();
+
+                        p.ast.instructions.push(Inst::PSH(op));
+                    },
+                    "pop" => {
+                        let Some(op) = p.get_reg() else {continue};
+                        p.assert_done();
+
+                        p.ast.instructions.push(Inst::POP(op));
+                    },
+                    "jmp" => {
+                        let Some(op) = p.get_imm() else {continue};
+                        p.assert_done();
+                        
+                        p.ast.instructions.push(Inst::JMP(op));
+                    }
                     _ => { jsprintln!("Unhandled name: {:#?}", p.buf.current().str); p.buf.advance(); },
                 }
             },
@@ -205,10 +257,47 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Program {
         }
     }
 
-    p.ast
+    p
 }
 
-fn get_imm(p: &mut Parser) -> Option<Operand> {
+impl <'a> Parser<'a> {
+    fn get_reg(&mut self) -> Option<Operand> {
+        let Some(operand) = self.get_imm() else {
+            self.err.error(self.buf.cur(), ErrorKind::InvalidOpperandType);
+            return None;
+        };
+        match operand { // operant 👍 i think its d
+            Operand::Reg(num) => {
+                if num == 0 {
+                    Some(Operand::Imm(0))
+                } else {
+                    Some(operand)
+                }
+            },
+            _ => {
+                self.err.error(&self.buf.cur(), ErrorKind::InvalidOpperandType);
+                None
+            },
+        }
+    }
+    fn get_imm(&mut self) -> Option<Operand> {
+        self.buf.advance();
+        let result = get_operand(self);
+        result
+    }
+    fn assert_done(&mut self) {
+        self.buf.advance();
+        match self.buf.current().kind {
+            Kind::LF |  Kind::EOF => {},
+            _ => {
+                self.err.error(&self.buf.current(), ErrorKind::NotEnoughOpperands)
+            }
+        }
+    }
+}
+
+
+fn get_operand(p: &mut Parser) -> Option<Operand> {
     match p.buf.current().kind {
         Kind::Reg(v) => Some(Operand::Reg(v)),
         Kind::Int(v) => Some(Operand::Imm(v as u64)),
@@ -217,6 +306,7 @@ fn get_imm(p: &mut Parser) -> Option<Operand> {
             match IOPort::from_str(&p.buf.current().str[1..].to_uppercase()) {
                 Ok(port) => {Some(Operand::Imm(port as u64))},
                 Err(err) => {
+                    p.err.error(&p.buf.current(), ErrorKind::UnknownPort);
                     jsprintln!("{:#}", err);
                     None
                 } // TODO: report error
@@ -322,6 +412,13 @@ pub enum Inst {
     OUT(Operand, Operand),
     IN(Operand, Operand),
     HLT,
+    
+    PSH(Operand),
+    POP(Operand),
+    JMP(Operand),
+    SUB(Operand, Operand, Operand),
+    NOP,
+    LSH(Operand, Operand),
 }
 
 

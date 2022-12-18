@@ -137,7 +137,7 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
             _ => {s.create(Unknown)}
         }
     }
-    s.create(Error);
+    s.create(EOF);
 
     s.tokens()
 }

@@ -137,6 +137,9 @@ function start_emulation(source) {
 
 function continue_emulation() {
     cancel_emulation();
+    if (!emulator) {
+        return;
+    }
     const result = emulator.run_for_ms(16);
     if (result === StepResult.Continue) {
         frame_id = requestAnimationFrame(continue_emulation);
