@@ -31,7 +31,8 @@ impl DeviceHost {
         match port {
             1 => self.console.outtext(value),
             2 => self.console.outnumb(value),
-            27 => self.console.outint(value),
+            24 => self.console.outint(value),
+            27 => self.console.outhex(value),
             _ => {todo!("unsupported port {}", port)}
         }
     }
