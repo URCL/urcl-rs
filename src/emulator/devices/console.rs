@@ -20,7 +20,7 @@ impl Console {
         self.output.push_str(&value.to_string());
     }
     pub fn outhex(&mut self, value: u64){
-        self.output.push_str(&format!("{:x}", value));
+        self.output.push_str(&format!("{:X}", value));
     }
     pub fn outint(&mut self, value: u64){
         self.output.push_str(&(value as i64).to_string())
