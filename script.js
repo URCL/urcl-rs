@@ -1,4 +1,5 @@
 import init, {output_highlight_span, init_panic_hook, emulate, EmulatorState}  from "./pkg/urcl_rs.js"
+import { StepResult } from "./pkg/urcl_rs.js";
 
 /**
  * @template T
@@ -121,10 +122,6 @@ export function update_debug_buttons(new_state) {
 let emulator;
 /** @type {undefined | number} */
 let frame_id;
-
-const StepResult = {
-    Continue: 0, HLT: 1, Input: 2,
-};
 
 /**
  * 

@@ -17,9 +17,15 @@ impl <'a> ErrorContext<'a> {
         self.errors.len() > 0
     }
 
-    pub fn to_string(&self) -> String {
+    pub fn to_string(&self, src: &str) -> String {
         let mut output = String::new();
         for error in &self.errors {
+            let (line, col) = line(src, error.span);
+            output += line;
+            output += "\n";
+            output += &" ".repeat(col);
+            output += &"^".repeat(error.span.chars().count().max(1));
+            output += "----- ";
             output += error.kind.message();
             output += ": ";
             output += error.span;
@@ -37,8 +43,9 @@ pub struct Error<'a> {
 
 #[allow(dead_code)]
 pub enum ErrorKind {
-    NotEnoughOpperands,
-    InvalidOpperandType,
+    NotEnoughOperands,
+    ToManyOperands,
+    InvalidOperandType,
     UnknownPort,
     DWNoEnding,
     EOFBeforeEndOfString,
@@ -51,8 +58,9 @@ impl ErrorKind {
     pub fn message(&self) -> &str {
         match self {
             ErrorKind::UnknownPort => "Unknown port",
-            ErrorKind::NotEnoughOpperands => "Not enough operands",
-            ErrorKind::InvalidOpperandType => "Invalid operand type",
+            ErrorKind::NotEnoughOperands => "Not enough operands",
+            ErrorKind::ToManyOperands => "To many operands",
+            ErrorKind::InvalidOperandType => "Invalid operand type",
             ErrorKind::DWNoEnding => "todo!()",
             ErrorKind::EOFBeforeEndOfString => "End of file before the end of a string",
             ErrorKind::EOFBeforeEndOfChar => "End of file before the end of a char",
@@ -60,4 +68,22 @@ impl ErrorKind {
             ErrorKind::StackUnderflow => "Stack underflow",
         }
     }
+}
+const LF_B: u8 = '\n' as u8;
+
+fn line<'a>(src: &'a str, span: &'a str) -> (&'a str, usize) {
+    let mut offset = span.as_ptr() as usize - src.as_ptr() as usize;
+    if offset >= src.len() {
+        offset = src.len();
+    }
+    drop(span);
+    let mut start = offset;
+    while start > 0 && src.as_bytes()[start - 1] != LF_B  {
+        start -= 1;
+    }
+    let mut end = offset;
+    while end < src.len() && src.as_bytes()[end] != LF_B {
+        end += 1;
+    }
+    (&src[start..end], src[start..offset].chars().count())
 }
