@@ -103,7 +103,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
                     "psh" => {let inst = Inst::PSH(p.get_op())                          ; p.inst(inst)},
                     "pop" => {let inst = Inst::POP(p.get_reg())                         ; p.inst(inst)},
                     "jmp" => {let inst = Inst::JMP(p.get_jmp())                         ; p.inst(inst)},
-                    _ => { jsprintln!("Unhandled name: {:#?}", p.buf.current().str); p.buf.advance(); },
+                    _ => { p.err.error(&p.buf.current(), ErrorKind::UnknownInstruction); p.buf.advance(); },
                 }
             },
             Kind::Label => {
@@ -113,7 +113,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
                         for i in v.iter() {
                             match p.ast.instructions[*i] {
                                 _ => continue,
-                            } // yeah changes in my fork idk how to impl too-late labels but this is good enough for now
+                            }
                         }
 
                         jsprintln!("Defined label {} too late lol I didnt impl that", p.buf.current().str);
@@ -123,7 +123,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
                 p.buf.advance();
             },
             Kind::White | Kind::Comment | Kind::LF => p.buf.advance(),
-            _ => { logprintln!("Unhandled token type: {:#?}", p.buf.current());  p.buf.advance(); },
+            _ => { logprintln!("Unhandled token type: {:#?}", p.buf.current()); p.buf.advance(); },
         }
     }
 
