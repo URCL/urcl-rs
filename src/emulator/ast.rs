@@ -110,25 +110,41 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
                 match p.ast.labels.get(p.buf.current().str) {
                     Some(Label::Defined(_)) => jsprintln!("Redefined label: {}", p.buf.current().str),
                     Some(Label::Undefined(v)) => {
+                        let label_name = p.buf.current().str; let pc = p.ast.instructions.len();
                         for i in v.iter() {
-                            match p.ast.instructions[*i] {
+                            p.ast.instructions[*i] = match &p.ast.instructions[*i] {
+                                Inst::PSH(a) => Inst::PSH(a.clone().transform_label(label_name, pc)),
+                                Inst::JMP(a) => Inst::JMP(a.clone().transform_label(label_name, pc)),
+                                Inst::MOV(a, b) => Inst::MOV(a.clone(), b.clone().transform_label(label_name, pc)),
+                                Inst::IN (a, b) => Inst::IN(a.clone(), b.clone().transform_label(label_name, pc)),
+                                Inst::OUT(a, b) => Inst::OUT(a.clone(), b.clone().transform_label(label_name, pc)),
+                                Inst::INC(a, b) => Inst::INC(a.clone(), b.clone().transform_label(label_name, pc)),
+                                Inst::DEC(a, b) => Inst::DEC(a.clone(), b.clone().transform_label(label_name, pc)),
+                                Inst::LSH(a, b) => Inst::LSH(a.clone(), b.clone().transform_label(label_name, pc)),
+                                Inst::RSH(a, b) => Inst::RSH(a.clone(), b.clone().transform_label(label_name, pc)),
+                                Inst::LOD(a, b) => Inst::LOD(a.clone(), b.clone().transform_label(label_name, pc)),
+                                Inst::STR(a, b) => Inst::STR(a.clone().transform_label(label_name, pc), b.clone()),
+                                Inst::ADD(a, b, c) => Inst::ADD(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SUB(a, b, c) => Inst::SUB(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::NOR(a, b, c) => Inst::NOR(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::BGE(a, b, c) => Inst::BGE(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 _ => continue,
                             }
                         }
-
-                        jsprintln!("Defined label {} too late lol I didnt impl that", p.buf.current().str);
                     },
                     None => { p.ast.labels.insert(p.buf.current().str.to_string(), Label::Defined(p.ast.instructions.len())); },
                 }
                 p.buf.advance();
             },
-            Kind::White | Kind::Comment | Kind::LF => p.buf.advance(),
+            Kind::White | Kind::Comment | Kind::LF | Kind::Char | Kind::String => p.buf.advance(),
             _ => { logprintln!("Unhandled token type: {:#?}", p.buf.current()); p.buf.advance(); },
         }
     }
 
     p
 }
+
+
 
 impl <'a> Parser<'a> {
     fn inst(&mut self, inst: Inst) {
@@ -182,7 +198,7 @@ impl <'a> Parser<'a> {
                     }
                 }
             }
-            Kind::Label  => label_to_operand(&self.buf.current(), self),
+            Kind::Label  => label_tok_to_operand(&self.buf.current(), self),
             _ => {
                 Operand::Imm(0)
             }
@@ -217,7 +233,7 @@ fn get_operand(p: &mut Parser) -> Option<Operand> {
                 }
             }
         }
-        Kind::Label  => Some(label_to_operand(&p.buf.current(), p)),
+        Kind::Label  => Some(label_tok_to_operand(&p.buf.current(), p)),
         _ => None
     }
 }
@@ -228,7 +244,7 @@ pub enum Label {
     Defined(usize),
 }
 
-fn label_to_operand<'a>(tok: &UToken<'a>, p: &mut Parser) -> Operand {
+fn label_tok_to_operand<'a>(tok: &UToken<'a>, p: &mut Parser) -> Operand {
     if (*tok).kind != Kind::Label {return Operand::Imm(0);}
 
     match p.ast.labels.get(tok.str) {
@@ -267,6 +283,15 @@ pub enum Operand {
     Reg(u64),// it gets changed to immediates, try it out
     Mem(u64),
     Label(String),
+}
+
+impl Operand {
+    pub fn transform_label(self, label: &str, pc: usize) -> Self {
+        match self {
+            Operand::Label(ref l) => if l == label {Operand::Imm(pc as u64)} else {self}
+            _ => self,
+        }
+    }
 }
 
 // kind (imm, reg, mem, label) 1 byte
