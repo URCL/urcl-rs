@@ -6,7 +6,7 @@ use super::{lexer::{UToken}, ast::AstOp};
 pub struct ErrorContext<'a> {
     errors: Vec<Error<'a>>
 }
-// REEEEEEEEEE LIFETIMES
+
 impl <'a> ErrorContext<'a> {
     pub fn new() -> Self {
         Self { errors: Vec::new() }
@@ -49,26 +49,30 @@ pub enum ErrorKind<'a> {
     InvalidOperand,
     UndefinedLabel,
     UnknownPort,
+    UnknownInstruction,
     DWNoEnding,
     EOFBeforeEndOfString,
     EOFBeforeEndOfChar,
     StackOverflow,
     StackUnderflow,
+    DuplicatedLabelName,
 }
 impl <'a> Display for ErrorKind<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::NotEnoughOperands => write!(f, "Not enough operands"),
-            Self::ToManyOperands => write!(f, "Too many operands"),
-            Self::InvalidOperandType { expected, actual } => write!(f, "Expected operand {} but got {:?}", expected, actual),
-            Self::UnknownPort => write!(f, "Unknown port"),
-            Self::DWNoEnding => write!(f, "Missing ']'"),
-            Self::EOFBeforeEndOfString => write!(f, "Missing '\"'"),
-            Self::EOFBeforeEndOfChar => write!(f, "Missing '''"),
-            Self::StackOverflow => write!(f, "Stack overflow"),
-            Self::StackUnderflow => write!(f, "Stack underflow"),
-            Self::InvalidOperand => write!(f, "Invalid operand"),
-            Self::UndefinedLabel => write!(f, "Undefined label")
+            ErrorKind::NotEnoughOperands => write!(f, "Not enough operands"),
+            ErrorKind::ToManyOperands => write!(f, "Too many operands"),
+            ErrorKind::InvalidOperandType { expected, actual } => write!(f, "Expected operand {} but got {:?}", expected, actual),
+            ErrorKind::UnknownPort => write!(f, "Unknown port"),
+            ErrorKind::DWNoEnding => write!(f, "Missing ']'"),
+            ErrorKind::EOFBeforeEndOfString => write!(f, "Missing '\"'"),
+            ErrorKind::EOFBeforeEndOfChar => write!(f, "Missing '''"),
+            ErrorKind::StackOverflow => write!(f, "Stack overflow"),
+            ErrorKind::StackUnderflow => write!(f, "Stack underflow"),
+            ErrorKind::InvalidOperand => write!(f, "Invalid operand"),
+            ErrorKind::UndefinedLabel => write!(f, "Undefined label"),
+            ErrorKind::DuplicatedLabelName => write!(f, "Duplicated label name"),
+            ErrorKind::UnknownInstruction => write!(f, "Unknown instruction"),
         }
     }
 }

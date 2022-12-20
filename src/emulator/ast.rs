@@ -103,27 +103,42 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
                     "psh" => inst(Inst::PSH(p.get_op())                         , &mut p),
                     "pop" => inst(Inst::POP(p.get_reg())                        , &mut p),
                     "jmp" => inst(Inst::JMP(p.get_jmp())                        , &mut p),
-                    _ => { jsprintln!("Unhandled name: {:#?}", p.buf.current().str); p.buf.advance(); },
+                    _ => { p.err.error(&p.buf.current(), ErrorKind::UnknownInstruction); p.buf.advance(); },
                 }
             },
             Kind::Label => {
                 match p.ast.labels.get(p.buf.current().str) {
-                    Some(Label::Defined(_)) => jsprintln!("Redefined label: {}", p.buf.current().str),
+                    Some(Label::Defined(_)) => p.err.error(&p.buf.current(), ErrorKind::DuplicatedLabelName),
                     Some(Label::Undefined(v)) => {
+                        let label_name = p.buf.current().str; let pc = p.ast.instructions.len();
                         for i in v.iter() {
-                            match p.ast.instructions[*i] {
+                            p.ast.instructions[*i] = match &p.ast.instructions[*i] {
+                                Inst::PSH(a) => Inst::PSH(a.clone().transform_label(label_name, pc)),
+                                Inst::JMP(a) => Inst::JMP(a.clone().transform_label(label_name, pc)),
+                                Inst::MOV(a, b) => Inst::MOV(a.clone(), b.clone().transform_label(label_name, pc)),
+                                Inst::IN (a, b) => Inst::IN(a.clone(), b.clone().transform_label(label_name, pc)),
+                                Inst::OUT(a, b) => Inst::OUT(a.clone(), b.clone().transform_label(label_name, pc)),
+                                Inst::INC(a, b) => Inst::INC(a.clone(), b.clone().transform_label(label_name, pc)),
+                                Inst::DEC(a, b) => Inst::DEC(a.clone(), b.clone().transform_label(label_name, pc)),
+                                Inst::LSH(a, b) => Inst::LSH(a.clone(), b.clone().transform_label(label_name, pc)),
+                                Inst::RSH(a, b) => Inst::RSH(a.clone(), b.clone().transform_label(label_name, pc)),
+                                Inst::LOD(a, b) => Inst::LOD(a.clone(), b.clone().transform_label(label_name, pc)),
+                                Inst::STR(a, b) => Inst::STR(a.clone().transform_label(label_name, pc), b.clone()),
+                                Inst::ADD(a, b, c) => Inst::ADD(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SUB(a, b, c) => Inst::SUB(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::NOR(a, b, c) => Inst::NOR(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::BGE(a, b, c) => Inst::BGE(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 _ => continue,
-                            } // yeah changes in my fork idk how to impl too-late labels but this is good enough for now
+                            }
                         }
-
-                        jsprintln!("Defined label {} too late lol I didnt impl that", p.buf.current().str);
+                        p.ast.labels.insert(p.buf.current().str.to_string(), Label::Defined(p.ast.instructions.len()));
                     },
                     None => { p.ast.labels.insert(p.buf.current().str.to_string(), Label::Defined(p.ast.instructions.len())); },
                 }
                 p.buf.advance();
             },
-            Kind::White | Kind::Comment | Kind::LF => p.buf.advance(),
-            _ => { logprintln!("Unhandled token type: {:#?}", p.buf.current());  p.buf.advance(); },
+            Kind::White | Kind::Comment | Kind::LF | Kind::Char | Kind::String => p.buf.advance(),
+            _ => { logprintln!("Unhandled token type: {:#?}", p.buf.current()); p.buf.advance(); },
         }
     }
 
@@ -136,7 +151,6 @@ fn inst<'a>(inst: Inst, p: &mut Parser<'a>) {
 }
 
 impl <'a> Parser<'a> {
-
     fn get_reg(&mut self) -> Operand {
         let (ast, op) = self.get_ast_op();
         match ast {
@@ -167,7 +181,7 @@ impl <'a> Parser<'a> {
             AstOp::Reg(_) | AstOp::Mem(_) => {},
             actual => {
                 self.err.error(self.buf.cur(), ErrorKind::InvalidOperandType{
-                    expected: "port", actual
+                    expected: "memory address", actual
                 });
             }
         }
@@ -179,7 +193,7 @@ impl <'a> Parser<'a> {
             AstOp::Reg(_) | AstOp::Label(_) => {},
             actual => {
                 self.err.error(self.buf.cur(), ErrorKind::InvalidOperandType{
-                    expected: "port", actual
+                    expected: "jump target", actual
                 });
             }
         }
@@ -211,13 +225,7 @@ impl <'a> Parser<'a> {
             AstOp::Char(v) => Operand::Imm(*v as u64),
             AstOp::String(v) => Operand::Imm(0),
             AstOp::Label(v) => {
-                match self.ast.labels.get(v) {
-                    None | Some(Label::Undefined(_)) => {
-                        self.err.error(&self.buf.current(), ErrorKind::UndefinedLabel);
-                        Operand::Imm(0)
-                    },
-                    Some(Label::Defined(v)) => Operand::Imm(*v as u64)
-                }
+                label_tok_to_operand(&self.buf.current(), self)
             },
         }
     }
@@ -301,13 +309,33 @@ impl <'a> Parser<'a> {
     }
 }
 
+
+fn get_operand(p: &mut Parser) -> Option<Operand> {
+    match p.buf.current().kind {
+        Kind::Reg(v) => Some(Operand::Reg(v)),
+        Kind::Int(v) => Some(Operand::Imm(v as u64)),
+        Kind::PortNum(v) => Some(Operand::Imm(v)),
+        Kind::Port => {
+            match IOPort::from_str(&p.buf.current().str[1..].to_uppercase()) {
+                Ok(port) => {Some(Operand::Imm(port as u64))},
+                Err(err) => {
+                    p.err.error(&p.buf.current(), ErrorKind::UnknownPort);
+                    None
+                }
+            }
+        }
+        Kind::Label  => Some(label_tok_to_operand(&p.buf.current(), p)),
+        _ => None
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub enum Label {
     Undefined(Vec<usize>),
     Defined(usize),
 }
 
-fn label_to_operand<'a>(tok: &UToken<'a>, p: &mut Parser) -> Operand {
+fn label_tok_to_operand<'a>(tok: &UToken<'a>, p: &mut Parser) -> Operand {
     if (*tok).kind != Kind::Label {return Operand::Imm(0);}
 
     match p.ast.labels.get(tok.str) {
@@ -359,6 +387,15 @@ pub enum Operand {
     Reg(u64),// it gets changed to immediates, try it out
     Mem(u64),
     Label(String),
+}
+
+impl Operand {
+    pub fn transform_label(self, label: &str, pc: usize) -> Self {
+        match self {
+            Operand::Label(ref l) => if l == label {Operand::Imm(pc as u64)} else {self}
+            _ => self,
+        }
+    }
 }
 
 #[derive(Debug)]
