@@ -1,29 +1,40 @@
 use std::fmt::{Debug, Display};
 
+use strum_macros::Display;
+
 use super::{lexer::{UToken}, ast::AstOp};
 
 #[allow(dead_code)]
 pub struct ErrorContext<'a> {
-    errors: Vec<Error<'a>>
+    errors: Vec<Error<'a>>,
+    has_error: bool,
 }
 
 impl <'a> ErrorContext<'a> {
     pub fn new() -> Self {
-        Self { errors: Vec::new() }
+        Self { errors: Vec::new(), has_error: false }
     }
 
     pub fn error(&mut self, token: &UToken<'a>, kind: ErrorKind<'a>) {
-        self.errors.push(Error {kind, span: token.str});
+        self.errors.push(Error {kind, span: token.str, level: ErrorLevel::Error});
+        self.has_error = true;
+    }
+    pub fn warn(&mut self, token: &UToken<'a>, kind: ErrorKind<'a>) {
+        self.errors.push(Error {kind, span: token.str, level: ErrorLevel::Warning});
+    }
+    pub fn info(&mut self, token: &UToken<'a>, kind: ErrorKind<'a>) {
+        self.errors.push(Error {kind, span: token.str, level: ErrorLevel::Info});
     }
     pub fn has_error(&self) -> bool {
-        self.errors.len() > 0
+        self.has_error
     }
 
     pub fn to_string(&self, src: &str) -> String {
         let mut output = String::new();
         for error in &self.errors {
             let (line, col) = line(src, error.span);
-            output += &format!("error: {}\n{}\n{}{}\n",
+            output += &format!("{}: {}\n{}\n{}{}\n",
+                error.level,
                 error.kind,
                 line,
                 " ".repeat(col),
@@ -33,11 +44,16 @@ impl <'a> ErrorContext<'a> {
         output
     }
 }
+#[derive(Debug, Display)]
+enum ErrorLevel {
+    Info, Warning, Error
+}
 
 #[allow(dead_code)]
 pub struct Error<'a> {
     kind: ErrorKind<'a>,
     span: &'a str, // start and end of code that caused the error
+    level: ErrorLevel
 }
 
 #[allow(dead_code)]

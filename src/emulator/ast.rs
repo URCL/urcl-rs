@@ -168,7 +168,7 @@ impl <'a> Parser<'a> {
         match ast {
             AstOp::Reg(_) | AstOp::Port(_) => {},
             actual => {
-                self.err.error(self.buf.cur(), ErrorKind::InvalidOperandType{
+                self.err.warn(self.buf.cur(), ErrorKind::InvalidOperandType{
                     expected: "port", actual
                 });
             }
@@ -180,7 +180,7 @@ impl <'a> Parser<'a> {
         match ast {
             AstOp::Reg(_) | AstOp::Mem(_) => {},
             actual => {
-                self.err.error(self.buf.cur(), ErrorKind::InvalidOperandType{
+                self.err.warn(self.buf.cur(), ErrorKind::InvalidOperandType{
                     expected: "memory address", actual
                 });
             }
@@ -192,7 +192,7 @@ impl <'a> Parser<'a> {
         match ast {
             AstOp::Reg(_) | AstOp::Label(_) => {},
             actual => {
-                self.err.error(self.buf.cur(), ErrorKind::InvalidOperandType{
+                self.err.warn(self.buf.cur(), ErrorKind::InvalidOperandType{
                     expected: "jump target", actual
                 });
             }
@@ -202,8 +202,8 @@ impl <'a> Parser<'a> {
     fn get_imm(&mut self) -> Operand {
         let (ast, op) = self.get_ast_op();
         match ast {
-            AstOp::Reg(v) => {
-                self.err.error(self.buf.cur(), ErrorKind::InvalidOperandType{
+            AstOp::Reg(_) => {
+                self.err.warn(self.buf.cur(), ErrorKind::InvalidOperandType{
                     expected: "immediate", actual: ast
                 });
             },

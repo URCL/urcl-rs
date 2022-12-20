@@ -89,7 +89,6 @@ impl EmulatorState {
                 }
             }
         }
-        clear_text();
         self.show();
         StepResult::Continue
     }
@@ -188,14 +187,13 @@ pub fn emulate(src: &str) -> Option<EmulatorState> { // wifi died
 
     let Parser {ast: program, err, ..} = ast::gen_ast(toks);
     jsprintln!("{:#?}", program);
-    
+    jsprintln!("{}", err.to_string(src));
     if err.has_error() {
-        jsprintln!("{}", err.to_string(src));
         return None;
     }
 
-    let mut host = DeviceHost::new();
-    let mut emu = EmulatorState::new(program, host);
+    let host = DeviceHost::new();
+    let emu = EmulatorState::new(program, host);
 
     return Some(emu);
     // i can add more insts while you guys do that
