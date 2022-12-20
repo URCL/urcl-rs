@@ -108,7 +108,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
             },
             Kind::Label => {
                 match p.ast.labels.get(p.buf.current().str) {
-                    Some(Label::Defined(_)) => jsprintln!("Redefined label: {}", p.buf.current().str),
+                    Some(Label::Defined(_)) => p.err.error(&p.buf.current(), ErrorKind::DuplicatedLabelName),
                     Some(Label::Undefined(v)) => {
                         let label_name = p.buf.current().str; let pc = p.ast.instructions.len();
                         for i in v.iter() {
@@ -131,6 +131,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
                                 _ => continue,
                             }
                         }
+                        p.ast.labels.insert(p.buf.current().str.to_string(), Label::Defined(p.ast.instructions.len()));
                     },
                     None => { p.ast.labels.insert(p.buf.current().str.to_string(), Label::Defined(p.ast.instructions.len())); },
                 }

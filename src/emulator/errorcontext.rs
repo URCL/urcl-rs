@@ -45,6 +45,7 @@ pub enum ErrorKind {
     EOFBeforeEndOfChar,
     StackOverflow,
     StackUnderflow,
+    DuplicatedLabelName,
 }
 
 impl ErrorKind {
@@ -60,6 +61,7 @@ impl ErrorKind {
             ErrorKind::EOFBeforeEndOfChar => "End of file before the end of a char",
             ErrorKind::StackOverflow => "Stack overflow",
             ErrorKind::StackUnderflow => "Stack underflow",
+            ErrorKind::DuplicatedLabelName => "Duplicated label name",
         }
     }
 }
