@@ -23,11 +23,11 @@ impl <'a> ErrorContext<'a> {
         let mut output = String::new();
         for error in &self.errors {
             let (line, col) = line(src, error.span);
-            output += &format!("{}\n{}{}----- {}\n",
+            output += &format!("error: {}\n{}\n{}{}\n",
+                error.kind,
                 line,
                 " ".repeat(col),
-                "^".repeat(error.span.chars().count().max(1)),
-                error.kind
+                "^".repeat(error.span.chars().count().max(1))
             );
         }
         output
