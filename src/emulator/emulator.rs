@@ -62,6 +62,7 @@ impl EmulatorState {
         loop {
             let result = self.step();
             if result != StepResult::Continue {
+                self.devices.show();
                 return result;
             }
         }

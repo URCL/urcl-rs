@@ -58,14 +58,7 @@ impl Debug for DeviceHost {
     }
 }
 
-impl DeviceHost {
-    // pub fn add_out<F: Fn(u64)>(&mut self, port_number: u8, f: F) {
-    //     self.out_ports[port_number as usize] = Box::new(f);
-    // }
-    // pub fn add_in<'a, F: 'a + Fn() -> u64>(&'a mut self, port_number: u8, f: F) {
-    //     self.in_ports[port_number as usize] = Box::new(f);
-    // }
-        
+impl DeviceHost {        
     pub fn out(&mut self, port: u64, value: u64) {
         match unsafe { IOPort::unsafe_from_u8(port as u8) } {
             IOPort::TEXT => self.console.outtext(value),
