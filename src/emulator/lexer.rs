@@ -2,7 +2,7 @@ use std::{str::{Chars}};
 
 pub type UToken<'a> = Token<'a, Kind>;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Kind {
     Unknown, Error, Comment,
     White, LF, EOF,

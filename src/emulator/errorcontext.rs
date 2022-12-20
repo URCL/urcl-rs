@@ -1,4 +1,6 @@
-use super::lexer::{UToken};
+use std::fmt::{Debug, Display};
+
+use super::{lexer::{UToken}, ast::AstOp};
 
 #[allow(dead_code)]
 pub struct ErrorContext<'a> {
@@ -10,7 +12,7 @@ impl <'a> ErrorContext<'a> {
         Self { errors: Vec::new() }
     }
 
-    pub fn error(&mut self, token: &UToken<'a>, kind: ErrorKind) {
+    pub fn error(&mut self, token: &UToken<'a>, kind: ErrorKind<'a>) {
         self.errors.push(Error {kind, span: token.str});
     }
     pub fn has_error(&self) -> bool {
@@ -21,15 +23,12 @@ impl <'a> ErrorContext<'a> {
         let mut output = String::new();
         for error in &self.errors {
             let (line, col) = line(src, error.span);
-            output += line;
-            output += "\n";
-            output += &" ".repeat(col);
-            output += &"^".repeat(error.span.chars().count().max(1));
-            output += "----- ";
-            output += error.kind.message();
-            output += ": ";
-            output += error.span;
-            output.push('\n');
+            output += &format!("{}\n{}{}----- {}\n",
+                line,
+                " ".repeat(col),
+                "^".repeat(error.span.chars().count().max(1)),
+                error.kind
+            );
         }
         output
     }
@@ -37,15 +36,18 @@ impl <'a> ErrorContext<'a> {
 
 #[allow(dead_code)]
 pub struct Error<'a> {
-    kind: ErrorKind,
+    kind: ErrorKind<'a>,
     span: &'a str, // start and end of code that caused the error
 }
 
 #[allow(dead_code)]
-pub enum ErrorKind {
+#[derive(Debug)]
+pub enum ErrorKind<'a> {
     NotEnoughOperands,
     ToManyOperands,
-    InvalidOperandType,
+    InvalidOperandType{expected: &'a str, actual: AstOp},
+    InvalidOperand,
+    UndefinedLabel,
     UnknownPort,
     DWNoEnding,
     EOFBeforeEndOfString,
@@ -53,19 +55,20 @@ pub enum ErrorKind {
     StackOverflow,
     StackUnderflow,
 }
-
-impl ErrorKind {
-    pub fn message(&self) -> &str {
+impl <'a> Display for ErrorKind<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ErrorKind::UnknownPort => "Unknown port",
-            ErrorKind::NotEnoughOperands => "Not enough operands",
-            ErrorKind::ToManyOperands => "To many operands",
-            ErrorKind::InvalidOperandType => "Invalid operand type",
-            ErrorKind::DWNoEnding => "todo!()",
-            ErrorKind::EOFBeforeEndOfString => "End of file before the end of a string",
-            ErrorKind::EOFBeforeEndOfChar => "End of file before the end of a char",
-            ErrorKind::StackOverflow => "Stack overflow",
-            ErrorKind::StackUnderflow => "Stack underflow",
+            Self::NotEnoughOperands => write!(f, "Not enough operands"),
+            Self::ToManyOperands => write!(f, "Too many operands"),
+            Self::InvalidOperandType { expected, actual } => write!(f, "Expected operand {} but got {:?}", expected, actual),
+            Self::UnknownPort => write!(f, "Unknown port"),
+            Self::DWNoEnding => write!(f, "Missing ']'"),
+            Self::EOFBeforeEndOfString => write!(f, "Missing '\"'"),
+            Self::EOFBeforeEndOfChar => write!(f, "Missing '''"),
+            Self::StackOverflow => write!(f, "Stack overflow"),
+            Self::StackUnderflow => write!(f, "Stack underflow"),
+            Self::InvalidOperand => write!(f, "Invalid operand"),
+            Self::UndefinedLabel => write!(f, "Undefined label")
         }
     }
 }

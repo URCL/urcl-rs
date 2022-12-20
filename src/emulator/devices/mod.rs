@@ -4,7 +4,6 @@ use console::Console;
 use self::screen::Screen;
 
 use strum_macros::EnumString;
-use std::str::FromStr;
 
 use super::super::*;
 
