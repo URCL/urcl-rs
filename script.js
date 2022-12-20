@@ -90,7 +90,7 @@ export function clear_screen() {
  */
 export function out_screen(width, height, pixels) {
     if (screen_canvas.width !== width || screen_canvas.height !== height) {
-        screen_canvas.width = width;
+        screen_canvas.width  = width;
         screen_canvas.height = height;
     }
     const image_data = new ImageData(new Uint8ClampedArray(pixels.buffer, pixels.byteOffset, pixels.byteLength), width, height);
@@ -105,11 +105,15 @@ export async function clear_span() {
     highlight.innerHTML = "";
 }
 
-export function resync_highlight() {
-    highlight.style.top      = code_input.getBoundingClientRect().top + "px";
-    highlight.style.left     = code_input.getBoundingClientRect().left + "px";
-    highlight.style.width    = (code_input.getBoundingClientRect().width  - parseFloat(getComputedStyle(highlight).fontSize)) + "px";
-    highlight.style.height   = (code_input.getBoundingClientRect().height - parseFloat(getComputedStyle(highlight).fontSize)) + "px";
+export function resync_element_size() {
+    const code_in_bounding_box  = code_input.getBoundingClientRect();
+    highlight.style.width       = (code_in_bounding_box.width  - parseFloat(getComputedStyle(highlight).fontSize)) + "px";
+    highlight.style.height      = (code_in_bounding_box.height - parseFloat(getComputedStyle(highlight).fontSize)) + "px";
+
+    screen_canvas.style.width   = ""; screen_canvas.style.height = "";
+    const screen_bounding_box   = screen_canvas.getBoundingClientRect();
+    screen_canvas.style.width   = screen_bounding_box.width  + "px";
+    screen_canvas.style.height  = screen_bounding_box.height + "px";
 }
 
 export function update_debug_buttons(new_state) {
@@ -190,7 +194,7 @@ init().then(() => { // all code should go in here
     document.getElementById("clear").onclick            = function() { clear_text(); };
     document.getElementById("debug_option").onchange    = function() { update_debug_buttons(this.checked); };
     document.getElementById("tab_size").onchange        = function() { document.querySelector(":root").style.setProperty("--tab-size", this.value); };
-    document.getElementsByTagName("body")[0].onresize   = function() { resync_highlight(); };
+    document.getElementsByTagName("body")[0].onresize   = function() { resync_element_size(); };
 
 
     document.getElementById("settings").onclick = function() {
@@ -239,7 +243,7 @@ init().then(() => { // all code should go in here
     document.getElementById("debug_option").checked = localStorage.getItem("debug_option") == "t";
     update_debug_buttons(document.getElementById("debug_option").checked);
 
-    resync_highlight();
+    resync_element_size();
     output_highlight_span(code_input.value);
 
     const params = new URLSearchParams(window.location.search);

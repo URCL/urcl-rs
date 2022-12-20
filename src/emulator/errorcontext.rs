@@ -4,7 +4,7 @@ use super::lexer::{UToken};
 pub struct ErrorContext<'a> {
     errors: Vec<Error<'a>>
 }
-// REEEEEEEEEE LIFETIMES
+
 impl <'a> ErrorContext<'a> {
     pub fn new() -> Self {
         Self { errors: Vec::new() }
@@ -21,15 +21,7 @@ impl <'a> ErrorContext<'a> {
         let mut output = String::new();
         for error in &self.errors {
             let (line, col) = line(src, error.span);
-            output += line;
-            output += "\n";
-            output += &" ".repeat(col);
-            output += &"^".repeat(error.span.chars().count().max(1));
-            output += "----- ";
-            output += error.kind.message();
-            output += ": ";
-            output += error.span;
-            output.push('\n');
+            output += &format!("{line}\n{}{}----- {}: {}\n", &" ".repeat(col), &"^".repeat(error.span.chars().count().max(1)), error.kind.message(), error.span);
         }
         output
     }
@@ -47,6 +39,7 @@ pub enum ErrorKind {
     ToManyOperands,
     InvalidOperandType,
     UnknownPort,
+    UnknownInstruction,
     DWNoEnding,
     EOFBeforeEndOfString,
     EOFBeforeEndOfChar,
@@ -57,10 +50,11 @@ pub enum ErrorKind {
 impl ErrorKind {
     pub fn message(&self) -> &str {
         match self {
-            ErrorKind::UnknownPort => "Unknown port",
             ErrorKind::NotEnoughOperands => "Not enough operands",
             ErrorKind::ToManyOperands => "To many operands",
             ErrorKind::InvalidOperandType => "Invalid operand type",
+            ErrorKind::UnknownPort => "Unknown port",
+            ErrorKind::UnknownInstruction => "Unknown instruction",
             ErrorKind::DWNoEnding => "todo!()",
             ErrorKind::EOFBeforeEndOfString => "End of file before the end of a string",
             ErrorKind::EOFBeforeEndOfChar => "End of file before the end of a char",
