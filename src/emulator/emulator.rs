@@ -190,7 +190,7 @@ pub fn emulate(src: &str) -> Option<EmulatorState> { // wifi died
     jsprintln!("{:#?}", program);
     
     if err.has_error() {
-        jsprintln!("{}", err.to_string());
+        jsprintln!("{}", err.to_string(src));
         return None;
     }
 
