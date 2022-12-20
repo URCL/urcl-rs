@@ -107,13 +107,15 @@ export async function clear_span() {
 
 export function resync_element_size() {
     const code_in_bounding_box  = code_input.getBoundingClientRect();
+    highlight.style.top         = code_in_bounding_box.top + "px";
+    highlight.style.left        = code_in_bounding_box.left + "px";
     highlight.style.width       = (code_in_bounding_box.width  - parseFloat(getComputedStyle(highlight).fontSize)) + "px";
     highlight.style.height      = (code_in_bounding_box.height - parseFloat(getComputedStyle(highlight).fontSize)) + "px";
 
     screen_canvas.style.width   = ""; screen_canvas.style.height = "";
-    const screen_bounding_box   = screen_canvas.getBoundingClientRect();
-    screen_canvas.style.width   = screen_bounding_box.width  + "px";
-    screen_canvas.style.height  = screen_bounding_box.height + "px";
+    const screen_bounding_box  = screen_canvas.getBoundingClientRect();
+    screen_canvas.style.width  = screen_bounding_box.width  + "px";
+    screen_canvas.style.height = screen_bounding_box.height + "px";
 }
 
 export function update_debug_buttons(new_state) {
