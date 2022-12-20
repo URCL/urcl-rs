@@ -154,7 +154,7 @@ impl <'a> Parser<'a> {
     fn get_reg(&mut self) -> Operand {
         let (ast, op) = self.get_ast_op();
         match ast {
-            AstOp::Reg(_) => {},
+            AstOp::Reg(_) | AstOp::Unknown => {},
             actual => {
                 self.err.error(self.buf.cur(), ErrorKind::InvalidOperandType{
                     expected: "register", actual
@@ -166,7 +166,7 @@ impl <'a> Parser<'a> {
     fn get_port(&mut self) -> Operand {
         let (ast, op) = self.get_ast_op();
         match ast {
-            AstOp::Reg(_) | AstOp::Port(_) => {},
+            AstOp::Reg(_) | AstOp::Port(_) | AstOp::Unknown => {},
             actual => {
                 self.err.warn(self.buf.cur(), ErrorKind::InvalidOperandType{
                     expected: "port", actual
@@ -178,7 +178,7 @@ impl <'a> Parser<'a> {
     fn get_mem(&mut self) -> Operand {
         let (ast, op) = self.get_ast_op();
         match ast {
-            AstOp::Reg(_) | AstOp::Mem(_) => {},
+            AstOp::Reg(_) | AstOp::Mem(_) | AstOp::Unknown => {},
             actual => {
                 self.err.warn(self.buf.cur(), ErrorKind::InvalidOperandType{
                     expected: "memory address", actual
@@ -190,7 +190,7 @@ impl <'a> Parser<'a> {
     fn get_jmp(&mut self) -> Operand {
         let (ast, op) = self.get_ast_op();
         match ast {
-            AstOp::Reg(_) | AstOp::Label(_) => {},
+            AstOp::Reg(_) | AstOp::Label(_) | AstOp::Unknown => {},
             actual => {
                 self.err.warn(self.buf.cur(), ErrorKind::InvalidOperandType{
                     expected: "jump target", actual
