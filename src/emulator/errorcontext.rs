@@ -1,4 +1,4 @@
-use std::fmt::{Debug, Display};
+use std::{fmt::{Debug, Write, Display, format}, collections::HashMap};
 
 use strum_macros::Display;
 
@@ -30,15 +30,29 @@ impl <'a> ErrorContext<'a> {
     }
 
     pub fn to_string(&self, src: &str) -> String {
+        let mut linenos = HashMap::new();
+        for (i, line) in src.lines().enumerate() {
+            linenos.insert(line.as_ptr(), i+1);
+        }
+
         let mut output = String::new();
         for error in &self.errors {
             let (line, col) = line(src, error.span);
-            output += &format!("<span class=\"{}\">{}: {}</span>\n\t{}<span class=\"note\">\n\t{}{}</span>\n",
-                format!("{}", error.level).to_lowercase(), error.level, error.kind,
-                line.replace("\t", " ").split_whitespace().collect::<Vec<_>>().join(" "),
+            let lineno = linenos.get(&line.as_ptr()).map_or(0, |i|*i);
+            let lineno = format!("{} ", lineno);
+            let lineno_width = str_width(&lineno);
+        
+            writeln!(&mut output, "<span class=\"{}\">{}: {}</span>",
+                format!("{}", error.level).to_lowercase(), error.level, error.kind
+            ).unwrap();
+            writeln!(&mut output, "{}| {}", 
+                lineno, line.replace("\t", " ").split_whitespace().collect::<Vec<_>>().join(" ")
+            ).unwrap();
+            writeln!(&mut output, "{}| {}<span class=\"note\">{}</span>",
+                " ".repeat(lineno_width),
                 &" ".repeat(col - (line.len() - line.replace("\t", " ").split_whitespace().collect::<Vec<_>>().join(" ").len())),
-                &"^".repeat(error.span.chars().count().max(1))
-            );
+                &"^".repeat(str_width(error.span).max(1))
+            ).unwrap();
         }
         output
     }
@@ -92,6 +106,10 @@ impl <'a> Display for ErrorKind<'a> {
     }
 }
 const LF_B: u8 = '\n' as u8;
+
+fn str_width(src: &str) -> usize {
+    src.chars().count()
+}
 
 fn line<'a>(src: &'a str, span: &'a str) -> (&'a str, usize) {
     let mut offset = span.as_ptr() as usize - src.as_ptr() as usize;
