@@ -33,10 +33,11 @@ impl <'a> ErrorContext<'a> {
         let mut output = String::new();
         for error in &self.errors {
             let (line, col) = line(src, error.span);
-            output += &format!("<span class=\"error\">Error: {}: {}</span>\n\t{}<span class=\"note\">\n\t{}{}</span>\n",
-                error.kind, error.span,
-                line.trim_start().replace("\t", " "),
-                &" ".repeat(col - (line.len() - line.trim_start().len())), &"^".repeat(error.span.chars().count().max(1))
+            output += &format!("<span class=\"{}\">{}: {}</span>\n\t{}<span class=\"note\">\n\t{}{}</span>\n",
+                format!("{}", error.level).to_lowercase(), error.level, error.kind,
+                line.replace("\t", " ").split_whitespace().collect::<Vec<_>>().join(" "),
+                &" ".repeat(col - (line.len() - line.replace("\t", " ").split_whitespace().collect::<Vec<_>>().join(" ").len())),
+                &"^".repeat(error.span.chars().count().max(1))
             );
         }
         output
