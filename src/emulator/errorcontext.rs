@@ -85,6 +85,7 @@ pub enum ErrorKind<'a> {
     StackOverflow,
     StackUnderflow,
     DuplicatedLabelName,
+    YoMamma
 }
 impl <'a> Display for ErrorKind<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -102,6 +103,7 @@ impl <'a> Display for ErrorKind<'a> {
             ErrorKind::UndefinedLabel => write!(f, "Undefined label"),
             ErrorKind::DuplicatedLabelName => write!(f, "Duplicated label name"),
             ErrorKind::UnknownInstruction => write!(f, "Unknown instruction"),
+            ErrorKind::YoMamma => write!(f, "Token too large")
         }
     }
 }
