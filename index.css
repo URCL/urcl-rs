@@ -52,10 +52,11 @@ span.string, span.char, span.text   { color: #e08f43; }
 span.port, span.int, span.relative  { color: #8CCf7E; }
 span.memory     { color: #79B1EB; }
 span.escape     { color: #d8b542; }
-span.error      { color: #fc3319; }
 span.reg        { color: #FFAB70; }
 span.name       { color: #E57474; }
 span.macro      { color: #d980f0; }
 span.label      { color: #E5C76B; }
 span.comment    { color: #579457; }
+span.error      { color: #fc3319; font-weight: bold; }
+span.warning    { color: #ffd23e; font-weight: bold; }
 span.note       { color: #ffd23e; }
