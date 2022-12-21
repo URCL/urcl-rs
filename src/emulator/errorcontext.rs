@@ -35,14 +35,23 @@ impl <'a> ErrorContext<'a> {
             let (line, col) = line(src, error.span);
             output += &format!("<span class=\"{}\">{}: {}</span>\n\t{}<span class=\"note\">\n\t{}{}</span>\n",
                 format!("{}", error.level).to_lowercase(), error.level, error.kind,
-                line.replace("\t", " ").split_whitespace().collect::<Vec<_>>().join(" "),
-                &" ".repeat(col - (line.trim().len() - line.replace("\t", " ").split_whitespace().collect::<Vec<_>>().join(" ").trim().len())),
+                line.split_at(get_indent_level(line)).1,
+                &" ".repeat(col - get_indent_level(line)),
                 &"^".repeat(error.span.chars().count().max(1))
             );
         }
         output
     }
 }
+
+pub fn get_indent_level(src: &str) -> usize {
+    let mut tabs = 0;
+    for el in src.chars() {
+        if el != '\t' && el != ' ' {break} else {tabs += 1}
+    }
+    tabs
+}
+
 #[derive(Debug, Display)]
 enum ErrorLevel {
     Info, Warning, Error

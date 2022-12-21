@@ -17,6 +17,7 @@ extern {
     
     pub fn out_span(text: &str, class_name: &str);
     pub fn clear_span();
+    pub fn out_linenumber(text: &str);
     
     pub fn now() -> f64;
     pub fn out_debug(text: &str);

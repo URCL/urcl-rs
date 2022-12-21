@@ -26,9 +26,12 @@ input[type="checkbox"]:hover                { accent-color: var(--color); }
 .card input[type="checkbox"]                { width: 1rem; height: 1rem; }
 input[type="number"], input[type="text"]    { background-color: transparent; color: #fff; border: none; outline: none; appearance: textfield; font-size: 1rem; border-bottom: solid .125rem var(--color); }
 input::-webkit-outer-spin-button, input::-webkit-inner-spin-button  { -webkit-appearance: none; margin: none; }
-#code_input  { box-sizing: border-box; height: calc(100% - 4rem); border-radius: .35rem; text-align: left; background-color: #1d1d1d; margin: 2rem 0 2rem 2rem; padding: .5rem; font: 1rem 'Fira Code', monospace; grid-area: c; overflow: auto; word-break: break-all; color: transparent; border: none; outline: none; }
+
+#code_input  { box-sizing: border-box; height: calc(100% - 4rem); border-radius: .35rem; text-align: left; background-color: #1d1d1d; margin: 2rem 0 2rem 2rem; padding: .5rem; padding-left: calc(3rem - 1px); font: 1rem 'Fira Code', monospace; grid-area: c; overflow: auto; word-break: break-all; color: transparent; border: none; outline: none; }
 #code_input::selection  { color: transparent; }
 #highlight   { font: 1rem 'Fira Code', monospace; position: absolute; padding: .5rem; pointer-events: none; white-space: pre-wrap; tab-size: var(--tab-size); overflow: hidden; word-break: break-all; }
+#line_nums   { font: 1rem 'Fira Code', monospace; position: absolute; padding: .5rem; pointer-events: none; white-space: pre-wrap; tab-size: var(--tab-size); overflow: hidden; word-break: break-all; }
+
 #stdout      { border-radius: .35rem; text-align: left; background-color: #1d1d1d; margin: 0rem 2rem 2rem 0; padding: .5rem; height: calc(83vh - 150px - 2rem); font: 1rem 'Fira Code', monospace; grid-area: o; overflow: auto; word-break: break-all; white-space: pre-wrap; tab-size: var(--tab-size); }
 #screen      { grid-area: s; margin: 2rem 2rem 0 0; padding: calc(.5rem - 4px); image-rendering: crisp-edges; border: 2.5px solid #202124; border-radius: .35rem; min-width: 0; min-height: 0; }
 
