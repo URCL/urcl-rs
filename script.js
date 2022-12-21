@@ -39,12 +39,8 @@ export function out_graphics(x, y, colour) {
     // 
 }
 
-export function out_err(text) {
-    //
-}
-
 export function clear_text() {
-    stdout.innerText = "";
+    stdout.innerHTML = "";
 }
 
 export function in_text() { // needs to have a null terminate character if null terminate box is pressed
@@ -54,11 +50,18 @@ export function in_text() { // needs to have a null terminate character if null 
 export function out_text(text) {
     const do_scroll = stdout.scrollTop === stdout.scrollHeight - stdout.clientHeight
     
-    stdout.innerText += text;
+    stdout.innerHTML += text;
     
     if (do_scroll) {
         stdout.scrollTop = stdout.scrollHeight*2;
     }
+}
+
+export function out_err(text) {
+    let a = document.createElement("span");
+    a.classList.add("error");
+    a.innerText = text;
+    stdout.appendChild(a);
 }
 
 export function out_debug(text) {
@@ -124,6 +127,10 @@ export function update_debug_buttons(new_state) {
     }
 }
 
+export function get_tab_size() {
+    return document.querySelector(":root").style.getPropertyValue("--tab-size");
+}
+
 /** @type {undefined | EmulatorState} */
 let emulator;
 /** @type {undefined | number} */
@@ -181,7 +188,8 @@ init().then(() => { // all code should go in here
             let a = code_input.selectionStart+1;
             code_input.value = code_input.value.substring(0, code_input.selectionStart) + "\t" + code_input.value.substring(code_input.selectionEnd);
             code_input.setSelectionRange(a, a);
-            output_highlight_span(this.value);
+            output_highlight_span(code_input.value);
+            if (auto_emulate.checked) start_emulation(code_input.value);
         };
     };
 
