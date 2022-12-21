@@ -99,7 +99,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
                     "nop" => inst(Inst::NOP                                     , &mut p),
                     "lsh" => inst(Inst::LSH(p.get_reg(), p.get_op())            , &mut p),
                     "out" => inst(Inst::OUT(p.get_port(), p.get_op())           , &mut p),
-                    "in"  => inst(Inst::IN(p.get_reg(), p.get_port())           , &mut p),
+                    "in"  => inst(Inst::IN (p.get_reg(), p.get_port())          , &mut p),
                     "psh" => inst(Inst::PSH(p.get_op())                         , &mut p),
                     "pop" => inst(Inst::POP(p.get_reg())                        , &mut p),
                     "jmp" => inst(Inst::JMP(p.get_jmp())                        , &mut p),
