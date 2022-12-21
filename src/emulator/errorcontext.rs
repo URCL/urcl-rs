@@ -36,7 +36,7 @@ impl <'a> ErrorContext<'a> {
             output += &format!("<span class=\"{}\">{}: {}</span>\n\t{}<span class=\"note\">\n\t{}{}</span>\n",
                 format!("{}", error.level).to_lowercase(), error.level, error.kind,
                 line.replace("\t", " ").split_whitespace().collect::<Vec<_>>().join(" "),
-                &" ".repeat(col - (line.len() - line.replace("\t", " ").split_whitespace().collect::<Vec<_>>().join(" ").len())),
+                &" ".repeat(col - (line.trim().len() - line.replace("\t", " ").split_whitespace().collect::<Vec<_>>().join(" ").trim().len())),
                 &"^".repeat(error.span.chars().count().max(1))
             );
         }
