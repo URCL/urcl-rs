@@ -5,7 +5,7 @@
 html                    { overflow-y: hidden; scrollbar-width: none; }
 body::-webkit-scrollbar { display: none; }
 *::selection            { background-color: #1b5754; }
-:root                   { --tab-size: 4; --color: #fff; }
+:root                   { --tab-size: 4; --color: #fff; caret-color: #fff; }
 
 body            { background-color: #121212; font: 1.25rem "Source Sans Pro", sans-serif; line-height: 1.5; color: #fff; margin: 0px; overflow: hidden; }
 h1              { color: #fff; font: 3rem   "Inter Tight", sans-serif; }
@@ -26,10 +26,10 @@ input[type="checkbox"]:hover                { accent-color: var(--color); }
 .card input[type="checkbox"]                { width: 1rem; height: 1rem; }
 input[type="number"], input[type="text"]    { background-color: transparent; color: #fff; border: none; outline: none; appearance: textfield; font-size: 1rem; border-bottom: solid .125rem var(--color); }
 input::-webkit-outer-spin-button, input::-webkit-inner-spin-button  { -webkit-appearance: none; margin: none; }
-#code_input  { box-sizing: border-box; height: calc(100% - 4rem); border-radius: .35rem; text-align: left; background-color: #1d1d1d; margin: 2rem 0 2rem 2rem; padding: .5rem; font: 1rem 'Fira Code'; grid-area: c; overflow: auto; word-break: break-all; color: transparent; caret-color: #fff; border: none; outline: none; }
+#code_input  { box-sizing: border-box; height: calc(100% - 4rem); border-radius: .35rem; text-align: left; background-color: #1d1d1d; margin: 2rem 0 2rem 2rem; padding: .5rem; font: 1rem 'Fira Code', monospace; grid-area: c; overflow: auto; word-break: break-all; color: transparent; border: none; outline: none; }
 #code_input::selection  { color: transparent; }
-#highlight   { font: 1rem 'Fira Code'; position: absolute; padding: .5rem; pointer-events: none; white-space: pre-wrap; tab-size: var(--tab-size); overflow: hidden; word-break: break-all; }
-#stdout      { border-radius: .35rem; text-align: left; background-color: #1d1d1d; margin: 0rem 2rem 2rem 0; padding: .5rem; height: calc(83vh - 150px - 2rem); font: 1rem 'Fira Code'; grid-area: o; overflow: auto; word-break: break-all; white-space: pre-wrap; tab-size: var(--tab-size); }
+#highlight   { font: 1rem 'Fira Code', monospace; position: absolute; padding: .5rem; pointer-events: none; white-space: pre-wrap; tab-size: var(--tab-size); overflow: hidden; word-break: break-all; }
+#stdout      { border-radius: .35rem; text-align: left; background-color: #1d1d1d; margin: 0rem 2rem 2rem 0; padding: .5rem; height: calc(83vh - 150px - 2rem); font: 1rem 'Fira Code', monospace; grid-area: o; overflow: auto; word-break: break-all; white-space: pre-wrap; tab-size: var(--tab-size); }
 #screen      { grid-area: s; margin: 2rem 2rem 0 0; padding: calc(.5rem - 4px); image-rendering: crisp-edges; border: 2.5px solid #202124; border-radius: .35rem; min-width: 0; min-height: 0; }
 
 nav          { background-color: #202124; padding: 10px; text-align: center; }
@@ -52,9 +52,10 @@ span.string, span.char, span.text   { color: #e08f43; }
 span.port, span.int, span.relative  { color: #8CCf7E; }
 span.memory     { color: #79B1EB; }
 span.escape     { color: #d8b542; }
-span.error      { color: #da351f; }
+span.error      { color: #fc3319; }
 span.reg        { color: #FFAB70; }
 span.name       { color: #E57474; }
 span.macro      { color: #d980f0; }
 span.label      { color: #E5C76B; }
 span.comment    { color: #579457; }
+span.note       { color: #ffd23e; }
