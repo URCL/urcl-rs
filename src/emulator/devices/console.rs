@@ -1,6 +1,3 @@
-use super::Device;
-use super::DeviceHost;
-
 pub struct Console { // console::console::console::console::console::console::console::console::console
     output: String
 }
@@ -44,12 +41,3 @@ impl Console {
     }
 }
 // epic rust
-
-impl Device for Console {
-    fn connect(&mut self, host: &mut DeviceHost) -> () {
-        // host.add_out(1, |value| self.outtext(value));
-        // host.add_out(2, |value| self.outnumb(value));
-        // host.add_out(27, |value| self.outint(value));
-        // host.add_out(27, |value| self.outnumb(value));
-    }
-}

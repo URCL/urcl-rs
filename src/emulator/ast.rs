@@ -53,10 +53,6 @@ pub struct Parser<'a> {
     pub ast: Program
 }
 
-fn remove_first(s: &str) -> Option<&str> {
-    s.chars().next().map(|c| &s[c.len_utf8()..])
-}
-
 pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
     let err = ErrorContext::new();
     let ast = Program::new();
@@ -84,25 +80,48 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
                         p.buf.advance();
                     },
 
-                    "imm" => inst(Inst::MOV(p.get_reg(), p.get_imm())           , &mut p),
-                    "mov" => inst(Inst::MOV(p.get_reg(), p.get_op())            , &mut p),
-                    "add" => inst(Inst::ADD(p.get_reg(), p.get_op(), p.get_op()), &mut p),
-                    "rsh" => inst(Inst::RSH(p.get_reg(), p.get_op())            , &mut p),
-                    "lod" => inst(Inst::LOD(p.get_reg(), p.get_mem())           , &mut p),
-                    "str" => inst(Inst::STR(p.get_mem(), p.get_op())            , &mut p),
-                    "bge" => inst(Inst::BGE(p.get_jmp(), p.get_op(), p.get_op()), &mut p),
-                    "nor" => inst(Inst::NOR(p.get_reg(), p.get_op(), p.get_op()), &mut p),
-                    "inc" => inst(Inst::INC(p.get_reg(), p.get_op())            , &mut p),
-                    "dec" => inst(Inst::DEC(p.get_reg(), p.get_op())            , &mut p),
-                    "hlt" => inst(Inst::HLT                                     , &mut p),
-                    "sub" => inst(Inst::SUB(p.get_reg(), p.get_op(), p.get_op()), &mut p),
-                    "nop" => inst(Inst::NOP                                     , &mut p),
-                    "lsh" => inst(Inst::LSH(p.get_reg(), p.get_op())            , &mut p),
-                    "out" => inst(Inst::OUT(p.get_port(), p.get_op())           , &mut p),
-                    "in"  => inst(Inst::IN(p.get_reg(), p.get_port())           , &mut p),
-                    "psh" => inst(Inst::PSH(p.get_op())                         , &mut p),
-                    "pop" => inst(Inst::POP(p.get_reg())                        , &mut p),
-                    "jmp" => inst(Inst::JMP(p.get_jmp())                        , &mut p),
+                    "imm"     => inst(Inst::MOV(p.get_reg(), p.get_imm())           , &mut p),
+                    "mov"     => inst(Inst::MOV(p.get_reg(), p.get_op())            , &mut p),
+                    "add"     => inst(Inst::ADD(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "rsh"     => inst(Inst::RSH(p.get_reg(), p.get_op())            , &mut p),
+                    "lod"     => inst(Inst::LOD(p.get_reg(), p.get_mem())           , &mut p),
+                    "str"     => inst(Inst::STR(p.get_mem(), p.get_op())            , &mut p),
+                    "bge"     => inst(Inst::BGE(p.get_jmp(), p.get_op(), p.get_op()), &mut p),
+                    "nor"     => inst(Inst::NOR(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "inc"     => inst(Inst::INC(p.get_reg(), p.get_op())            , &mut p),
+                    "dec"     => inst(Inst::DEC(p.get_reg(), p.get_op())            , &mut p),
+                    "hlt"     => inst(Inst::HLT                                     , &mut p),
+                    "sub"     => inst(Inst::SUB(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "nop"     => inst(Inst::NOP                                     , &mut p),
+                    "lsh"     => inst(Inst::LSH(p.get_reg(), p.get_op())            , &mut p),
+                    "out"     => inst(Inst::OUT(p.get_port(), p.get_op())           , &mut p),
+                    "in"      => inst(Inst::IN (p.get_reg(), p.get_port())          , &mut p),
+                    "psh"     => inst(Inst::PSH(p.get_op())                         , &mut p),
+                    "pop"     => inst(Inst::POP(p.get_reg())                        , &mut p),
+                    "jmp"     => inst(Inst::JMP(p.get_jmp())                        , &mut p),
+                    "neg"     => inst(Inst::NEG(p.get_reg(), p.get_op())            , &mut p),
+                    "and"     => inst(Inst::AND(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "or"      => inst(Inst::OR (p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "not"     => inst(Inst::NOT(p.get_reg(), p.get_op())            , &mut p),
+                    "nand"    => inst(Inst::NAND(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "cpy"     => inst(Inst::CPY(p.get_mem(), p.get_mem())           , &mut p),
+                    "mlt"     => inst(Inst::MLT(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "div"     => inst(Inst::DIV(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "mod"     => inst(Inst::MOD(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "abs"     => inst(Inst::ABS(p.get_reg(), p.get_op())            , &mut p),
+                    "llod"    => inst(Inst::LLOD(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "lstr"    => inst(Inst::LSTR(p.get_op(), p.get_op(), p.get_op()), &mut p),
+                    "sdiv"    => inst(Inst::SDIV(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "sete"    => inst(Inst::SETE(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "setne"   => inst(Inst::SETNE(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "setg"    => inst(Inst::SETG(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "setge"   => inst(Inst::SETGE(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "setl"    => inst(Inst::SETL(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "setle"   => inst(Inst::SETLE(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "xor"     => inst(Inst::XOR(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "xnor"    => inst(Inst::XNOR(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "bne"     => inst(Inst::BNE(p.get_op(), p.get_op(), p.get_op())   , &mut p),
+                    "yomamma" => { p.err.error(&p.buf.current(), ErrorKind::YoMamma); p.buf.advance(); },
                     _ => { p.err.error(&p.buf.current(), ErrorKind::UnknownInstruction); p.buf.advance(); },
                 }
             },
@@ -128,6 +147,27 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
                                 Inst::SUB(a, b, c) => Inst::SUB(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 Inst::NOR(a, b, c) => Inst::NOR(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 Inst::BGE(a, b, c) => Inst::BGE(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::NEG(a, b) => Inst::NEG(a.clone(), b.clone().transform_label(label_name, pc)),
+                                Inst::AND(a, b, c) => Inst::AND(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::OR(a, b, c) => Inst::OR(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::NOT(a, b) => Inst::NOT(a.clone(), b.clone().transform_label(label_name, pc)),
+                                Inst::NAND(a, b, c) => Inst::NAND(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::MLT(a, b, c) => Inst::MLT(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::DIV(a, b, c) => Inst::DIV(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::MOD(a, b, c) => Inst::MOD(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::ABS(a, b) => Inst::ABS(a.clone(), b.clone().transform_label(label_name, pc)),
+                                Inst::LLOD(a, b, c) => Inst::LLOD(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::LSTR(a, b, c) => Inst::LSTR(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone()),
+                                Inst::SDIV(a, b, c) => Inst::SDIV(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SETE(a, b, c) => Inst::SETE(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SETNE(a, b, c) => Inst::SETNE(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SETG(a, b, c) => Inst::SETG(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SETGE(a, b, c) => Inst::SETGE(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SETL(a, b, c) => Inst::SETL(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SETLE(a, b, c) => Inst::SETLE(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::XOR(a, b, c) => Inst::XOR(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::XNOR(a, b, c) => Inst::XNOR(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::BNE(a, b, c) => Inst::BNE(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 _ => continue,
                             }
                         }
@@ -223,8 +263,8 @@ impl <'a> Parser<'a> {
             AstOp::Mem(v) => Operand::Imm(*v),
             AstOp::Port(v) => Operand::Imm(*v),
             AstOp::Char(v) => Operand::Imm(*v as u64),
-            AstOp::String(v) => Operand::Imm(0),
-            AstOp::Label(v) => {
+            AstOp::String(_v) => Operand::Imm(0),
+            AstOp::Label(_v) => {
                 label_tok_to_operand(&self.buf.current(), self)
             },
         }
@@ -240,7 +280,7 @@ impl <'a> Parser<'a> {
             Kind::Port => {
                 match IOPort::from_str(&current.str[1..].to_uppercase()) {
                     Ok(port) => {AstOp::Port(port as u64)},
-                    Err(err) => {
+                    Err(_err) => {
                         self.err.error(&self.buf.current(), ErrorKind::UnknownPort);
                         AstOp::Port(0)
                     }
@@ -310,6 +350,7 @@ impl <'a> Parser<'a> {
 }
 
 
+#[allow(dead_code)]
 fn get_operand(p: &mut Parser) -> Option<Operand> {
     match p.buf.current().kind {
         Kind::Reg(v) => Some(Operand::Reg(v)),
@@ -318,7 +359,7 @@ fn get_operand(p: &mut Parser) -> Option<Operand> {
         Kind::Port => {
             match IOPort::from_str(&p.buf.current().str[1..].to_uppercase()) {
                 Ok(port) => {Some(Operand::Imm(port as u64))},
-                Err(err) => {
+                Err(_err) => {
                     p.err.error(&p.buf.current(), ErrorKind::UnknownPort);
                     None
                 }
@@ -384,8 +425,7 @@ pub enum AstOp {
 #[derive(Debug, Clone)] // cant copy because of the String
 pub enum Operand {
     Imm(u64),
-    Reg(u64),// it gets changed to immediates, try it out
-    Mem(u64),
+    Reg(u64),
     Label(String),
 }
 
@@ -414,7 +454,6 @@ impl Headers {
 
 #[derive(Debug, Clone)]
 pub enum Inst {
-    IMM(Operand, Operand),
     ADD(Operand, Operand, Operand),
     RSH(Operand, Operand),
     LOD(Operand, Operand),
@@ -434,4 +473,26 @@ pub enum Inst {
     SUB(Operand, Operand, Operand),
     NOP,
     LSH(Operand, Operand),
+    NEG(Operand, Operand),
+    AND(Operand, Operand, Operand),
+    OR(Operand, Operand, Operand),
+    NOT(Operand, Operand),
+    NAND(Operand, Operand, Operand),
+    CPY(Operand, Operand),
+    MLT(Operand, Operand, Operand),
+    DIV(Operand, Operand, Operand),
+    MOD(Operand, Operand, Operand),
+    ABS(Operand, Operand),
+    LLOD(Operand, Operand, Operand),
+    LSTR(Operand, Operand, Operand),
+    SDIV(Operand, Operand, Operand),
+    SETE(Operand, Operand, Operand),
+    SETNE(Operand, Operand, Operand),
+    SETG(Operand, Operand, Operand),
+    SETGE(Operand, Operand, Operand),
+    SETL(Operand, Operand, Operand),
+    SETLE(Operand, Operand, Operand),
+    XOR(Operand, Operand, Operand),
+    XNOR(Operand, Operand, Operand),
+    BNE(Operand, Operand, Operand)
 }
