@@ -142,6 +142,42 @@ impl EmulatorState {
             ABS(a, b) => self.set(a, (self.get(b) as i64).abs() as u64),
             LLOD(a, b, c) => self.set(a, self.getm(&Operand::Imm(self.get(b) + self.get(c)))),
             LSTR(a, b, c) => self.setm(&Operand::Imm(self.get(a)+self.get(b)), self.get(c)),
+            SDIV(a, b, c) => self.set(a, ((self.get(b) as i64)/(self.get(c) as i64)) as u64),
+            SETE(a, b, c) => self.set(a, 
+                if self.get(b) == self.get(c) {
+                    u64::MAX
+                } else {
+                    0
+                }
+            ),
+            SETG(a, b, c) => self.set(a,
+                if self.get(b) > self.get(c) {
+                    u64::MAX
+                } else {
+                    0
+                }
+            ),
+            SETGE(a, b, c) => self.set(a,
+                if self.get(b) >= self.get(c) {
+                    u64::MAX
+                } else {
+                    0
+                }
+            ),
+            SETL(a, b, c) => self.set(a,
+                if self.get(b) < self.get(c) {
+                    u64::MAX
+                } else {
+                    0
+                }
+            ),
+            SETLE(a, b, c) => self.set(a,
+                if self.get(b) <= self.get(c) {
+                    u64::MAX
+                } else {
+                    0
+                }
+            ),
             _ => jsprintln!("Unimplimented instruction."),
         }
         self.pc += 1;

@@ -111,6 +111,13 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
                     "abs"     => inst(Inst::ABS(p.get_reg(), p.get_op())            , &mut p),
                     "llod"    => inst(Inst::LLOD(p.get_reg(), p.get_op(), p.get_op()), &mut p),
                     "lstr"    => inst(Inst::LSTR(p.get_op(), p.get_op(), p.get_op()), &mut p),
+                    "sdiv"    => inst(Inst::SDIV(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "sete"    => inst(Inst::SETE(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "setne"   => inst(Inst::SETNE(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "setg"    => inst(Inst::SETG(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "setge"   => inst(Inst::SETGE(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "setl"    => inst(Inst::SETL(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "setle"   => inst(Inst::SETLE(p.get_reg(), p.get_op(), p.get_op()), &mut p),
 
 
                     "yomamma" => { p.err.error(&p.buf.current(), ErrorKind::YoMamma); p.buf.advance(); },
@@ -150,6 +157,13 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
                                 Inst::ABS(a, b) => Inst::ABS(a.clone(), b.clone().transform_label(label_name, pc)),
                                 Inst::LLOD(a, b, c) => Inst::LLOD(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 Inst::LSTR(a, b, c) => Inst::LSTR(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone()),
+                                Inst::SDIV(a, b, c) => Inst::SDIV(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SETE(a, b, c) => Inst::SDIV(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SETNE(a, b, c) => Inst::SDIV(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SETG(a, b, c) => Inst::SDIV(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SETGE(a, b, c) => Inst::SDIV(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SETL(a, b, c) => Inst::SDIV(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SETLE(a, b, c) => Inst::SDIV(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 _ => continue,
                             }
                         }
@@ -466,5 +480,13 @@ pub enum Inst {
     MOD(Operand, Operand, Operand),
     ABS(Operand, Operand),
     LLOD(Operand, Operand, Operand),
-    LSTR(Operand, Operand, Operand)
+    LSTR(Operand, Operand, Operand),
+    SDIV(Operand, Operand, Operand),
+    SETE(Operand, Operand, Operand),
+    SETNE(Operand, Operand, Operand),
+    SETG(Operand, Operand, Operand),
+    SETGE(Operand, Operand, Operand),
+    SETL(Operand, Operand, Operand),
+    SETLE(Operand, Operand, Operand),
+
 }
