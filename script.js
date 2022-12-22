@@ -158,6 +158,9 @@ function continue_emulation() {
     } else {
         pause_button.disabled = true;
         pause_button.textContent = "DONE";
+        if (emulator) {
+            emulator.free();
+        } 
         emulator = undefined;
     }
 }
