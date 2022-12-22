@@ -178,6 +178,9 @@ impl EmulatorState {
                     0
                 }
             ),
+            XOR(a, b, c) => self.set(a, self.get(b)^self.get(c)),
+            XNOR(a, b, c) => self.set(a, !(self.get(b)^self.get(c))),
+
             _ => jsprintln!("Unimplimented instruction."),
         }
         self.pc += 1;
