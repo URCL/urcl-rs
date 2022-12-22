@@ -185,6 +185,11 @@ impl EmulatorState {
                     self.pc = self.get(a) as usize;
                 }
             },
+            BRE(a, b, c) => {
+                if self.get(b) == self.get(c) {
+                    self.pc = self.get(a) as usize;
+                }
+            },
             _ => jsprintln!("Unimplimented instruction."),
         }
         self.pc += 1;
