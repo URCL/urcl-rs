@@ -57,6 +57,10 @@ impl EmulatorState {
         let index = self.get(operand) as usize;
         self.heap[index] = value;
     }
+
+    fn push(&mut self, operand: &Operand, value: u64) {
+
+    }
     
     pub fn run(&mut self) -> StepResult {
         loop {
@@ -73,7 +77,6 @@ impl EmulatorState {
     pub fn show(&mut self) {
         clear_text();
         self.devices.show();
-        jsprintln!("{:#?}", self.program);
         jsprintln!("Regs: {:?}", self.regs);
     }
     
@@ -135,6 +138,10 @@ impl EmulatorState {
             AND(a, b, c) => self.set(a, self.get(b) & self.get(c)),
             OR(a, b, c) => self.set(a, self.get(a) | self.get(b)),
             NOT(a, b) => self.set(a, !self.get(b)),
+            NAND(a, b, c) => self.set(a, !(self.get(b) & self.get(c))),
+            CPY(a, b) => self.setm(a, self.getm(b)),
+            MLT(a, b, c) => self.set(a, self.get(b)*self.get(c)),
+            DIV(a, b, c) => self.set(a, self.get(b)/self.get(c)),
             _ => jsprintln!("Unimplimented instruction."),
         }
         self.pc += 1;

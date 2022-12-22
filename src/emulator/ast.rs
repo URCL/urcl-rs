@@ -107,6 +107,15 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
                     "and"     => inst(Inst::AND(p.get_reg(), p.get_op(), p.get_op()), &mut p),
                     "or"      => inst(Inst::OR (p.get_reg(), p.get_op(), p.get_op()), &mut p),
                     "not"     => inst(Inst::NOT(p.get_reg(), p.get_op())            , &mut p),
+                    "nand"    => inst(Inst::NAND(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "cpy"     => inst(Inst::CPY(p.get_mem(), p.get_mem())           , &mut p),
+                    "mlt"     => inst(Inst::MLT(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "div"     => inst(Inst::DIV(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+
+
+
+
+
                     "yomamma" => { p.err.error(&p.buf.current(), ErrorKind::YoMamma); p.buf.advance(); },
                     _ => { p.err.error(&p.buf.current(), ErrorKind::UnknownInstruction); p.buf.advance(); },
                 }
@@ -137,6 +146,9 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
                                 Inst::AND(a, b, c) => Inst::AND(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 Inst::OR(a, b, c) => Inst::OR(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 Inst::NOT(a, b) => Inst::NOT(a.clone(), b.clone().transform_label(label_name, pc)),
+                                Inst::NAND(a, b, c) => Inst::NAND(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::MLT(a, b, c) => Inst::MLT(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::DIV(a, b, c) => Inst::DIV(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 _ => continue,
                             }
                         }
@@ -393,7 +405,7 @@ pub enum AstOp {
 #[derive(Debug, Clone)] // cant copy because of the String
 pub enum Operand {
     Imm(u64),
-    Reg(u64),// it gets changed to immediates, try it out
+    Reg(u64),
     Mem(u64),
     Label(String),
 }
@@ -447,4 +459,8 @@ pub enum Inst {
     AND(Operand, Operand, Operand),
     OR(Operand, Operand, Operand),
     NOT(Operand, Operand),
+    NAND(Operand, Operand, Operand),
+    CPY(Operand, Operand),
+    MLT(Operand, Operand, Operand),
+    DIV(Operand, Operand, Operand),
 }
