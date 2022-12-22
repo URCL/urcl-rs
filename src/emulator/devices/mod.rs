@@ -2,12 +2,13 @@ mod console;
 mod screen;
 use console::Console;
 use self::screen::Screen;
-
-use strum_macros::EnumString;
-
 use super::super::*;
 
-#[derive(Debug, Clone, Copy, EnumString)]
+use strum_macros::EnumString;
+use num_derive::FromPrimitive;    
+use num_traits::FromPrimitive;
+
+#[derive(Debug, Clone, Copy, EnumString, FromPrimitive)]
 #[repr(u8)]
 #[allow(dead_code, non_camel_case_types)]
 pub enum IOPort {
@@ -34,14 +35,6 @@ pub enum IOPort {
     FILE,
 }
 
-impl IOPort {
-    /// safety: repr() must match u8
-    /// and returned IOPort should be matched with a default case
-    unsafe fn unsafe_from_u8(x: u8) -> Self {
-        std::mem::transmute(x)
-    }
-}
-
 
 pub trait Device {
     fn connect(&mut self, host: &mut DeviceHost) -> ();
@@ -61,7 +54,8 @@ impl Debug for DeviceHost {
 
 impl DeviceHost {        
     pub fn out(&mut self, port: u64, value: u64) {
-        match unsafe { IOPort::unsafe_from_u8(port as u8) } {
+        let Some(port) = FromPrimitive::from_u64(value) else {return;}
+        match port {
             IOPort::TEXT => self.console.outtext(value),
             IOPort::NUMB => self.console.outnumb(value),
             IOPort::INT => self.console.outint(value),
@@ -69,7 +63,7 @@ impl DeviceHost {
             IOPort::X => self.screen.out_x(value),
             IOPort::Y => self.screen.out_y(value),
             IOPort::COLOR => self.screen.out_color(value),
-            _ => {todo!("unsupported port {}", port)}
+            _ => {todo!("unsupported port {:?}", port)}
         }
     }
 
