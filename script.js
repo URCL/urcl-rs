@@ -133,12 +133,12 @@ export function resync_element_size() {
     highlight.style.top         = code_in_bounding_box.top + "px";
     highlight.style.left        = (code_in_bounding_box.left    + (parseFloat(getComputedStyle(highlight).fontSize)) * 2.5) + "px";
     highlight.style.width       = (code_in_bounding_box.width   - (parseFloat(getComputedStyle(highlight).fontSize)) * 4) + "px";
-    highlight.style.height      = (code_in_bounding_box.height  - (parseFloat(getComputedStyle(highlight).fontSize)) * 1.5) + "px";
+    highlight.style.height      = (code_in_bounding_box.height  - (parseFloat(getComputedStyle(highlight).fontSize)) * .5) + "px";
     
-    line_numbers.style.top          = code_in_bounding_box.top  + "px";
-    line_numbers.style.left         = code_in_bounding_box.left + "px";
-    line_numbers.style.width        = parseFloat(getComputedStyle(highlight).fontSize) * 4 + "px";
-    line_numbers.style.height       = (code_in_bounding_box.height - (parseFloat(getComputedStyle(highlight).fontSize)) * 1.5) + "px";
+    line_numbers.style.top      = code_in_bounding_box.top  + "px";
+    line_numbers.style.left     = code_in_bounding_box.left + "px";
+    line_numbers.style.width    = parseFloat(getComputedStyle(highlight).fontSize) * 4 + "px";
+    line_numbers.style.height   = (code_in_bounding_box.height - (parseFloat(getComputedStyle(highlight).fontSize)) * .5) + "px";
 
     screen_canvas.style.width   = ""; screen_canvas.style.height = "";
     const screen_bounding_box   = screen_canvas.getBoundingClientRect();
@@ -223,7 +223,11 @@ init().then(() => { // all code should go in here
         if (auto_emulate.checked) start_emulation(code_input.value);
     };
 
-    code_input.onscroll                                 = function() { highlight.scrollTo(code_input.scrollLeft, code_input.scrollTop); };
+    code_input.onscroll = () => {
+        highlight.scrollTo(code_input.scrollLeft, code_input.scrollTop);
+        line_numbers.scrollTo(code_input.scrollLeft, code_input.scrollTop);
+    };
+
     document.getElementById("document_link").onclick    = function() { window.open("https://github.com/ModPunchtree/URCL/releases/latest", "_blank"); };
     document.getElementById("emulate").onclick          = function() { start_emulation(code_input.value); };
     document.getElementById("clear").onclick            = function() { clear_text(); };
