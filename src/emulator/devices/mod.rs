@@ -9,6 +9,7 @@ use super::super::*;
 
 #[derive(Debug, Clone, Copy, EnumString)]
 #[repr(u8)]
+#[allow(dead_code, non_camel_case_types)]
 pub enum IOPort {
     // General
     CPUBUS, TEXT, NUMB, SUPPORTED = 5, SPECIAL, PROFILE,

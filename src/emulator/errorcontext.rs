@@ -1,4 +1,4 @@
-use std::{fmt::{Debug, Write, Display, format}, collections::HashMap};
+use std::{fmt::{Debug, Write, Display}, collections::HashMap};
 
 use strum_macros::Display;
 
@@ -10,6 +10,7 @@ pub struct ErrorContext<'a> {
     has_error: bool,
 }
 
+#[allow(dead_code)]
 impl <'a> ErrorContext<'a> {
     pub fn new() -> Self {
         Self { errors: Vec::new(), has_error: false }

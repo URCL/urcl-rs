@@ -24,6 +24,7 @@ pub enum StepResult {
 
 // you cant bindgen impls i dont think
 #[wasm_bindgen]
+#[allow(dead_code)]
 impl EmulatorState {
 
     fn new(program: Program, devices: DeviceHost) -> Self {
@@ -41,7 +42,7 @@ impl EmulatorState {
     }
     fn set(&mut self, operand: &Operand, value: u64) {
         match operand {
-            Operand::Imm(v) => {}, // do nothing assume it is r0
+            Operand::Imm(_) => {}, // do nothing assume it is r0
             Operand::Reg(v) => {
                 self.regs[*v as usize] = value;
             },
@@ -56,10 +57,6 @@ impl EmulatorState {
     fn setm(&mut self, operand: &Operand, value: u64) {
         let index = self.get(operand) as usize;
         self.heap[index] = value;
-    }
-
-    fn push(&mut self, operand: &Operand, value: u64) {
-
     }
     
     pub fn run(&mut self) -> StepResult {
@@ -112,7 +109,6 @@ impl EmulatorState {
         // safety: pc has to bounds checked before hand
         match unsafe{fuck_borrow_checker(self.program.instructions.get_unchecked(self.pc))} {
             HLT => return StepResult::HLT,
-            IMM(a, b) => self.set(a, self.get(b)),
             ADD(op1, op2, op3) => {
                 self.set(op1, self.get(op2)+self.get(op3));
             },
@@ -129,14 +125,14 @@ impl EmulatorState {
             INC(a, b) => self.set(a, self.get(b)+1),
             DEC(a, b) => self.set(a, self.get(b)-1),
             OUT(a, b) => self.devices.out(self.get(a), self.get(b)),
-            IN(a,b) => todo!(),
+            IN(_a,_b) => todo!(),
             JMP(a) => self.pc = self.get(a) as usize - 1,
             SUB(a, b, c) => self.set(a, self.get(b) - self.get(c)),
             NOP => {},
             LSH(a, b) => self.set(a, self.get(b) << 1),
             NEG(a, b) => self.set(a, (-(self.get(b) as i64)) as u64),
             AND(a, b, c) => self.set(a, self.get(b) & self.get(c)),
-            OR(a, b, c) => self.set(a, self.get(a) | self.get(b)),
+            OR(a, b, c) => self.set(a, self.get(b) | self.get(c)),
             NOT(a, b) => self.set(a, !self.get(b)),
             NAND(a, b, c) => self.set(a, !(self.get(b) & self.get(c))),
             CPY(a, b) => self.setm(a, self.getm(b)),
@@ -144,6 +140,8 @@ impl EmulatorState {
             DIV(a, b, c) => self.set(a, self.get(b)/self.get(c)),
             MOD(a, b, c) => self.set(a, self.get(b)%self.get(c)),
             ABS(a, b) => self.set(a, (self.get(b) as i64).abs() as u64),
+            LLOD(a, b, c) => self.set(a, self.getm(&Operand::Imm(self.get(b) + self.get(c)))),
+            LSTR(a, b, c) => self.setm(&Operand::Imm(self.get(a)+self.get(b)), self.get(c)),
             _ => jsprintln!("Unimplimented instruction."),
         }
         self.pc += 1;
@@ -155,42 +153,6 @@ impl EmulatorState {
 #[inline]
 unsafe fn fuck_borrow_checker<T>(a: *const T) -> &'static T { // no 
     &*a
-}
-struct InstBuffer {
-    index: usize,
-    insts: Vec<Inst>
-}
-impl InstBuffer {
-    #[inline]
-    pub fn new(insts: Vec<Inst>) -> Self {
-        InstBuffer {
-            insts: insts,
-            index: 0,
-        }
-    }
-    #[inline]
-    pub fn has_next(&self) -> bool {
-        self.index < self.insts.len()
-    }
-    #[inline]
-    pub fn advance(&mut self) {
-        if self.has_next() {
-            self.index += 1;
-        }
-    }
-    #[inline]
-    pub fn next(&mut self) -> Inst {
-        self.advance();
-        self.insts[self.index].clone()
-    }
-    #[inline]
-    pub fn current(&self) -> Inst {
-        if self.has_next() {
-            self.insts[self.index].clone()
-        } else{
-            Inst::HLT
-        }
-    }
 }
 
 #[allow(dead_code)]

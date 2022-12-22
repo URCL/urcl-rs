@@ -69,7 +69,7 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
                     s._while(|c|c.is_ascii_digit());
                     match s.str_after(1).parse::<u64>() {
                         Ok(value) => s.create(PortNum(value)),
-                        Err(err) => s.create(Error),
+                        Err(_err) => s.create(Error),
                     }
 
                 } else {

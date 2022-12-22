@@ -53,10 +53,6 @@ pub struct Parser<'a> {
     pub ast: Program
 }
 
-fn remove_first(s: &str) -> Option<&str> {
-    s.chars().next().map(|c| &s[c.len_utf8()..])
-}
-
 pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
     let err = ErrorContext::new();
     let ast = Program::new();
@@ -113,7 +109,8 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
                     "div"     => inst(Inst::DIV(p.get_reg(), p.get_op(), p.get_op()), &mut p),
                     "mod"     => inst(Inst::MOD(p.get_reg(), p.get_op(), p.get_op()), &mut p),
                     "abs"     => inst(Inst::ABS(p.get_reg(), p.get_op())            , &mut p),
-
+                    "llod"    => inst(Inst::LLOD(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "lstr"    => inst(Inst::LSTR(p.get_op(), p.get_op(), p.get_op()), &mut p),
 
 
                     "yomamma" => { p.err.error(&p.buf.current(), ErrorKind::YoMamma); p.buf.advance(); },
@@ -151,6 +148,8 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
                                 Inst::DIV(a, b, c) => Inst::DIV(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 Inst::MOD(a, b, c) => Inst::MOD(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 Inst::ABS(a, b) => Inst::ABS(a.clone(), b.clone().transform_label(label_name, pc)),
+                                Inst::LLOD(a, b, c) => Inst::LLOD(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::LSTR(a, b, c) => Inst::LSTR(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone()),
                                 _ => continue,
                             }
                         }
@@ -246,8 +245,8 @@ impl <'a> Parser<'a> {
             AstOp::Mem(v) => Operand::Imm(*v),
             AstOp::Port(v) => Operand::Imm(*v),
             AstOp::Char(v) => Operand::Imm(*v as u64),
-            AstOp::String(v) => Operand::Imm(0),
-            AstOp::Label(v) => {
+            AstOp::String(_v) => Operand::Imm(0),
+            AstOp::Label(_v) => {
                 label_tok_to_operand(&self.buf.current(), self)
             },
         }
@@ -263,7 +262,7 @@ impl <'a> Parser<'a> {
             Kind::Port => {
                 match IOPort::from_str(&current.str[1..].to_uppercase()) {
                     Ok(port) => {AstOp::Port(port as u64)},
-                    Err(err) => {
+                    Err(_err) => {
                         self.err.error(&self.buf.current(), ErrorKind::UnknownPort);
                         AstOp::Port(0)
                     }
@@ -333,6 +332,7 @@ impl <'a> Parser<'a> {
 }
 
 
+#[allow(dead_code)]
 fn get_operand(p: &mut Parser) -> Option<Operand> {
     match p.buf.current().kind {
         Kind::Reg(v) => Some(Operand::Reg(v)),
@@ -341,7 +341,7 @@ fn get_operand(p: &mut Parser) -> Option<Operand> {
         Kind::Port => {
             match IOPort::from_str(&p.buf.current().str[1..].to_uppercase()) {
                 Ok(port) => {Some(Operand::Imm(port as u64))},
-                Err(err) => {
+                Err(_err) => {
                     p.err.error(&p.buf.current(), ErrorKind::UnknownPort);
                     None
                 }
@@ -408,7 +408,6 @@ pub enum AstOp {
 pub enum Operand {
     Imm(u64),
     Reg(u64),
-    Mem(u64),
     Label(String),
 }
 
@@ -437,7 +436,6 @@ impl Headers {
 
 #[derive(Debug, Clone)]
 pub enum Inst {
-    IMM(Operand, Operand),
     ADD(Operand, Operand, Operand),
     RSH(Operand, Operand),
     LOD(Operand, Operand),
@@ -467,4 +465,6 @@ pub enum Inst {
     DIV(Operand, Operand, Operand),
     MOD(Operand, Operand, Operand),
     ABS(Operand, Operand),
+    LLOD(Operand, Operand, Operand),
+    LSTR(Operand, Operand, Operand)
 }
