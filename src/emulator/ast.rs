@@ -103,6 +103,10 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
                     "psh"     => inst(Inst::PSH(p.get_op())                         , &mut p),
                     "pop"     => inst(Inst::POP(p.get_reg())                        , &mut p),
                     "jmp"     => inst(Inst::JMP(p.get_jmp())                        , &mut p),
+                    "neg"     => inst(Inst::NEG(p.get_reg(), p.get_op())            , &mut p),
+                    "and"     => inst(Inst::AND(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "or"      => inst(Inst::OR (p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "not"     => inst(Inst::NOT(p.get_reg(), p.get_op())            , &mut p),
                     "yomamma" => { p.err.error(&p.buf.current(), ErrorKind::YoMamma); p.buf.advance(); },
                     _ => { p.err.error(&p.buf.current(), ErrorKind::UnknownInstruction); p.buf.advance(); },
                 }
@@ -129,6 +133,10 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
                                 Inst::SUB(a, b, c) => Inst::SUB(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 Inst::NOR(a, b, c) => Inst::NOR(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 Inst::BGE(a, b, c) => Inst::BGE(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::NEG(a, b) => Inst::NEG(a.clone(), b.clone().transform_label(label_name, pc)),
+                                Inst::AND(a, b, c) => Inst::AND(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::OR(a, b, c) => Inst::OR(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::NOT(a, b) => Inst::NOT(a.clone(), b.clone().transform_label(label_name, pc)),
                                 _ => continue,
                             }
                         }
@@ -435,4 +443,8 @@ pub enum Inst {
     SUB(Operand, Operand, Operand),
     NOP,
     LSH(Operand, Operand),
+    NEG(Operand, Operand),
+    AND(Operand, Operand, Operand),
+    OR(Operand, Operand, Operand),
+    NOT(Operand, Operand),
 }

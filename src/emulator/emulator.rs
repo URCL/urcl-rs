@@ -131,6 +131,10 @@ impl EmulatorState {
             SUB(a, b, c) => self.set(a, self.get(b) - self.get(c)),
             NOP => {},
             LSH(a, b) => self.set(a, self.get(b) << 1),
+            NEG(a, b) => self.set(a, (-(self.get(b) as i64)) as u64),
+            AND(a, b, c) => self.set(a, self.get(b) & self.get(c)),
+            OR(a, b, c) => self.set(a, self.get(a) | self.get(b)),
+            NOT(a, b) => self.set(a, !self.get(b)),
             _ => jsprintln!("Unimplimented instruction."),
         }
         self.pc += 1;
