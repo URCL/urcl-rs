@@ -111,8 +111,8 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
                     "cpy"     => inst(Inst::CPY(p.get_mem(), p.get_mem())           , &mut p),
                     "mlt"     => inst(Inst::MLT(p.get_reg(), p.get_op(), p.get_op()), &mut p),
                     "div"     => inst(Inst::DIV(p.get_reg(), p.get_op(), p.get_op()), &mut p),
-
-
+                    "mod"     => inst(Inst::MOD(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "abs"     => inst(Inst::ABS(p.get_reg(), p.get_op())            , &mut p),
 
 
 
@@ -149,6 +149,8 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
                                 Inst::NAND(a, b, c) => Inst::NAND(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 Inst::MLT(a, b, c) => Inst::MLT(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 Inst::DIV(a, b, c) => Inst::DIV(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::MOD(a, b, c) => Inst::MOD(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::ABS(a, b) => Inst::ABS(a.clone(), b.clone().transform_label(label_name, pc)),
                                 _ => continue,
                             }
                         }
@@ -463,4 +465,6 @@ pub enum Inst {
     CPY(Operand, Operand),
     MLT(Operand, Operand, Operand),
     DIV(Operand, Operand, Operand),
+    MOD(Operand, Operand, Operand),
+    ABS(Operand, Operand),
 }

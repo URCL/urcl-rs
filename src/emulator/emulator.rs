@@ -142,6 +142,8 @@ impl EmulatorState {
             CPY(a, b) => self.setm(a, self.getm(b)),
             MLT(a, b, c) => self.set(a, self.get(b)*self.get(c)),
             DIV(a, b, c) => self.set(a, self.get(b)/self.get(c)),
+            MOD(a, b, c) => self.set(a, self.get(b)%self.get(c)),
+            ABS(a, b) => self.set(a, (self.get(b) as i64).abs() as u64),
             _ => jsprintln!("Unimplimented instruction."),
         }
         self.pc += 1;
