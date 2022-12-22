@@ -28,6 +28,7 @@ function by_id(clazz, name) {
 const stdout = by_id(HTMLElement, "stdout");
 const pause_button = by_id(HTMLButtonElement, "pause");
 const highlight = by_id(HTMLElement, "highlight");
+const line_numbers = by_id(HTMLElement, "line-numbers")
 const code_input = by_id(HTMLTextAreaElement, "code_input");
 const auto_emulate = by_id(HTMLInputElement, "auto_emulate");
 
@@ -86,11 +87,13 @@ export function out_span(text, class_name) {
 
 export function out_linenumber(text) {
     if (text === "") linenum = 1;
-    const span = document.createElement("span");
-    // span.textContent = text + (linenum % 999).toLocaleString("en-US", {minimumIntegerDigits: 3, useGrouping: false}) + " ";
-    span.textContent = text;
-    span.className = "line-number";
-    highlight.appendChild(span);
+    const a = document.createElement("span");
+    a.textContent = text + (linenum % 999).toLocaleString("en-US", {minimumIntegerDigits: 3, useGrouping: false}) + " ";
+    a.className = "line-number";
+    line_numbers.appendChild(a);
+    const b = document.createElement("span");
+    b.textContent = text;
+    highlight.appendChild(b);
     linenum++;
 }
 
@@ -122,19 +125,25 @@ export function output_registers(regs) {
 
 export async function clear_span() {
     highlight.innerHTML = "";
+    line_numbers.innerHTML = "";
 }
 
 export function resync_element_size() {
     const code_in_bounding_box  = code_input.getBoundingClientRect();
     highlight.style.top         = code_in_bounding_box.top + "px";
-    highlight.style.left        = (code_in_bounding_box.left   + (parseFloat(getComputedStyle(highlight).fontSize)) * 2.5) + "px";
-    highlight.style.width       = (code_in_bounding_box.width  - (parseFloat(getComputedStyle(highlight).fontSize)) * 4) + "px";
-    highlight.style.height      = (code_in_bounding_box.height - (parseFloat(getComputedStyle(highlight).fontSize)) * 1.5) + "px";
+    highlight.style.left        = (code_in_bounding_box.left    + (parseFloat(getComputedStyle(highlight).fontSize)) * 2.5) + "px";
+    highlight.style.width       = (code_in_bounding_box.width   - (parseFloat(getComputedStyle(highlight).fontSize)) * 4) + "px";
+    highlight.style.height      = (code_in_bounding_box.height  - (parseFloat(getComputedStyle(highlight).fontSize)) * 1.5) + "px";
+    
+    line_numbers.style.top          = code_in_bounding_box.top  + "px";
+    line_numbers.style.left         = code_in_bounding_box.left + "px";
+    line_numbers.style.width        = parseFloat(getComputedStyle(highlight).fontSize) * 4 + "px";
+    line_numbers.style.height       = (code_in_bounding_box.height - (parseFloat(getComputedStyle(highlight).fontSize)) * 1.5) + "px";
 
     screen_canvas.style.width   = ""; screen_canvas.style.height = "";
-    const screen_bounding_box  = screen_canvas.getBoundingClientRect();
-    screen_canvas.style.width  = screen_bounding_box.width  + "px";
-    screen_canvas.style.height = screen_bounding_box.height + "px";
+    const screen_bounding_box   = screen_canvas.getBoundingClientRect();
+    screen_canvas.style.width   = screen_bounding_box.width  + "px";
+    screen_canvas.style.height  = screen_bounding_box.height + "px";
 }
 
 export function update_debug_buttons(new_state) {
