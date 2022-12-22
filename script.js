@@ -153,10 +153,6 @@ export function update_debug_buttons(new_state) {
     }
 }
 
-export function get_tab_size() {
-    return document.querySelector(":root").style.getPropertyValue("--tab-size");
-}
-
 /** @type {undefined | EmulatorState} */
 let emulator;
 /** @type {undefined | number} */

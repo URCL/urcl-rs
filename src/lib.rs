@@ -24,8 +24,6 @@ extern {
 
     pub fn out_screen(width: usize, height: usize, pixels: &[u32]);
     pub fn clear_screen();
-
-    pub fn get_tab_size() -> usize;
 }
 
 #[wasm_bindgen]
