@@ -11,9 +11,39 @@ use super::{*, lexer, ast::{self, Inst, Program, Operand}};
 pub struct EmulatorState {
     regs: Vec<u64>,
     heap: Vec<u64>,
+    stack: Stack,
     pc: usize,
     program: Program,
     devices: DeviceHost,
+}
+
+#[derive(Debug)]
+pub struct Stack {
+    data: Vec<u64>,
+    sp: i64,
+    size: usize,
+}
+
+impl Stack {
+    fn new(size: usize) -> Self {
+        let mut data = Vec::new();
+        data.resize(size, 0);
+        Stack { data, sp: 0, size }
+    }
+    fn push(&mut self, data: u64) {
+        if self.sp >= self.size as i64 || self.sp < 0 {
+            todo!();
+        }
+        self.data[self.sp as usize] = data;
+        self.sp += 1;
+    }
+    fn pop(&mut self) -> u64 {
+        if self.sp > self.size as i64 || self.sp <= 0 {
+            todo!();
+        }
+        self.sp -= 1;
+        self.data[self.sp as usize]
+    }
 }
 
 #[wasm_bindgen]
@@ -21,6 +51,9 @@ pub struct EmulatorState {
 pub enum StepResult {
     Continue, HLT, Input,
 }
+
+pub const PC: u64 = u64::MAX;
+pub const SP: u64 = u64::MAX - 1;
 
 // you cant bindgen impls i dont think
 #[wasm_bindgen]
@@ -30,13 +63,19 @@ impl EmulatorState {
     fn new(program: Program, devices: DeviceHost) -> Self {
         let regs = vec![0; program.headers.minreg as usize];
         let heap = vec![0; (program.headers.minheap + program.headers.minstack) as usize];
-        EmulatorState { regs, heap, pc: 0, program, devices }
+        EmulatorState { regs, heap, stack: Stack::new(program.headers.minstack as usize), pc: 0, program, devices }
     }
     
     fn get(&self, operand: &Operand) -> u64 {
         match operand {
             Operand::Imm(v) => *v,
-            Operand::Reg(v) => self.regs[*v as usize],
+            Operand::Reg(v) => {
+                match *v {
+                    PC => self.pc as u64,
+                    SP => self.stack.data.len() as u64,
+                    _  => self.regs[*v as usize]
+                }
+            },
             _ => panic!("Unsupported operand {:?}", operand)
         }
     }
@@ -44,7 +83,11 @@ impl EmulatorState {
         match operand {
             Operand::Imm(_) => {}, // do nothing assume it is r0
             Operand::Reg(v) => {
-                self.regs[*v as usize] = value;
+                match *v {
+                    PC => self.pc = value as usize,
+                    SP => self.stack.sp = value as i64,
+                    _  => self.regs[*v as usize] = value
+                }
             },
             _ => panic!("Unsupported target operand {:?}", operand)
         }
@@ -190,6 +233,13 @@ impl EmulatorState {
                     self.pc = self.get(a) as usize;
                 }
             },
+            PSH(a) => {
+                self.stack.push(self.get(a));
+            },
+            POP(a) => {
+                let b = self.stack.pop();
+                self.set(a, b);
+            }
             _ => jsprintln!("Unimplimented instruction."),
         }
         self.pc += 1;
