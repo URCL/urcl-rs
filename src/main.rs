@@ -4,7 +4,7 @@ mod emulator;
 use std::time::Instant;
 
 fn main() {
-    let mut emu = emulator::emulator::emulate("OUT 10 'h'\nHLT").unwrap();
+    let mut emu = emulator::emulator::emulate("OUT 10 'h'\nHLT".to_owned()).unwrap();
     println!("{:?}", emu.run());
 }
 

@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{time::Duration, borrow::Cow, rc::Rc};
 use devices::DeviceHost;
 
 use wasm_bindgen::prelude::*;
@@ -25,7 +25,7 @@ pub enum StepResult {
 // you cant bindgen impls i dont think
 #[wasm_bindgen]
 #[allow(dead_code)]
-impl EmulatorState {
+impl EmulatorState  {
 
     fn new(program: Program, devices: DeviceHost) -> Self {
         let regs = vec![0; program.headers.minreg as usize];
@@ -98,7 +98,6 @@ impl EmulatorState {
     
     // now how did multitrheading work on the web again lol
     // is there some cargo library for that or should we just do some Worker schenenigans
-    
 
     pub fn step(&mut self) -> StepResult {
         // safety: pc is bounds checked here 
@@ -205,13 +204,14 @@ unsafe fn fuck_borrow_checker<T>(a: *const T) -> &'static T { // no
 
 #[allow(dead_code)]
 #[wasm_bindgen]
-pub fn emulate(src: &str) -> Option<EmulatorState> { // wifi died
+pub fn emulate(src: String) -> Option<EmulatorState> { // wifi died
+    let src = Rc::from(src);
     clear_text();
-    let toks = lexer::lex(src);
+    let toks = lexer::lex(&src);
 
-    let Parser {ast: program, err, ..} = ast::gen_ast(toks);
+    let Parser {ast: program, err, ..} = ast::gen_ast(toks, src.clone());
     jsprintln!("{:#?}", program);
-    jsprintln!("{}", err.to_string(src));
+    jsprintln!("{}", err.to_string(&src));
     if err.has_error() {
         return None;
     }

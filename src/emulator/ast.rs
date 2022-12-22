@@ -1,4 +1,4 @@
-use std::{collections::HashMap, str::FromStr};
+use std::{collections::HashMap, str::FromStr, rc::Rc};
 
 use super::{*, lexer::{Token, Kind, UToken}, errorcontext::{ErrorContext, ErrorKind}, devices::IOPort};
 
@@ -53,9 +53,9 @@ pub struct Parser<'a> {
     pub ast: Program
 }
 
-pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
+pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
     let err = ErrorContext::new();
-    let ast = Program::new();
+    let ast = Program::new(src);
     let buf = TokenBuffer::new(toks);
     let mut p = Parser {buf, err, ast};
 
@@ -404,11 +404,23 @@ pub struct Program {
     pub instructions: Vec<Inst>,
     pub labels: HashMap<String, Label>,
     pub memory: Vec<u64>,
+    pub debug: DebugInfo,
 }
 
 impl Program {
-    pub fn new() -> Self {
-        Program { headers: Headers::new(), instructions: Vec::new(), labels: HashMap::new(), memory: Vec::new() }
+    pub fn new(src: Rc<str>) -> Self {
+        Self { headers: Headers::new(), instructions: Vec::new(), labels: HashMap::new(), memory: Vec::new(), debug: DebugInfo::new(src) }
+    }
+}
+
+#[derive(Debug)]
+pub struct DebugInfo {
+    pub src: Rc<str>,
+    pub pc_to_line_start: HashMap<u64, usize>
+}
+impl DebugInfo {
+    pub fn new(src: Rc<str>) -> Self {
+        Self {src, pc_to_line_start: HashMap::new()}
     }
 }
 
