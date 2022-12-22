@@ -92,8 +92,6 @@ pub enum ErrorKind<'a> {
     DWNoEnding,
     EOFBeforeEndOfString,
     EOFBeforeEndOfChar,
-    StackOverflow,
-    StackUnderflow,
     DuplicatedLabelName,
     YoMamma
 }
@@ -107,8 +105,8 @@ impl <'a> Display for ErrorKind<'a> {
             ErrorKind::DWNoEnding => write!(f, "Missing ']'"),
             ErrorKind::EOFBeforeEndOfString => write!(f, "Missing '\"'"),
             ErrorKind::EOFBeforeEndOfChar => write!(f, "Missing '''"),
-            ErrorKind::StackOverflow => write!(f, "Stack overflow"),
-            ErrorKind::StackUnderflow => write!(f, "Stack underflow"),
+            // ErrorKind::StackOverflow => write!(f, "Stack overflow"),
+            // ErrorKind::StackUnderflow => write!(f, "Stack underflow"),
             ErrorKind::InvalidOperand => write!(f, "Invalid operand"),
             ErrorKind::UndefinedLabel => write!(f, "Undefined label"),
             ErrorKind::DuplicatedLabelName => write!(f, "Duplicated label name"),

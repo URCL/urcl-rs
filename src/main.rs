@@ -1,4 +1,3 @@
-use wasm_bindgen::prelude::*;
 mod emulator;
 
 use std::time::Instant;

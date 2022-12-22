@@ -6,6 +6,30 @@ use crate::emulator::ast::Parser;
 
 use super::{*, lexer, ast::{self, Inst, Program, Operand}};
 
+#[derive(Debug)]
+pub enum EmulatorErrorKind {
+    StackOverflow,
+    StackUnderflow,
+}
+
+impl <'a> std::fmt::Display for EmulatorErrorKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            EmulatorErrorKind::StackOverflow => write!(f, "Stack overflow"),
+            EmulatorErrorKind::StackUnderflow => write!(f, "Stack underflow"),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct EmulatorError(Option<EmulatorErrorKind>);
+
+impl EmulatorError {
+    fn new() -> Self {
+        EmulatorError(None)
+    }
+}
+
 #[wasm_bindgen]
 #[derive(Debug)]
 pub struct EmulatorState {
@@ -15,6 +39,7 @@ pub struct EmulatorState {
     pc: usize,
     program: Program,
     devices: DeviceHost,
+    error: EmulatorError,
 }
 
 #[derive(Debug)]
@@ -30,20 +55,7 @@ impl Stack {
         data.resize(size, 0);
         Stack { data, sp: 0, size }
     }
-    fn push(&mut self, data: u64) {
-        if self.sp >= self.size as i64 || self.sp < 0 {
-            todo!();
-        }
-        self.data[self.sp as usize] = data;
-        self.sp += 1;
-    }
-    fn pop(&mut self) -> u64 {
-        if self.sp > self.size as i64 || self.sp <= 0 {
-            todo!();
-        }
-        self.sp -= 1;
-        self.data[self.sp as usize]
-    }
+    
 }
 
 #[wasm_bindgen]
@@ -63,7 +75,7 @@ impl EmulatorState {
     fn new(program: Program, devices: DeviceHost) -> Self {
         let regs = vec![0; program.headers.minreg as usize];
         let heap = vec![0; (program.headers.minheap + program.headers.minstack) as usize];
-        EmulatorState { regs, heap, stack: Stack::new(program.headers.minstack as usize), pc: 0, program, devices }
+        EmulatorState { regs, heap, stack: Stack::new(program.headers.minstack as usize), pc: 0, program, devices, error: EmulatorError::new() }
     }
     
     fn get(&self, operand: &Operand) -> u64 {
@@ -100,6 +112,21 @@ impl EmulatorState {
     fn setm(&mut self, operand: &Operand, value: u64) {
         let index = self.get(operand) as usize;
         self.heap[index] = value;
+    }
+
+    fn push(&mut self, data: u64) {
+        if self.stack.sp >= self.stack.size as i64 || self.stack.sp < 0 {
+            
+        }
+        self.stack.data[self.stack.sp as usize] = data;
+        self.stack.sp += 1;
+    }
+    fn pop(&mut self) -> u64 {
+        if self.stack.sp > self.stack.size as i64 || self.stack.sp <= 0 {
+            todo!();
+        }
+        self.stack.sp -= 1;
+        self.stack.data[self.stack.sp as usize]
     }
     
     pub fn run(&mut self) -> StepResult {
@@ -234,10 +261,10 @@ impl EmulatorState {
                 }
             },
             PSH(a) => {
-                self.stack.push(self.get(a));
+                self.push(self.get(a));
             },
             POP(a) => {
-                let b = self.stack.pop();
+                let b = self.pop();
                 self.set(a, b);
             }
             _ => jsprintln!("Unimplimented instruction."),
