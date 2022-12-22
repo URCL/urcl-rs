@@ -47,11 +47,11 @@ impl <'a> ErrorContext<'a> {
                 format!("{}", error.level).to_lowercase(), error.level, error.kind
             ).unwrap();
             writeln!(&mut output, "{}| {}", 
-                lineno, line.replace("\t", " ").split_whitespace().collect::<Vec<_>>().join(" ")
+                lineno, line.split_at(get_indent_level(line)).1.replace("\t", " ")
             ).unwrap();
             writeln!(&mut output, "{}| {}<span class=\"note\">{}</span>",
                 " ".repeat(lineno_width),
-                &" ".repeat(col - (line.len() - line.replace("\t", " ").split_whitespace().collect::<Vec<_>>().join(" ").len())),
+                &" ".repeat(col - get_indent_level(line)),
                 &"^".repeat(str_width(error.span).max(1))
             ).unwrap();
         }
