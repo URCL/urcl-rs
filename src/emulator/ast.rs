@@ -119,8 +119,8 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
                     "setl"    => inst(Inst::SETL(p.get_reg(), p.get_op(), p.get_op()), &mut p),
                     "setle"   => inst(Inst::SETLE(p.get_reg(), p.get_op(), p.get_op()), &mut p),
                     "xor"     => inst(Inst::XOR(p.get_reg(), p.get_op(), p.get_op()), &mut p),
-                    "xnor"     => inst(Inst::XNOR(p.get_reg(), p.get_op(), p.get_op()), &mut p),
-
+                    "xnor"    => inst(Inst::XNOR(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "bne"     => inst(Inst::BNE(p.get_op(), p.get_op(), p.get_op())   , &mut p),
                     "yomamma" => { p.err.error(&p.buf.current(), ErrorKind::YoMamma); p.buf.advance(); },
                     _ => { p.err.error(&p.buf.current(), ErrorKind::UnknownInstruction); p.buf.advance(); },
                 }
@@ -167,6 +167,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
                                 Inst::SETLE(a, b, c) => Inst::SETLE(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 Inst::XOR(a, b, c) => Inst::XOR(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 Inst::XNOR(a, b, c) => Inst::XNOR(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::BNE(a, b, c) => Inst::BNE(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 _ => continue,
                             }
                         }
@@ -493,4 +494,5 @@ pub enum Inst {
     SETLE(Operand, Operand, Operand),
     XOR(Operand, Operand, Operand),
     XNOR(Operand, Operand, Operand),
+    BNE(Operand, Operand, Operand)
 }

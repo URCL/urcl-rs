@@ -180,7 +180,11 @@ impl EmulatorState {
             ),
             XOR(a, b, c) => self.set(a, self.get(b)^self.get(c)),
             XNOR(a, b, c) => self.set(a, !(self.get(b)^self.get(c))),
-
+            BNE(a, b, c) => {
+                if self.get(b) != self.get(c) {
+                    self.pc = self.get(a) as usize;
+                }
+            },
             _ => jsprintln!("Unimplimented instruction."),
         }
         self.pc += 1;
