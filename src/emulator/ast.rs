@@ -499,9 +499,10 @@ pub enum Operand {
 
 impl Operand {
     pub fn transform_label(self, label: &str, pc: usize) -> Self {
-        match self {
-            Operand::Label(ref l) => if l == label {Operand::Imm(pc as u64)} else {self}
-            _ => self,
+        if matches!(self, Self::Label(ref l) if l == label) {
+            Self::Imm(pc as u64)
+        } else {
+            self
         }
     }
 }
