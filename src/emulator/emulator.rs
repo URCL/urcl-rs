@@ -403,6 +403,8 @@ impl EmulatorState  {
             BSL(a, b, c) => self.set(a, self.get(b)>>self.get(c)),
             SRS(a, b) => self.set(a, ((self.get(b) as i64) >> 1) as u64),
             BSS(a, b, c) => self.set(a, ((self.get(b) as i64) >> (self.get(c) as i64)) as u64),
+            CAL(a) => {self.stack_push(self.get(a)); self.pc = self.get(a) as usize - 1},
+            RET => self.pc = self.stack_pop() as usize,
             _ => jsprintln!("Unimplimented instruction."),
         }
         self.pc += 1;
