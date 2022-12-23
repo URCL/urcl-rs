@@ -92,7 +92,7 @@ export function out_span(text, class_name) {
 export function out_linenumber(text) {
     if (text === "") linenum = 1;
     const a = document.createElement("span");
-    a.textContent = text + (linenum % 999).toLocaleString("en-US", {minimumIntegerDigits: 3, useGrouping: false}) + " ";
+    a.textContent = text + linenum;
     a.className = "line-number";
     line_numbers.appendChild(a);
     linenum++;
@@ -137,8 +137,7 @@ export function resync_element_size() {
     highlight.style.height      = (code_in_bounding_box.height  - (parseFloat(getComputedStyle(highlight).fontSize)) * .3) + "px";
     
     line_numbers.style.top      = code_in_bounding_box.top  + "px";
-    line_numbers.style.left     = code_in_bounding_box.left + "px";
-    line_numbers.style.width    = parseFloat(getComputedStyle(highlight).fontSize) * 1.5 + "px";
+    line_numbers.style.width    = parseFloat(getComputedStyle(highlight).fontSize) * 4 + "px";
     line_numbers.style.height   = (code_in_bounding_box.height - (parseFloat(getComputedStyle(highlight).fontSize)) * .3) + "px";
 
     screen_canvas.style.width   = ""; screen_canvas.style.height = "";
