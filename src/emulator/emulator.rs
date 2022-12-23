@@ -111,13 +111,20 @@ impl EmulatorState  {
         }
     }
     
+    #[inline(always)]
+    fn get_mem(&self, index: u64) -> u64 {
+        self.heap[index as usize]
+    }
+    #[inline(always)]
+    fn set_mem(&mut self, index: u64, value: u64) {
+        self.heap[index as usize] = value
+    }
+
     fn getm(&self, operand: &Operand) -> u64 {
-        let index = self.get(operand) as usize;
-        self.heap[index]
+        self.get_mem(self.get(operand))
     }
     fn setm(&mut self, operand: &Operand, value: u64) {
-        let index = self.get(operand) as usize;
-        self.heap[index] = value;
+        self.set_mem(self.get(operand), value)
     }
 
     fn stack_push(&mut self, data: u64) {
@@ -225,8 +232,8 @@ impl EmulatorState  {
             DIV(a, b, c) => self.set(a, self.get(b)/self.get(c)),
             MOD(a, b, c) => self.set(a, self.get(b)%self.get(c)),
             ABS(a, b) => self.set(a, (self.get(b) as i64).abs() as u64),
-            LLOD(a, b, c) => self.set(a, self.getm(&Operand::Imm(self.get(b) + self.get(c)))),
-            LSTR(a, b, c) => self.setm(&Operand::Imm(self.get(a)+self.get(b)), self.get(c)),
+            LLOD(a, b, c) => self.set(a, self.get_mem(self.get(b) + self.get(c))),
+            LSTR(a, b, c) => self.set_mem(self.get(a) + self.get(b), self.get(c)),
             SDIV(a, b, c) => self.set(a, ((self.get(b) as i64)/(self.get(c) as i64)) as u64),
             SETE(a, b, c) => self.set(a, 
                 if self.get(b) == self.get(c) {
