@@ -139,6 +139,8 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
                     "sbrg"    => inst(Inst::SBRG(p.get_op(), p.get_op(), p.get_op()),   &mut p),
                     "sble"    => inst(Inst::SBLE(p.get_op(), p.get_op(), p.get_op()),   &mut p),
                     "sbge"    => inst(Inst::SBGE(p.get_op(), p.get_op(), p.get_op()),   &mut p),
+                    "bod"     => inst(Inst::BOD(p.get_op(), p.get_op())             , &mut p),
+                    "bev"     => inst(Inst::BEV(p.get_op(), p.get_op())             , &mut p),
                     "yomamma" => { p.err.error(&p.buf.current(), ErrorKind::YoMamma); p.buf.advance(); },
                     _ => { p.err.error(&p.buf.current(), ErrorKind::UnknownInstruction); p.buf.advance(); },
                 }
@@ -204,6 +206,8 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
                                 Inst::SBRG(a, b, c) => Inst::SBRG(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 Inst::SBLE(a, b, c) => Inst::SBLE(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 Inst::SBGE(a, b, c) => Inst::SBGE(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::BOD(a, b) => Inst::BOD(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc)),
+                                Inst::BEV(a, b) => Inst::BEV(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc)),
 
                                 _ => continue,
                             }
@@ -561,5 +565,7 @@ pub enum Inst {
     SBRL(Operand, Operand, Operand),
     SBRG(Operand, Operand, Operand),
     SBLE(Operand, Operand, Operand),
-    SBGE(Operand, Operand, Operand)
+    SBGE(Operand, Operand, Operand),
+    BOD(Operand, Operand),
+    BEV(Operand, Operand)
 }
