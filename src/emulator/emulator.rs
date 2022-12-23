@@ -217,6 +217,16 @@ impl EmulatorState  {
                     0
                 }
             ),
+            BRL(a, b, c) => {
+                if self.get(b) < self.get(c) {
+                    self.pc = self.get(a) as usize - 1;
+                }
+            },
+            BRG(a, b, c) => {
+                if self.get(b) > self.get(c) {
+                    self.pc = self.get(a) as usize - 1;
+                }
+            },
             _ => jsprintln!("Unimplimented instruction."),
         }
         self.pc += 1;
