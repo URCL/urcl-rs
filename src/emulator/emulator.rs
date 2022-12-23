@@ -61,7 +61,7 @@ impl Stack {
 #[wasm_bindgen]
 #[derive(Debug, PartialEq, Eq)]
 pub enum StepResult {
-    Continue, HLT, Input,
+    Continue, HLT, Input, Error
 }
 
 pub const PC: u64 = u64::MAX;
@@ -114,16 +114,18 @@ impl EmulatorState {
         self.heap[index] = value;
     }
 
-    fn push(&mut self, data: u64) {
-        if self.stack.sp >= self.stack.size as i64 || self.stack.sp < 0 {
-            
+    fn stack_push(&mut self, data: u64) {
+        if self.stack.sp >= self.stack.size as i64 {
+            self.error = EmulatorError(Some(EmulatorErrorKind::StackOverflow));
+            return;
         }
         self.stack.data[self.stack.sp as usize] = data;
         self.stack.sp += 1;
     }
-    fn pop(&mut self) -> u64 {
-        if self.stack.sp > self.stack.size as i64 || self.stack.sp <= 0 {
-            todo!();
+    fn stack_pop(&mut self) -> u64 {
+        if self.stack.sp <= 0 {
+            self.error = EmulatorError(Some(EmulatorErrorKind::StackUnderflow));
+            return 0;
         }
         self.stack.sp -= 1;
         self.stack.data[self.stack.sp as usize]
@@ -132,9 +134,13 @@ impl EmulatorState {
     pub fn run(&mut self) -> StepResult {
         loop {
             let result = self.step();
-            if result != StepResult::Continue {
-                self.devices.show();
-                return result;
+            match result {
+                StepResult::Continue => (),
+                StepResult::Error => return result,
+                _ => {
+                    self.devices.show();
+                    return result;
+                },
             }
         }
     }
@@ -154,9 +160,13 @@ impl EmulatorState {
         while now() < end {
             for _ in 0..BURST_LENGTH {
                 let result = self.step();
-                if result != StepResult::Continue {
-                    self.show();
-                    return result;
+                match result {
+                    StepResult::Continue => (),
+                    StepResult::Error => return result,
+                    _ => {
+                        self.devices.show();
+                        return result;
+                    },
                 }
             }
         }
@@ -261,17 +271,23 @@ impl EmulatorState {
                 }
             },
             PSH(a) => {
-                self.push(self.get(a));
+                self.stack_push(self.get(a));
             },
             POP(a) => {
-                let b = self.pop();
+                let b = self.stack_pop();
                 self.set(a, b);
             }
             _ => jsprintln!("Unimplimented instruction."),
         }
         self.pc += 1;
 
-        StepResult::Continue
+        match &self.error {
+            EmulatorError(Some(err)) => {
+                jsprintln!("<span class=\"error\">Emulator Error: {} at PC: {}</span>", err, self.pc);
+                StepResult::Error
+            },
+            EmulatorError(None) => StepResult::Continue
+        }
     }
 }
 
@@ -297,21 +313,4 @@ pub fn emulate(src: &str) -> Option<EmulatorState> { // wifi died
     let emu = EmulatorState::new(program, host);
 
     return Some(emu);
-    // i can add more insts while you guys do that
-    // also please do the too late label thing
-    // we need to get some web workers out 👷‍♂️
-    // let result = emu.run_for(Duration::from_millis(1000));
-    // if result == StepResult::Continue {
-    //     jsprintln!("Program took too long");
-    // } else {
-    //     jsprintln!("Program Halted");
-    // }
-    // emu.devices.show();
-    // return emu;
-    // for _ in 0..100 {
-    //     jsprintln!("{:?}: {:?}", emu.pc, emu.regs);
-    //     if emu.step() != StepResult::Continue {
-    //         break;
-    //     }
-    // }
 }

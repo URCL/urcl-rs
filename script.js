@@ -164,7 +164,7 @@ let frame_id;
  */
 function start_emulation(source) {
     emulator = emulate(source);
-    continue_emulation();  
+    continue_emulation();
 }
 
 function continue_emulation() {
