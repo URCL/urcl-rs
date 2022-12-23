@@ -49,10 +49,10 @@ impl <'a> ErrorContext<'a> {
             writeln!(&mut output, "{}| {}", 
                 lineno, line.split_at(get_indent_level(line)).1.replace("\t", " ")
             ).unwrap();
-            writeln!(&mut output, "{}| {}<span class=\"note\">{}</span>",
+            writeln!(&mut output, "{}| {}<span class=\"error_line\">{}</span>",
                 " ".repeat(lineno_width),
                 &" ".repeat(col - get_indent_level(line)),
-                &"^".repeat(str_width(error.span).max(1))
+                &"\u{203E}".repeat(str_width(error.span).max(1))
             ).unwrap();
         }
         output

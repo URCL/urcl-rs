@@ -149,7 +149,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
                     "bss"     => inst(Inst::BSS(p.get_reg(), p.get_op(), p.get_op()), &mut p),
                     "cal"     => inst(Inst::CAL(p.get_jmp())                        , &mut p),
                     "ret"     => inst(Inst::RET                                     , &mut p),
-                    
+
                     "yomamma" => { p.err.error(&p.buf.current(), ErrorKind::YoMamma); p.buf.advance(); },
                     _ => { p.err.error(&p.buf.current(), ErrorKind::UnknownInstruction); p.buf.advance(); },
                 }
