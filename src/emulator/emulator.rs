@@ -408,7 +408,7 @@ impl EmulatorState  {
             CAL(a) => {self.stack_push(self.pc as u64); self.pc = self.get(a) as usize - 1},
             RET => {
                 match self.stack_pop() {
-                    Some(v) => self.pc = v as usize - 1,
+                    Some(v) => self.pc = v as usize,
                     None => (),
                 };
             },
