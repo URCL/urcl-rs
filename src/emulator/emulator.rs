@@ -128,13 +128,13 @@ impl EmulatorState  {
         self.stack.data[self.stack.sp as usize] = data;
         self.stack.sp += 1;
     }
-    fn stack_pop(&mut self) -> u64 {
+    fn stack_pop(&mut self) -> Option<u64> {
         if self.stack.sp <= 0 {
             self.error = EmulatorError(Some(EmulatorErrorKind::StackUnderflow));
-            return 0;
+            return None;
         }
         self.stack.sp -= 1;
-        self.stack.data[self.stack.sp as usize]
+        Some(self.stack.data[self.stack.sp as usize])
     }
     
     pub fn run(&mut self) -> StepResult {
@@ -279,8 +279,10 @@ impl EmulatorState  {
                 self.stack_push(self.get(a));
             },
             POP(a) => {
-                let b = self.stack_pop();
-                self.set(a, b);
+                match self.stack_pop() {
+                    Some(v) => self.set(a, v),
+                    None => (),
+                };
             },
             SSETG(a, b, c) => self.set(a,
                 if self.get(b) as i64 > self.get(c) as i64 {
@@ -404,7 +406,12 @@ impl EmulatorState  {
             SRS(a, b) => self.set(a, ((self.get(b) as i64) >> 1) as u64),
             BSS(a, b, c) => self.set(a, ((self.get(b) as i64) >> (self.get(c) as i64)) as u64),
             CAL(a) => {self.stack_push(self.pc as u64); self.pc = self.get(a) as usize - 1},
-            RET => self.pc = self.stack_pop() as usize,
+            RET => {
+                match self.stack_pop() {
+                    Some(v) => self.pc = v as usize - 1,
+                    None => (),
+                };
+            },
             _ => jsprintln!("Unimplimented instruction."),
         }
         self.pc += 1;
