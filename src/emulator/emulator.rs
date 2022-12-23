@@ -313,6 +313,9 @@ impl EmulatorState  {
                     self.pc = self.get(a) as usize;
                 }
             },
+            BSR(a, b, c) => self.set(a, self.get(b)>>self.get(c)),
+            BSL(a, b, c) => self.set(a, self.get(b)>>self.get(c)),
+
             _ => jsprintln!("Unimplimented instruction."),
         }
         self.pc += 1;
