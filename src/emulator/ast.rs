@@ -1,4 +1,4 @@
-use std::{collections::HashMap, str::FromStr};
+use std::{collections::HashMap, str::FromStr, rc::Rc};
 
 use super::{*, lexer::{Token, Kind, UToken}, errorcontext::{ErrorContext, ErrorKind}, devices::IOPort};
 
@@ -53,9 +53,9 @@ pub struct Parser<'a> {
     pub ast: Program
 }
 
-pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
+pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
     let err = ErrorContext::new();
-    let ast = Program::new();
+    let ast = Program::new(src);
     let buf = TokenBuffer::new(toks);
     let mut p = Parser {buf, err, ast};
 
@@ -103,25 +103,51 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
                     "and"     => inst(Inst::AND(p.get_reg(), p.get_op(), p.get_op()), &mut p),
                     "or"      => inst(Inst::OR (p.get_reg(), p.get_op(), p.get_op()), &mut p),
                     "not"     => inst(Inst::NOT(p.get_reg(), p.get_op())            , &mut p),
-                    "nand"    => inst(Inst::NAND(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "nand"    => inst(Inst::NAND(p.get_reg(), p.get_op(), p.get_op()),&mut p),
                     "cpy"     => inst(Inst::CPY(p.get_mem(), p.get_mem())           , &mut p),
                     "mlt"     => inst(Inst::MLT(p.get_reg(), p.get_op(), p.get_op()), &mut p),
                     "div"     => inst(Inst::DIV(p.get_reg(), p.get_op(), p.get_op()), &mut p),
                     "mod"     => inst(Inst::MOD(p.get_reg(), p.get_op(), p.get_op()), &mut p),
                     "abs"     => inst(Inst::ABS(p.get_reg(), p.get_op())            , &mut p),
-                    "llod"    => inst(Inst::LLOD(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "llod"    => inst(Inst::LLOD(p.get_reg(), p.get_op(), p.get_op()),&mut p),
                     "lstr"    => inst(Inst::LSTR(p.get_op(), p.get_op(), p.get_op()), &mut p),
-                    "sdiv"    => inst(Inst::SDIV(p.get_reg(), p.get_op(), p.get_op()), &mut p),
-                    "sete"    => inst(Inst::SETE(p.get_reg(), p.get_op(), p.get_op()), &mut p),
-                    "setne"   => inst(Inst::SETNE(p.get_reg(), p.get_op(), p.get_op()), &mut p),
-                    "setg"    => inst(Inst::SETG(p.get_reg(), p.get_op(), p.get_op()), &mut p),
-                    "setge"   => inst(Inst::SETGE(p.get_reg(), p.get_op(), p.get_op()), &mut p),
-                    "setl"    => inst(Inst::SETL(p.get_reg(), p.get_op(), p.get_op()), &mut p),
-                    "setle"   => inst(Inst::SETLE(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "sdiv"    => inst(Inst::SDIV(p.get_reg(), p.get_op(), p.get_op()),&mut p),
+                    "sete"    => inst(Inst::SETE(p.get_reg(), p.get_op(), p.get_op()),&mut p),
+                    "setne"   => inst(Inst::SETNE(p.get_reg(), p.get_op(), p.get_op()),&mut p),
+                    "setg"    => inst(Inst::SETG(p.get_reg(), p.get_op(), p.get_op()),&mut p),
+                    "setge"   => inst(Inst::SETGE(p.get_reg(), p.get_op(), p.get_op()),&mut p),
+                    "setl"    => inst(Inst::SETL(p.get_reg(), p.get_op(), p.get_op()),&mut p),
+                    "setle"   => inst(Inst::SETLE(p.get_reg(), p.get_op(), p.get_op()),&mut p),
                     "xor"     => inst(Inst::XOR(p.get_reg(), p.get_op(), p.get_op()), &mut p),
-                    "xnor"    => inst(Inst::XNOR(p.get_reg(), p.get_op(), p.get_op()), &mut p),
-                    "bne"     => inst(Inst::BNE(p.get_op(), p.get_op(), p.get_op())   , &mut p),
-                    "bre"     => inst(Inst::BRE(p.get_op(), p.get_op(), p.get_op())   , &mut p),
+                    "xnor"    => inst(Inst::XNOR(p.get_reg(), p.get_op(), p.get_op()),&mut p),
+                    "bne"     => inst(Inst::BNE(p.get_op(), p.get_op(), p.get_op()) , &mut p),
+                    "bre"     => inst(Inst::BRE(p.get_op(), p.get_op(), p.get_op()) , &mut p),
+                    "ssetg"   => inst(Inst::SSETG(p.get_reg(), p.get_op(), p.get_op()),&mut p),
+                    "ssetge"  => inst(Inst::SSETGE(p.get_reg(), p.get_op(), p.get_op()),&mut p),
+                    "ssetl"   => inst(Inst::SSETL(p.get_reg(), p.get_op(), p.get_op()),&mut p),
+                    "ssetle"  => inst(Inst::SSETLE(p.get_reg(), p.get_op(), p.get_op()),&mut p),
+                    "brl"     => inst(Inst::BRL(p.get_op(), p.get_op(), p.get_op()),   &mut p),
+                    "brg"     => inst(Inst::BRG(p.get_op(), p.get_op(), p.get_op()),   &mut p),
+                    "ble"     => inst(Inst::BLE(p.get_op(), p.get_op(), p.get_op()),   &mut p),
+                    "brz"     => inst(Inst::BRZ(p.get_op(), p.get_op())            ,   &mut p),
+                    "bnz"     => inst(Inst::BNZ(p.get_op(), p.get_op())            ,   &mut p),
+                    "setc"    => inst(Inst::SETC(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "setnc"   => inst(Inst::SETNC(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "bnc"     => inst(Inst::BNC(p.get_op(), p.get_op(), p.get_op()), &mut p),
+                    "brc"     => inst(Inst::BRC(p.get_op(), p.get_op(), p.get_op()), &mut p),
+                    "sbrl"    => inst(Inst::SBRL(p.get_op(), p.get_op(), p.get_op()),  &mut p),
+                    "sbrg"    => inst(Inst::SBRG(p.get_op(), p.get_op(), p.get_op()),   &mut p),
+                    "sble"    => inst(Inst::SBLE(p.get_op(), p.get_op(), p.get_op()),   &mut p),
+                    "sbge"    => inst(Inst::SBGE(p.get_op(), p.get_op(), p.get_op()),   &mut p),
+                    "bod"     => inst(Inst::BOD(p.get_op(), p.get_op())             , &mut p),
+                    "bev"     => inst(Inst::BEV(p.get_op(), p.get_op())             , &mut p),
+                    "brn"     => inst(Inst::BRN(p.get_op(), p.get_op()),              &mut p),
+                    "brp"     => inst(Inst::BRP(p.get_op(), p.get_op()),              &mut p),
+                    "bsr"     => inst(Inst::BSR(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "bsl"     => inst(Inst::BSL(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "srs"     => inst(Inst::SRS(p.get_reg(), p.get_op())            , &mut p),
+                    "bss"     => inst(Inst::BSS(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+
                     "yomamma" => { p.err.error(&p.buf.current(), ErrorKind::YoMamma); p.buf.advance(); },
                     _ => { p.err.error(&p.buf.current(), ErrorKind::UnknownInstruction); p.buf.advance(); },
                 }
@@ -170,6 +196,31 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>) -> Parser {
                                 Inst::XNOR(a, b, c) => Inst::XNOR(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 Inst::BNE(a, b, c) => Inst::BNE(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 Inst::BRE(a, b, c) => Inst::BRE(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SSETG(a, b, c) => Inst::SSETG(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SSETGE(a, b, c) => Inst::SSETGE(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SSETL(a, b, c) => Inst::SSETL(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SSETLE(a, b, c) => Inst::SSETLE(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::BRL(a, b, c) => Inst::BRL(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::BRG(a, b, c) => Inst::BRG(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::BLE(a, b, c) => Inst::BLE(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::BRZ(a, b) => Inst::BRZ(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc)),
+                                Inst::BNZ(a, b) => Inst::BNZ(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc)),
+                                Inst::SETC(a, b, c) => Inst::SETC(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SETNC(a, b, c) => Inst::SETNC(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::BNC(a, b, c) => Inst::BNC(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::BRC(a, b, c) => Inst::BRC(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SBRL(a, b, c) => Inst::SBRL(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SBRG(a, b, c) => Inst::SBRG(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SBLE(a, b, c) => Inst::SBLE(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SBGE(a, b, c) => Inst::SBGE(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::BOD(a, b) => Inst::BOD(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc)),
+                                Inst::BEV(a, b) => Inst::BEV(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc)),
+                                Inst::BRN(a, b) => Inst::BRN(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc)),
+                                Inst::BRP(a, b) => Inst::BRP(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc)),
+                                Inst::BSR(a, b, c) => Inst::BSR(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::BSL(a, b, c) => Inst::BSL(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SRS(a, b) => Inst::SRS(a.clone(), b.clone().transform_label(label_name, pc)),
+                                Inst::BSS(a, b, c) => Inst::BSS(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 _ => continue,
                             }
                         }
@@ -404,11 +455,23 @@ pub struct Program {
     pub instructions: Vec<Inst>,
     pub labels: HashMap<String, Label>,
     pub memory: Vec<u64>,
+    pub debug: DebugInfo,
 }
 
 impl Program {
-    pub fn new() -> Self {
-        Program { headers: Headers::new(), instructions: Vec::new(), labels: HashMap::new(), memory: Vec::new() }
+    pub fn new(src: Rc<str>) -> Self {
+        Self { headers: Headers::new(), instructions: Vec::new(), labels: HashMap::new(), memory: Vec::new(), debug: DebugInfo::new(src) }
+    }
+}
+
+#[derive(Debug)]
+pub struct DebugInfo {
+    pub src: Rc<str>,
+    pub pc_to_line_start: HashMap<u64, usize>
+}
+impl DebugInfo {
+    pub fn new(src: Rc<str>) -> Self {
+        Self {src, pc_to_line_start: HashMap::new()}
     }
 }
 
@@ -497,5 +560,30 @@ pub enum Inst {
     XOR(Operand, Operand, Operand),
     XNOR(Operand, Operand, Operand),
     BNE(Operand, Operand, Operand),
-    BRE(Operand, Operand, Operand)
+    BRE(Operand, Operand, Operand),
+    SSETG(Operand, Operand, Operand),
+    SSETGE(Operand, Operand, Operand),
+    SSETL(Operand, Operand, Operand),
+    SSETLE(Operand, Operand, Operand),
+    BRL(Operand, Operand, Operand),
+    BRG(Operand, Operand, Operand),
+    BLE(Operand, Operand, Operand),
+    BRZ(Operand, Operand),
+    BNZ(Operand, Operand),
+    SETC(Operand, Operand, Operand),
+    SETNC(Operand, Operand, Operand),
+    BNC(Operand, Operand, Operand),
+    BRC(Operand, Operand, Operand),
+    SBRL(Operand, Operand, Operand),
+    SBRG(Operand, Operand, Operand),
+    SBLE(Operand, Operand, Operand),
+    SBGE(Operand, Operand, Operand),
+    BOD(Operand, Operand),
+    BEV(Operand, Operand),
+    BRN(Operand, Operand),
+    BRP(Operand, Operand),
+    BSR(Operand, Operand, Operand),
+    BSL(Operand, Operand, Operand),
+    SRS(Operand, Operand),
+    BSS(Operand, Operand, Operand),
 }

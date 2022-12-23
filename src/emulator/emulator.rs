@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{time::Duration, rc::Rc};
 use devices::DeviceHost;
 
 use wasm_bindgen::prelude::*;
@@ -67,11 +67,17 @@ pub enum StepResult {
 pub const PC: u64 = u64::MAX;
 pub const SP: u64 = u64::MAX - 1;
 
+fn does_overflow(a: u64, b: u64) -> bool {
+    match a.checked_add(b) {
+        Some(_) => false,
+        None    => true
+    }
+}
+
 // you cant bindgen impls i dont think
 #[wasm_bindgen]
 #[allow(dead_code)]
-impl EmulatorState {
-
+impl EmulatorState  {
     fn new(program: Program, devices: DeviceHost) -> Self {
         let regs = vec![0; program.headers.minreg as usize];
         let heap = vec![0; (program.headers.minheap + program.headers.minstack) as usize];
@@ -178,7 +184,6 @@ impl EmulatorState {
     
     // now how did multitrheading work on the web again lol
     // is there some cargo library for that or should we just do some Worker schenenigans
-    
 
     pub fn step(&mut self) -> StepResult {
         // safety: pc is bounds checked here 
@@ -276,14 +281,135 @@ impl EmulatorState {
             POP(a) => {
                 let b = self.stack_pop();
                 self.set(a, b);
-            }
+            },
+            SSETG(a, b, c) => self.set(a,
+                if self.get(b) as i64 > self.get(c) as i64 {
+                    u64::MAX
+                } else {
+                    0
+                }
+            ),
+            SSETGE(a, b, c) => self.set(a,
+                if (self.get(b) as i64) >= (self.get(c) as i64) {
+                    u64::MAX
+                } else {
+                    0
+                }
+            ),
+            SSETL(a, b, c) => self.set(a,
+                if (self.get(b) as i64) < (self.get(c) as i64) {
+                    u64::MAX
+                } else {
+                    0
+                }
+            ),
+            SSETLE(a, b, c) => self.set(a,
+                if (self.get(b) as i64) <= (self.get(c) as i64) {
+                    u64::MAX
+                } else {
+                    0
+                }
+            ),
+            BRL(a, b, c) => {
+                if self.get(b) < self.get(c) {
+                    self.pc = self.get(a) as usize - 1;
+                }
+            },
+            BRG(a, b, c) => {
+                if self.get(b) > self.get(c) {
+                    self.pc = self.get(a) as usize - 1;
+                }
+            },
+            BLE(a, b, c) => {
+                if self.get(b) <= self.get(c) {
+                    self.pc = self.get(a) as usize - 1;
+                }
+            },
+            BRZ(a, b) => {
+                if self.get(b) == 0 {
+                    self.pc = self.get(a) as usize - 1;
+                }
+            },
+            BNZ(a, b) => {
+                if self.get(b) != 0 {
+                    self.pc = self.get(a) as usize - 1;
+                }
+            },
+            SETC(a, b, c) => self.set(a, 
+                match does_overflow(self.get(b), self.get(c)) {
+                    true => u64::MAX,
+                    false => 0
+                }
+            ),
+            SETNC(a, b, c) => self.set(a, 
+                match does_overflow(self.get(b), self.get(c)) {
+                    false => u64::MAX,
+                    true => 0
+                }
+            ),
+            BNC(a, b, c) => {
+                match does_overflow(self.get(b), self.get(c)) {
+                    false => self.pc = self.get(a) as usize,
+                    _ => {}
+                }
+            },
+            BRC(a, b, c) => {
+                match does_overflow(self.get(b), self.get(c)) {
+                    true => self.pc = self.get(a) as usize,
+                    _ => {}
+                }
+            },
+            SBRL(a, b, c) => {
+                if (self.get(b) as i64) < (self.get(c) as i64) {
+                    self.pc = self.get(a) as usize;
+                }
+            },
+            SBRG(a, b, c) => {
+                if (self.get(b) as i64) > (self.get(c) as i64) {
+                    self.pc = self.get(a) as usize;
+                }
+            },
+            SBLE(a, b, c) => {
+                if (self.get(b) as i64) <= (self.get(c) as i64) {
+                    self.pc = self.get(a) as usize;
+                }
+            },
+            SBGE(a, b, c) => {
+                if (self.get(b) as i64) >= (self.get(c) as i64) {
+                    self.pc = self.get(a) as usize;
+                }
+            },
+            BOD(a, b) => {
+                if self.get(b) % 2 != 0 {
+                    self.pc = self.get(a) as usize;
+                }
+            },
+            BEV(a, b) => {
+                if self.get(b) % 2 == 0 {
+                    self.pc = self.get(a) as usize;
+                }
+            },
+            BRN(a, b) => {
+                if (self.get(b) as i64) < 0 {
+                    self.pc = self.get(a) as usize;
+                }
+            },
+            BRP(a, b) => {
+                if (self.get(b) as i64) >= 0 {
+                    self.pc = self.get(a) as usize;
+                }
+            },
+            BSR(a, b, c) => self.set(a, self.get(b)>>self.get(c)),
+            BSL(a, b, c) => self.set(a, self.get(b)>>self.get(c)),
+            SRS(a, b) => self.set(a, ((self.get(b) as i64) >> 1) as u64),
+            BSS(a, b, c) => self.set(a, ((self.get(b) as i64) >> (self.get(c) as i64)) as u64),
             _ => jsprintln!("Unimplimented instruction."),
         }
         self.pc += 1;
 
         match &self.error {
             EmulatorError(Some(err)) => {
-                jsprintln!("<span class=\"error\">Emulator Error: {} at PC: {}</span>", err, self.pc);
+                jsprintln!("<span class=\"error\">Emulator Error: {} at PC: {}</span>", err, self.pc-1);
                 StepResult::Error
             },
             EmulatorError(None) => StepResult::Continue
@@ -298,13 +424,14 @@ unsafe fn fuck_borrow_checker<T>(a: *const T) -> &'static T { // no
 
 #[allow(dead_code)]
 #[wasm_bindgen]
-pub fn emulate(src: &str) -> Option<EmulatorState> { // wifi died
+pub fn emulate(src: String) -> Option<EmulatorState> { // wifi died
+    let src = Rc::from(src);
     clear_text();
-    let toks = lexer::lex(src);
+    let toks = lexer::lex(&src);
 
-    let Parser {ast: program, err, ..} = ast::gen_ast(toks);
+    let Parser {ast: program, err, ..} = ast::gen_ast(toks, src.clone());
     jsprintln!("{:#?}", program);
-    jsprintln!("{}", err.to_string(src));
+    jsprintln!("{}", err.to_string(&src));
     if err.has_error() {
         return None;
     }
