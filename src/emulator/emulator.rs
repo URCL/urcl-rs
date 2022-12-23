@@ -273,6 +273,26 @@ impl EmulatorState  {
                     _ => {}
                 }
             },
+            SBRL(a, b, c) => {
+                if (self.get(b) as i64) < (self.get(c) as i64) {
+                    self.pc = self.get(a) as usize;
+                }
+            },
+            SBRG(a, b, c) => {
+                if (self.get(b) as i64) > (self.get(c) as i64) {
+                    self.pc = self.get(a) as usize;
+                }
+            },
+            SBLE(a, b, c) => {
+                if (self.get(b) as i64) <= (self.get(c) as i64) {
+                    self.pc = self.get(a) as usize;
+                }
+            },
+            SBGE(a, b, c) => {
+                if (self.get(b) as i64) >= (self.get(c) as i64) {
+                    self.pc = self.get(a) as usize;
+                }
+            },
             _ => jsprintln!("Unimplimented instruction."),
         }
         self.pc += 1;

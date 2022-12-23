@@ -135,6 +135,10 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
                     "setnc"   => inst(Inst::SETNC(p.get_reg(), p.get_op(), p.get_op()), &mut p),
                     "bnc"     => inst(Inst::BNC(p.get_op(), p.get_op(), p.get_op()), &mut p),
                     "brc"     => inst(Inst::BRC(p.get_op(), p.get_op(), p.get_op()), &mut p),
+                    "sbrl"    => inst(Inst::SBRL(p.get_op(), p.get_op(), p.get_op()),  &mut p),
+                    "sbrg"    => inst(Inst::SBRG(p.get_op(), p.get_op(), p.get_op()),   &mut p),
+                    "sble"    => inst(Inst::SBLE(p.get_op(), p.get_op(), p.get_op()),   &mut p),
+                    "sbge"    => inst(Inst::SBGE(p.get_op(), p.get_op(), p.get_op()),   &mut p),
                     "yomamma" => { p.err.error(&p.buf.current(), ErrorKind::YoMamma); p.buf.advance(); },
                     _ => { p.err.error(&p.buf.current(), ErrorKind::UnknownInstruction); p.buf.advance(); },
                 }
@@ -196,8 +200,10 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
                                 Inst::SETNC(a, b, c) => Inst::SETNC(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 Inst::BNC(a, b, c) => Inst::BNC(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 Inst::BRC(a, b, c) => Inst::BRC(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
-
-
+                                Inst::SBRL(a, b, c) => Inst::SBRL(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SBRG(a, b, c) => Inst::SBRG(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SBLE(a, b, c) => Inst::SBLE(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SBGE(a, b, c) => Inst::SBGE(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
 
                                 _ => continue,
                             }
@@ -551,5 +557,9 @@ pub enum Inst {
     SETC(Operand, Operand, Operand),
     SETNC(Operand, Operand, Operand),
     BNC(Operand, Operand, Operand),
-    BRC(Operand, Operand, Operand)
+    BRC(Operand, Operand, Operand),
+    SBRL(Operand, Operand, Operand),
+    SBRG(Operand, Operand, Operand),
+    SBLE(Operand, Operand, Operand),
+    SBGE(Operand, Operand, Operand)
 }
