@@ -47,17 +47,26 @@ impl <'a> ErrorContext<'a> {
                 format!("{}", error.level).to_lowercase(), error.level, error.kind
             ).unwrap();
             writeln!(&mut output, "{}| {}", 
-                lineno, line.replace("\t", " ").split_whitespace().collect::<Vec<_>>().join(" ")
+                lineno, line.split_at(get_indent_level(line)).1.replace("\t", " ")
             ).unwrap();
-            writeln!(&mut output, "{}| {}<span class=\"note\">{}</span>",
+            writeln!(&mut output, "{}| {}<span class=\"error_line\">{}</span>",
                 " ".repeat(lineno_width),
-                &" ".repeat(col - (line.len() - line.replace("\t", " ").split_whitespace().collect::<Vec<_>>().join(" ").len())),
-                &"^".repeat(str_width(error.span).max(1))
+                &" ".repeat(col - get_indent_level(line)),
+                &"\u{203E}".repeat(str_width(error.span).max(1))
             ).unwrap();
         }
         output
     }
 }
+
+pub fn get_indent_level(src: &str) -> usize {
+    let mut tabs = 0;
+    for el in src.chars() {
+        if el != '\t' && el != ' ' {break} else {tabs += 1}
+    }
+    tabs
+}
+
 #[derive(Debug, Display)]
 enum ErrorLevel {
     Info, Warning, Error
@@ -83,8 +92,6 @@ pub enum ErrorKind<'a> {
     DWNoEnding,
     EOFBeforeEndOfString,
     EOFBeforeEndOfChar,
-    StackOverflow,
-    StackUnderflow,
     DuplicatedLabelName,
     YoMamma
 }
@@ -98,8 +105,8 @@ impl <'a> Display for ErrorKind<'a> {
             ErrorKind::DWNoEnding => write!(f, "Missing ']'"),
             ErrorKind::EOFBeforeEndOfString => write!(f, "Missing '\"'"),
             ErrorKind::EOFBeforeEndOfChar => write!(f, "Missing '''"),
-            ErrorKind::StackOverflow => write!(f, "Stack overflow"),
-            ErrorKind::StackUnderflow => write!(f, "Stack underflow"),
+            // ErrorKind::StackOverflow => write!(f, "Stack overflow"),
+            // ErrorKind::StackUnderflow => write!(f, "Stack underflow"),
             ErrorKind::InvalidOperand => write!(f, "Invalid operand"),
             ErrorKind::UndefinedLabel => write!(f, "Undefined label"),
             ErrorKind::DuplicatedLabelName => write!(f, "Duplicated label name"),

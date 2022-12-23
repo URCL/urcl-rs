@@ -17,14 +17,13 @@ extern {
     
     pub fn out_span(text: &str, class_name: &str);
     pub fn clear_span();
+    pub fn out_linenumber(text: &str);
     
     pub fn now() -> f64;
     pub fn out_debug(text: &str);
 
     pub fn out_screen(width: usize, height: usize, pixels: &[u32]);
     pub fn clear_screen();
-
-    pub fn get_tab_size() -> usize;
 }
 
 #[wasm_bindgen]

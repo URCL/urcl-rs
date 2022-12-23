@@ -147,6 +147,8 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
                     "bsl"     => inst(Inst::BSL(p.get_reg(), p.get_op(), p.get_op()), &mut p),
                     "srs"     => inst(Inst::SRS(p.get_reg(), p.get_op())            , &mut p),
                     "bss"     => inst(Inst::BSS(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "cal"     => inst(Inst::CAL(p.get_jmp())                        , &mut p),
+                    "ret"     => inst(Inst::RET                                     , &mut p),
 
                     "yomamma" => { p.err.error(&p.buf.current(), ErrorKind::YoMamma); p.buf.advance(); },
                     _ => { p.err.error(&p.buf.current(), ErrorKind::UnknownInstruction); p.buf.advance(); },
@@ -221,6 +223,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
                                 Inst::BSL(a, b, c) => Inst::BSL(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 Inst::SRS(a, b) => Inst::SRS(a.clone(), b.clone().transform_label(label_name, pc)),
                                 Inst::BSS(a, b, c) => Inst::BSS(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::CAL(a) => Inst::CAL(a.clone().transform_label(label_name, pc)),
                                 _ => continue,
                             }
                         }
@@ -586,4 +589,6 @@ pub enum Inst {
     BSL(Operand, Operand, Operand),
     SRS(Operand, Operand),
     BSS(Operand, Operand, Operand),
+    CAL(Operand),
+    RET,
 }

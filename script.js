@@ -28,6 +28,7 @@ function by_id(clazz, name) {
 const stdout = by_id(HTMLElement, "stdout");
 const pause_button = by_id(HTMLButtonElement, "pause");
 const highlight = by_id(HTMLElement, "highlight");
+const line_numbers = by_id(HTMLElement, "line-numbers")
 const code_input = by_id(HTMLTextAreaElement, "code_input");
 const auto_emulate = by_id(HTMLInputElement, "auto_emulate");
 
@@ -71,11 +72,30 @@ export function out_debug(text) {
  * @param {string} text 
  * @param {string} clazz 
  */
+
+let linenum = 1;
 export function out_span(text, class_name) {
-    const span = document.createElement("span");
-    span.textContent = text;
-    span.className = class_name;
-    highlight.appendChild(span);
+    if (text !== "\n") {
+        const span = document.createElement("span");
+        span.textContent = text;
+        span.className = class_name;
+        highlight.appendChild(span);
+    } else {
+        out_linenumber(text);
+        const span = document.createElement("span");
+        span.textContent = text;
+        span.className = class_name;
+        highlight.appendChild(span);
+    }
+}
+
+export function out_linenumber(text) {
+    if (text === "") linenum = 1;
+    const a = document.createElement("span");
+    a.textContent = text + linenum;
+    a.className = "line-number";
+    line_numbers.appendChild(a);
+    linenum++;
 }
 
 const screen_canvas = by_id(HTMLCanvasElement, "screen");
@@ -106,29 +126,30 @@ export function output_registers(regs) {
 
 export async function clear_span() {
     highlight.innerHTML = "";
+    line_numbers.innerHTML = "";
 }
 
 export function resync_element_size() {
     const code_in_bounding_box  = code_input.getBoundingClientRect();
     highlight.style.top         = code_in_bounding_box.top + "px";
-    highlight.style.left        = code_in_bounding_box.left + "px";
-    highlight.style.width       = (code_in_bounding_box.width  - parseFloat(getComputedStyle(highlight).fontSize)) + "px";
-    highlight.style.height      = (code_in_bounding_box.height - parseFloat(getComputedStyle(highlight).fontSize)) + "px";
+    highlight.style.left        = (code_in_bounding_box.left    + (parseFloat(getComputedStyle(highlight).fontSize)) * 2.5) + "px";
+    highlight.style.width       = (code_in_bounding_box.width   - (parseFloat(getComputedStyle(highlight).fontSize)) * 4.25) + "px";
+    highlight.style.height      = (code_in_bounding_box.height  - (parseFloat(getComputedStyle(highlight).fontSize)) * .3) + "px";
+    
+    line_numbers.style.top      = code_in_bounding_box.top  + "px";
+    line_numbers.style.width    = parseFloat(getComputedStyle(highlight).fontSize) * 4 + "px";
+    line_numbers.style.height   = (code_in_bounding_box.height - (parseFloat(getComputedStyle(highlight).fontSize)) * .3) + "px";
 
     screen_canvas.style.width   = ""; screen_canvas.style.height = "";
-    const screen_bounding_box  = screen_canvas.getBoundingClientRect();
-    screen_canvas.style.width  = screen_bounding_box.width  + "px";
-    screen_canvas.style.height = screen_bounding_box.height + "px";
+    const screen_bounding_box   = screen_canvas.getBoundingClientRect();
+    screen_canvas.style.width   = screen_bounding_box.width  + "px";
+    screen_canvas.style.height  = screen_bounding_box.height + "px";
 }
 
 export function update_debug_buttons(new_state) {
     for (let i = 0; i < document.getElementsByClassName("debug_only").length; i++) {
         document.getElementsByClassName("debug_only")[i].style.display = new_state ? "initial" : "none";
     }
-}
-
-export function get_tab_size() {
-    return document.querySelector(":root").style.getPropertyValue("--tab-size");
 }
 
 /** @type {undefined | EmulatorState} */
@@ -142,7 +163,7 @@ let frame_id;
  */
 function start_emulation(source) {
     emulator = emulate(source);
-    continue_emulation();  
+    continue_emulation();
 }
 
 function continue_emulation() {
@@ -201,7 +222,11 @@ init().then(() => { // all code should go in here
         if (auto_emulate.checked) start_emulation(code_input.value);
     };
 
-    code_input.onscroll                                 = function() { highlight.scrollTo(0, code_input.scrollTop); };
+    code_input.onscroll = () => {
+        highlight.scrollTo(code_input.scrollLeft, code_input.scrollTop);
+        line_numbers.scrollTo(0, code_input.scrollTop);
+    };
+
     document.getElementById("document_link").onclick    = function() { window.open("https://github.com/ModPunchtree/URCL/releases/latest", "_blank"); };
     document.getElementById("emulate").onclick          = function() { start_emulation(code_input.value); };
     document.getElementById("clear").onclick            = function() { clear_text(); };

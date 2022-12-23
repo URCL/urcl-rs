@@ -19,6 +19,7 @@ pub fn is_inline_white(c: char) -> bool {
 
 pub fn lex(src: &str) -> Vec<Token<Kind>>{
     use Kind::*;
+    use crate::emulator::emulator::*;
     let mut s = Scanner::<Kind>::new(src);
 
     while let Some(c) = s.next() {
@@ -71,12 +72,18 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
                         Ok(value) => s.create(PortNum(value)),
                         Err(_err) => s.create(Error),
                     }
-
                 } else {
                     s._while(char::is_alphanumeric); s.create(Port)
                 }
             },
-            'a'..='z' | 'A'..='Z' => {s._while(char::is_alphanumeric); s.create(Name)},
+            'a'..='z' | 'A'..='Z' => {
+                s._while(char::is_alphanumeric);
+                match s.str().to_lowercase().as_str() {
+                    "pc" => s.create(Reg(PC)),
+                    "sp" => s.create(Reg(SP)),
+                    _ => s.create(Name)
+                }
+            },
             '>' => {if s._if(|c|c=='=') {s.create(GE);} else {s.create(Error);}}
             '<' => {if s._if(|c|c=='=') {s.create(LE);} else {s.create(Error);}}
             '=' => {if s._if(|c|c=='=') {s.create(Eq);} else {s.create(Error);}}

@@ -6,26 +6,71 @@ use crate::emulator::ast::Parser;
 
 use super::{*, lexer, ast::{self, Inst, Program, Operand}};
 
+#[derive(Debug)]
+pub enum EmulatorErrorKind {
+    StackOverflow,
+    StackUnderflow,
+}
+
+impl <'a> std::fmt::Display for EmulatorErrorKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            EmulatorErrorKind::StackOverflow => write!(f, "Stack overflow"),
+            EmulatorErrorKind::StackUnderflow => write!(f, "Stack underflow"),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct EmulatorError(Option<EmulatorErrorKind>);
+
+impl EmulatorError {
+    fn new() -> Self {
+        EmulatorError(None)
+    }
+}
+
 #[wasm_bindgen]
 #[derive(Debug)]
 pub struct EmulatorState {
     regs: Vec<u64>,
     heap: Vec<u64>,
+    stack: Stack,
     pc: usize,
     program: Program,
     devices: DeviceHost,
+    error: EmulatorError,
+}
+
+#[derive(Debug)]
+pub struct Stack {
+    data: Vec<u64>,
+    sp: i64,
+    size: usize,
+}
+
+impl Stack {
+    fn new(size: usize) -> Self {
+        let mut data = Vec::new();
+        data.resize(size, 0);
+        Stack { data, sp: 0, size }
+    }
+    
 }
 
 #[wasm_bindgen]
 #[derive(Debug, PartialEq, Eq)]
 pub enum StepResult {
-    Continue, HLT, Input,
+    Continue, HLT, Input, Error
 }
+
+pub const PC: u64 = u64::MAX;
+pub const SP: u64 = u64::MAX - 1;
 
 fn does_overflow(a: u64, b: u64) -> bool {
     match a.checked_add(b) {
         Some(_) => false,
-        None         => true
+        None    => true
     }
 }
 
@@ -33,17 +78,22 @@ fn does_overflow(a: u64, b: u64) -> bool {
 #[wasm_bindgen]
 #[allow(dead_code)]
 impl EmulatorState  {
-
     fn new(program: Program, devices: DeviceHost) -> Self {
         let regs = vec![0; program.headers.minreg as usize];
         let heap = vec![0; (program.headers.minheap + program.headers.minstack) as usize];
-        EmulatorState { regs, heap, pc: 0, program, devices }
+        EmulatorState { regs, heap, stack: Stack::new(program.headers.minstack as usize), pc: 0, program, devices, error: EmulatorError::new() }
     }
     
     fn get(&self, operand: &Operand) -> u64 {
         match operand {
             Operand::Imm(v) => *v,
-            Operand::Reg(v) => self.regs[*v as usize],
+            Operand::Reg(v) => {
+                match *v {
+                    PC => self.pc as u64,
+                    SP => self.stack.data.len() as u64,
+                    _  => self.regs[*v as usize]
+                }
+            },
             _ => panic!("Unsupported operand {:?}", operand)
         }
     }
@@ -51,7 +101,11 @@ impl EmulatorState  {
         match operand {
             Operand::Imm(_) => {}, // do nothing assume it is r0
             Operand::Reg(v) => {
-                self.regs[*v as usize] = value;
+                match *v {
+                    PC => self.pc = value as usize,
+                    SP => self.stack.sp = value as i64,
+                    _  => self.regs[*v as usize] = value
+                }
             },
             _ => panic!("Unsupported target operand {:?}", operand)
         }
@@ -65,13 +119,34 @@ impl EmulatorState  {
         let index = self.get(operand) as usize;
         self.heap[index] = value;
     }
+
+    fn stack_push(&mut self, data: u64) {
+        if self.stack.sp >= self.stack.size as i64 {
+            self.error = EmulatorError(Some(EmulatorErrorKind::StackOverflow));
+            return;
+        }
+        self.stack.data[self.stack.sp as usize] = data;
+        self.stack.sp += 1;
+    }
+    fn stack_pop(&mut self) -> Option<u64> {
+        if self.stack.sp <= 0 {
+            self.error = EmulatorError(Some(EmulatorErrorKind::StackUnderflow));
+            return None;
+        }
+        self.stack.sp -= 1;
+        Some(self.stack.data[self.stack.sp as usize])
+    }
     
     pub fn run(&mut self) -> StepResult {
         loop {
             let result = self.step();
-            if result != StepResult::Continue {
-                self.devices.show();
-                return result;
+            match result {
+                StepResult::Continue => (),
+                StepResult::Error => return result,
+                _ => {
+                    self.devices.show();
+                    return result;
+                },
             }
         }
     }
@@ -91,9 +166,13 @@ impl EmulatorState  {
         while now() < end {
             for _ in 0..BURST_LENGTH {
                 let result = self.step();
-                if result != StepResult::Continue {
-                    self.show();
-                    return result;
+                match result {
+                    StepResult::Continue => (),
+                    StepResult::Error => return result,
+                    _ => {
+                        self.devices.show();
+                        return result;
+                    },
                 }
             }
         }
@@ -195,6 +274,15 @@ impl EmulatorState  {
                 if self.get(b) == self.get(c) {
                     self.pc = self.get(a) as usize;
                 }
+            },
+            PSH(a) => {
+                self.stack_push(self.get(a));
+            },
+            POP(a) => {
+                match self.stack_pop() {
+                    Some(v) => self.set(a, v),
+                    None => (),
+                };
             },
             SSETG(a, b, c) => self.set(a,
                 if self.get(b) as i64 > self.get(c) as i64 {
@@ -317,11 +405,24 @@ impl EmulatorState  {
             BSL(a, b, c) => self.set(a, self.get(b)>>self.get(c)),
             SRS(a, b) => self.set(a, ((self.get(b) as i64) >> 1) as u64),
             BSS(a, b, c) => self.set(a, ((self.get(b) as i64) >> (self.get(c) as i64)) as u64),
+            CAL(a) => {self.stack_push(self.pc as u64); self.pc = self.get(a) as usize - 1},
+            RET => {
+                match self.stack_pop() {
+                    Some(v) => self.pc = v as usize - 1,
+                    None => (),
+                };
+            },
             _ => jsprintln!("Unimplimented instruction."),
         }
         self.pc += 1;
 
-        StepResult::Continue
+        match &self.error {
+            EmulatorError(Some(err)) => {
+                jsprintln!("<span class=\"error\">Emulator Error: {} at PC: {}</span>", err, self.pc-1);
+                StepResult::Error
+            },
+            EmulatorError(None) => StepResult::Continue
+        }
     }
 }
 
@@ -348,21 +449,4 @@ pub fn emulate(src: String) -> Option<EmulatorState> { // wifi died
     let emu = EmulatorState::new(program, host);
 
     return Some(emu);
-    // i can add more insts while you guys do that
-    // also please do the too late label thing
-    // we need to get some web workers out 👷‍♂️
-    // let result = emu.run_for(Duration::from_millis(1000));
-    // if result == StepResult::Continue {
-    //     jsprintln!("Program took too long");
-    // } else {
-    //     jsprintln!("Program Halted");
-    // }
-    // emu.devices.show();
-    // return emu;
-    // for _ in 0..100 {
-    //     jsprintln!("{:?}: {:?}", emu.pc, emu.regs);
-    //     if emu.step() != StepResult::Continue {
-    //         break;
-    //     }
-    // }
 }
