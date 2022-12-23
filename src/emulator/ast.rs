@@ -194,6 +194,8 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
                                 Inst::BNZ(a, b) => Inst::BNZ(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc)),
                                 Inst::SETC(a, b, c) => Inst::SETC(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 Inst::SETNC(a, b, c) => Inst::SETNC(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::BNC(a, b, c) => Inst::BNC(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::BRC(a, b, c) => Inst::BRC(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
 
 
 
