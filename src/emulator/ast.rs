@@ -143,8 +143,10 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
                     "bev"     => inst(Inst::BEV(p.get_op(), p.get_op())             , &mut p),
                     "brn"     => inst(Inst::BRN(p.get_op(), p.get_op()),              &mut p),
                     "brp"     => inst(Inst::BRP(p.get_op(), p.get_op()),              &mut p),
-                    "bsr"     => inst(Inst::BSR(p.get_op(), p.get_op(), p.get_op()), &mut p),
-                    "bsl"     => inst(Inst::BSL(p.get_op(), p.get_op(), p.get_op()), &mut p),
+                    "bsr"     => inst(Inst::BSR(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "bsl"     => inst(Inst::BSL(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "srs"     => inst(Inst::SRS(p.get_reg(), p.get_op())            , &mut p),
+                    "bss"     => inst(Inst::BSS(p.get_reg(), p.get_op(), p.get_op()), &mut p),
 
                     "yomamma" => { p.err.error(&p.buf.current(), ErrorKind::YoMamma); p.buf.advance(); },
                     _ => { p.err.error(&p.buf.current(), ErrorKind::UnknownInstruction); p.buf.advance(); },
@@ -217,7 +219,8 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
                                 Inst::BRP(a, b) => Inst::BRP(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc)),
                                 Inst::BSR(a, b, c) => Inst::BSR(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 Inst::BSL(a, b, c) => Inst::BSL(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
-
+                                Inst::SRS(a, b) => Inst::SRS(a.clone(), b.clone().transform_label(label_name, pc)),
+                                Inst::BSS(a, b, c) => Inst::BSS(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 _ => continue,
                             }
                         }
@@ -581,4 +584,6 @@ pub enum Inst {
     BRP(Operand, Operand),
     BSR(Operand, Operand, Operand),
     BSL(Operand, Operand, Operand),
+    SRS(Operand, Operand),
+    BSS(Operand, Operand, Operand),
 }

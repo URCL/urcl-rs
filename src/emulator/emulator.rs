@@ -315,7 +315,8 @@ impl EmulatorState  {
             },
             BSR(a, b, c) => self.set(a, self.get(b)>>self.get(c)),
             BSL(a, b, c) => self.set(a, self.get(b)>>self.get(c)),
-
+            SRS(a, b) => self.set(a, ((self.get(b) as i64) >> 1) as u64),
+            BSS(a, b, c) => self.set(a, ((self.get(b) as i64) >> (self.get(c) as i64)) as u64),
             _ => jsprintln!("Unimplimented instruction."),
         }
         self.pc += 1;
