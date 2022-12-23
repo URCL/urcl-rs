@@ -131,6 +131,10 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
                     "ble"     => inst(Inst::BLE(p.get_op(), p.get_op(), p.get_op()),   &mut p),
                     "brz"     => inst(Inst::BRZ(p.get_op(), p.get_op())            ,   &mut p),
                     "bnz"     => inst(Inst::BNZ(p.get_op(), p.get_op())            ,   &mut p),
+                    "setc"    => inst(Inst::SETC(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "setnc"   => inst(Inst::SETNC(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "bnc"     => inst(Inst::BNC(p.get_op(), p.get_op(), p.get_op()), &mut p),
+                    "brc"     => inst(Inst::BRC(p.get_op(), p.get_op(), p.get_op()), &mut p),
                     "yomamma" => { p.err.error(&p.buf.current(), ErrorKind::YoMamma); p.buf.advance(); },
                     _ => { p.err.error(&p.buf.current(), ErrorKind::UnknownInstruction); p.buf.advance(); },
                 }
@@ -188,6 +192,8 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
                                 Inst::BLE(a, b, c) => Inst::BLE(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 Inst::BRZ(a, b) => Inst::BRZ(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc)),
                                 Inst::BNZ(a, b) => Inst::BNZ(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc)),
+                                Inst::SETC(a, b, c) => Inst::SETC(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SETNC(a, b, c) => Inst::SETNC(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
 
 
 
@@ -539,5 +545,9 @@ pub enum Inst {
     BRG(Operand, Operand, Operand),
     BLE(Operand, Operand, Operand),
     BRZ(Operand, Operand),
-    BNZ(Operand, Operand)
+    BNZ(Operand, Operand),
+    SETC(Operand, Operand, Operand),
+    SETNC(Operand, Operand, Operand),
+    BNC(Operand, Operand, Operand),
+    BRC(Operand, Operand, Operand)
 }

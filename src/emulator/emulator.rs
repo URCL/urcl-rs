@@ -1,4 +1,4 @@
-use std::{time::Duration, borrow::Cow, rc::Rc};
+use std::{time::Duration, rc::Rc};
 use devices::DeviceHost;
 
 use wasm_bindgen::prelude::*;
@@ -20,6 +20,13 @@ pub struct EmulatorState {
 #[derive(Debug, PartialEq, Eq)]
 pub enum StepResult {
     Continue, HLT, Input,
+}
+
+fn does_overflow(a: u64, b: u64) -> bool {
+    match a.checked_add(b) {
+        Some(_) => false,
+        None         => true
+    }
 }
 
 // you cant bindgen impls i dont think
@@ -240,6 +247,30 @@ impl EmulatorState  {
             BNZ(a, b) => {
                 if self.get(b) != 0 {
                     self.pc = self.get(a) as usize - 1;
+                }
+            },
+            SETC(a, b, c) => self.set(a, 
+                match does_overflow(self.get(b), self.get(c)) {
+                    true => u64::MAX,
+                    false => 0
+                }
+            ),
+            SETNC(a, b, c) => self.set(a, 
+                match does_overflow(self.get(b), self.get(c)) {
+                    false => u64::MAX,
+                    true => 0
+                }
+            ),
+            BNC(a, b, c) => {
+                match does_overflow(self.get(b), self.get(c)) {
+                    false => self.pc = self.get(a) as usize,
+                    _ => {}
+                }
+            },
+            BRC(a, b, c) => {
+                match does_overflow(self.get(b), self.get(c)) {
+                    true => self.pc = self.get(a) as usize,
+                    _ => {}
                 }
             },
             _ => jsprintln!("Unimplimented instruction."),
