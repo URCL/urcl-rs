@@ -303,6 +303,16 @@ impl EmulatorState  {
                     self.pc = self.get(a) as usize;
                 }
             },
+            BRN(a, b) => {
+                if (self.get(b) as i64) < 0 {
+                    self.pc = self.get(a) as usize;
+                }
+            },
+            BRP(a, b) => {
+                if (self.get(b) as i64) >= 0 {
+                    self.pc = self.get(a) as usize;
+                }
+            },
             _ => jsprintln!("Unimplimented instruction."),
         }
         self.pc += 1;
