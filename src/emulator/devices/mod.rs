@@ -53,8 +53,8 @@ impl Debug for DeviceHost {
 }
 
 impl DeviceHost {        
-    pub fn out(&mut self, port: u64, value: u64) {
-        let Some(port) = FromPrimitive::from_u64(port) else {return;};
+    pub fn out(&mut self, _port: u64, value: u64) {
+        let Some(port) = FromPrimitive::from_u64(value) else {return;};
         match port {
             IOPort::TEXT => self.console.outtext(value),
             IOPort::NUMB => self.console.outnumb(value),

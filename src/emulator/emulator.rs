@@ -189,6 +189,34 @@ impl EmulatorState  {
                     self.pc = self.get(a) as usize;
                 }
             },
+            SSETG(a, b, c) => self.set(a,
+                if self.get(b) as i64 > self.get(c) as i64 {
+                    u64::MAX
+                } else {
+                    0
+                }
+            ),
+            SSETGE(a, b, c) => self.set(a,
+                if (self.get(b) as i64) >= (self.get(c) as i64) {
+                    u64::MAX
+                } else {
+                    0
+                }
+            ),
+            SSETL(a, b, c) => self.set(a,
+                if (self.get(b) as i64) < (self.get(c) as i64) {
+                    u64::MAX
+                } else {
+                    0
+                }
+            ),
+            SSETLE(a, b, c) => self.set(a,
+                if (self.get(b) as i64) <= (self.get(c) as i64) {
+                    u64::MAX
+                } else {
+                    0
+                }
+            ),
             _ => jsprintln!("Unimplimented instruction."),
         }
         self.pc += 1;

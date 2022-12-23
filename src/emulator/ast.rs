@@ -122,6 +122,11 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
                     "xnor"    => inst(Inst::XNOR(p.get_reg(), p.get_op(), p.get_op()), &mut p),
                     "bne"     => inst(Inst::BNE(p.get_op(), p.get_op(), p.get_op())   , &mut p),
                     "bre"     => inst(Inst::BRE(p.get_op(), p.get_op(), p.get_op())   , &mut p),
+                    "ssetg"    => inst(Inst::SSETG(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "ssetge"   => inst(Inst::SSETGE(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "ssetl"    => inst(Inst::SSETL(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "ssetle"   => inst(Inst::SSETLE(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+
                     "yomamma" => { p.err.error(&p.buf.current(), ErrorKind::YoMamma); p.buf.advance(); },
                     _ => { p.err.error(&p.buf.current(), ErrorKind::UnknownInstruction); p.buf.advance(); },
                 }
@@ -170,6 +175,11 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
                                 Inst::XNOR(a, b, c) => Inst::XNOR(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 Inst::BNE(a, b, c) => Inst::BNE(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
                                 Inst::BRE(a, b, c) => Inst::BRE(a.clone().transform_label(label_name, pc), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SSETG(a, b, c) => Inst::SSETG(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SSETGE(a, b, c) => Inst::SSETGE(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SSETL(a, b, c) => Inst::SSETL(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+                                Inst::SSETLE(a, b, c) => Inst::SSETLE(a.clone(), b.clone().transform_label(label_name, pc), c.clone().transform_label(label_name, pc)),
+
                                 _ => continue,
                             }
                         }
@@ -509,5 +519,9 @@ pub enum Inst {
     XOR(Operand, Operand, Operand),
     XNOR(Operand, Operand, Operand),
     BNE(Operand, Operand, Operand),
-    BRE(Operand, Operand, Operand)
+    BRE(Operand, Operand, Operand),
+    SSETG(Operand, Operand, Operand),
+    SSETGE(Operand, Operand, Operand),
+    SSETL(Operand, Operand, Operand),
+    SSETLE(Operand, Operand, Operand),
 }

@@ -1,4 +1,3 @@
-use wasm_bindgen::prelude::*;
 mod emulator;
 
 use std::time::Instant;
@@ -22,7 +21,7 @@ pub fn out_err(text: &str) {
     eprintln!("{}", text);
 }
 
-pub fn out_span(text: &str, class_name: &str) {
+pub fn out_span(text: &str, _class_name: &str) {
     println!(">{}", text);
 }
 pub fn clear_span() {
@@ -36,7 +35,7 @@ pub fn out_debug(text: &str) {
     println!("{}", text);
 }
 
-pub fn out_screen(width: usize, height: usize, pixels: &[u32]) {
+pub fn out_screen(width: usize, height: usize, _pixels: &[u32]) {
     println!("screen: {} {}", width, height);
 }
 pub fn clear_screen() {
