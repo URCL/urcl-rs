@@ -263,6 +263,8 @@ init().then(() => { // all code should go in here
         localStorage.setItem("auto_emulate", auto_emulate.checked ? "t" : "f");
         localStorage.setItem("tab_size", document.getElementById("tab_size").value);
         localStorage.setItem("debug_option", document.getElementById("debug_option").checked ? "t" : "f");
+        localStorage.setItem("screen_width", document.getElementById("screen_width").value);
+        localStorage.setItem("screen_height", document.getElementById("screen_height").value);
     };
 
     for (let i = 0; i < document.getElementsByClassName("example_link").length; i++) {
@@ -276,6 +278,9 @@ init().then(() => { // all code should go in here
     
     document.getElementById("debug_option").checked = localStorage.getItem("debug_option") == "t";
     update_debug_buttons(document.getElementById("debug_option").checked);
+
+    document.getElementById("screen_width") .value = localStorage.getItem("screen_width")  == null ? 32 : localStorage.getItem("screen_width");
+    document.getElementById("screen_height").value = localStorage.getItem("screen_height") == null ? 32 : localStorage.getItem("screen_height");
 
     resync_element_size();
     output_highlight_span(code_input.value);
