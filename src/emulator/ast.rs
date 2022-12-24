@@ -349,7 +349,7 @@ impl <'a> Parser<'a> {
                         if !matches!(self.buf.next().kind, Kind::Char) {
                             self.err.error(&self.buf.current(), ErrorKind::EOFBeforeEndOfString);
                         }
-                        let a = AstOp::Char(self.buf.next().str.chars().next().unwrap())
+                        let a = AstOp::Char(self.buf.next().str.chars().next().unwrap());
                         self.buf.next();
                         a
                     }
