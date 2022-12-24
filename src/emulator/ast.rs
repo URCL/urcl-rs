@@ -346,10 +346,11 @@ impl <'a> Parser<'a> {
             Kind::Char => {
                 match self.buf.next().kind {
                     Kind::Text => {
-                        if !matches!(self.buf.current().kind, Kind::Char) {
+                        let a = self.buf.current();
+                        if !matches!(self.buf.next().kind, Kind::Char) {
                             self.err.error(&self.buf.current(), ErrorKind::EOFBeforeEndOfString);
                         }
-                        AstOp::Char(self.buf.current().str.chars().next().unwrap())
+                        AstOp::Char(a.str.chars().next().unwrap())
                     }
                     Kind::Escape(c) => {
                         if !matches!(self.buf.next().kind, Kind::Char) {
