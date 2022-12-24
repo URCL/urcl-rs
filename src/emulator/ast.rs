@@ -238,7 +238,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
         }
     }
 
-    for el in p.ast.labels.iter() {
+    for (_, el) in p.ast.labels.iter() {
         match *el {
             Label::Undefined(_) => p.err.error(&p.buf.current(), ErrorKind::UndefinedLabel),
             _ => (),
