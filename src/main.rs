@@ -10,9 +10,11 @@ fn main() {
 pub fn clear_text() {
 
 }
+
 pub fn in_text() -> String {
     "".to_owned()
 }
+
 pub fn out_text(text: &str) {
     println!("{}", text);
 }
@@ -24,6 +26,7 @@ pub fn out_err(text: &str) {
 pub fn out_span(text: &str, _class_name: &str) {
     println!(">{}", text);
 }
+
 pub fn clear_span() {
 
 }
@@ -31,6 +34,7 @@ pub fn clear_span() {
 pub fn now() -> f64 {
     Instant::now().elapsed().as_secs_f64() * 1000.
 }
+
 pub fn out_debug(text: &str) {
     println!("{}", text);
 }
@@ -38,9 +42,12 @@ pub fn out_debug(text: &str) {
 pub fn out_screen(width: usize, height: usize, _pixels: &[u32]) {
     println!("screen: {} {}", width, height);
 }
+
 pub fn clear_screen() {
 
 }
+
+pub fn out_linenumber(_: &str) {}
 
 fn log(s: &str) {
     println!("{}", s);

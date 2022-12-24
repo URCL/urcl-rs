@@ -8,4 +8,5 @@ build:
 	rm ./pkg/.gitignore
 	rm ./pkg/urcl_rs_tmp.wasm
 
-#	esbuild --bundle worker.js --outdir=out
+build_cli:
+	cargo build --release
