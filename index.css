@@ -39,7 +39,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button  { -webkit-ap
 nav          { background-color: #202124; padding: 10px; text-align: center; position: sticky; top: 0; }
 main         { background-color: #121212; text-align: center; padding: 0; display: grid; grid-template: "c s" "c o"; grid-auto-columns: 1fr 1fr; grid-auto-rows: 150px .100%; margin: 0; align-items: center; gap: 2rem; justify-items: stretch; }
 
-.section     { opacity: 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #121212; z-index: -999; pointer-events: none; transition: .25s; margin: 0; overflow: auto; }
+.section     { opacity: 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #121212; z-index: -999; pointer-events: none; transition: .25s; margin: 0; overflow: auto; font-size: 1rem; }
 .section-seperater  { margin: 2rem; padding: 1rem; border-bottom: 1px solid #fff; }
 .card        { background-color: #202124; margin: 2rem; padding: 1rem; border-radius: .25rem; }
 .card-title  { display: flex; align-items: center; }
