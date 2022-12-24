@@ -346,7 +346,7 @@ impl <'a> Parser<'a> {
             Kind::Char => {
                 match self.buf.next().kind {
                     Kind::Text => {
-                        if !matches!(self.buf.next().kind, Kind::Char) {
+                        if !matches!(self.buf.current().kind, Kind::Char) {
                             self.err.error(&self.buf.current(), ErrorKind::EOFBeforeEndOfString);
                         }
                         AstOp::Char(self.buf.current().str.chars().next().unwrap())
