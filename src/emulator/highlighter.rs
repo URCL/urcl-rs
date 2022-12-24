@@ -12,4 +12,5 @@ pub fn output_highlight_span(src: &str) {
         out_span(tok.str, class);
     }
     out_span("\n\n", "");
+    out_linenumber("e");
 }

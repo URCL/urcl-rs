@@ -159,7 +159,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
                     Some(Label::Defined(_)) => p.err.error(&p.buf.current(), ErrorKind::DuplicatedLabelName),
                     Some(Label::Undefined(v)) => {
                         let label_name = p.buf.current().str; let pc = p.ast.instructions.len();
-                        for i in v.iter() {
+                        for i in v.refrences.iter() {
                             p.ast.instructions[*i] = match &p.ast.instructions[*i] {
                                 Inst::PSH(a) => Inst::PSH(a.clone().transform_label(label_name, pc)),
                                 Inst::JMP(a) => Inst::JMP(a.clone().transform_label(label_name, pc)),
@@ -239,8 +239,12 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
     }
 
     for (_, el) in p.ast.labels.iter() {
-        match *el {
-            Label::Undefined(_) => p.err.error(&p.buf.current(), ErrorKind::UndefinedLabel),
+        match el {
+            Label::Undefined(a) => {
+                for i in a.refrenced_tokens.iter() {
+                    p.err.error(&p.buf.toks[*i], ErrorKind::UndefinedLabel);
+                }
+            },
             _ => (),
         }
     }
@@ -386,6 +390,9 @@ impl <'a> Parser<'a> {
 
                 AstOp::String(text)
             }
+            Kind::Relative(v) => {
+                AstOp::Int((self.ast.instructions.len() as i64 + v) as u64)
+            }
             Kind::EOF | Kind::LF => {
                 self.err.error(&self.buf.current(), ErrorKind::NotEnoughOperands);
                 AstOp::Unknown
@@ -434,9 +441,15 @@ fn get_operand(p: &mut Parser) -> Option<Operand> {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
+pub struct UndefinedLabel {
+    refrences: Vec<usize>,
+    refrenced_tokens: Vec<usize>,
+}
+
 #[derive(Debug, PartialEq)]
 pub enum Label {
-    Undefined(Vec<usize>),
+    Undefined(UndefinedLabel),
     Defined(usize),
 }
 
@@ -446,15 +459,19 @@ fn label_tok_to_operand<'a>(tok: &UToken<'a>, p: &mut Parser) -> Operand {
     match p.ast.labels.get(tok.str) {
         Some(Label::Undefined(v)) => {
             let mut a = v.clone();
-            a.push(p.ast.instructions.len());
+            a.refrences         .push(p.ast.instructions.len());
+            a.refrenced_tokens  .push(p.buf.index);
             p.ast.labels.insert((*tok).str.to_string(), Label::Undefined(a));
             Operand::Label(tok.str.to_string())
         },
         Some(Label::Defined(v)) => Operand::Imm(*v as u64),
         None => {
-            let mut a = Vec::new();
-            a.push(p.ast.instructions.len());
-            p.ast.labels.insert((*tok).str.to_string(), Label::Undefined(a));
+            p.ast.labels.insert((*tok).str.to_string(), Label::Undefined(
+                UndefinedLabel{
+                    refrences: vec![p.ast.instructions.len()],
+                    refrenced_tokens: vec![p.buf.index]
+                }
+            ));
             Operand::Label(tok.str.to_string())
         }
     }

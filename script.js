@@ -90,9 +90,9 @@ export function out_span(text, class_name) {
 }
 
 export function out_linenumber(text) {
-    if (text === "") linenum = 1;
+    if (text === "")  linenum = 1;
     const a = document.createElement("span");
-    a.textContent = text + linenum;
+    a.textContent = text !== "e" ? text + linenum : "\n\n";
     a.className = "line-number";
     line_numbers.appendChild(a);
     linenum++;
@@ -112,10 +112,11 @@ export function clear_screen() {
  * @param {Uint32Array} pixels 
  */
 export function out_screen(width, height, pixels) {
-    if (screen_canvas.width !== width || screen_canvas.height !== height) {
-        screen_canvas.width  = width;
-        screen_canvas.height = height;
-    }
+    const s = screen_canvas.getBoundingClientRect();
+    screen_canvas.width         = s.width / (s.height / height);
+    screen_canvas.height        = height;
+    screen_canvas.style.width   = s.width  + "px";
+    screen_canvas.style.height  = s.height + "px";
     const image_data = new ImageData(new Uint8ClampedArray(pixels.buffer, pixels.byteOffset, pixels.byteLength), width, height);
     screen_ctx.putImageData(image_data, 0, 0);
 }
@@ -134,16 +135,11 @@ export function resync_element_size() {
     highlight.style.top         = code_in_bounding_box.top + "px";
     highlight.style.left        = (code_in_bounding_box.left    + (parseFloat(getComputedStyle(highlight).fontSize)) * 2.5) + "px";
     highlight.style.width       = (code_in_bounding_box.width   - (parseFloat(getComputedStyle(highlight).fontSize)) * 4.25) + "px";
-    highlight.style.height      = (code_in_bounding_box.height  - (parseFloat(getComputedStyle(highlight).fontSize)) * .3) + "px";
+    highlight.style.height      = (code_in_bounding_box.height  - (parseFloat(getComputedStyle(highlight).fontSize)) * .5) + "px";
     
     line_numbers.style.top      = code_in_bounding_box.top  + "px";
     line_numbers.style.width    = parseFloat(getComputedStyle(highlight).fontSize) * 4 + "px";
-    line_numbers.style.height   = (code_in_bounding_box.height - (parseFloat(getComputedStyle(highlight).fontSize)) * .3) + "px";
-
-    screen_canvas.style.width   = ""; screen_canvas.style.height = "";
-    const screen_bounding_box   = screen_canvas.getBoundingClientRect();
-    screen_canvas.style.width   = screen_bounding_box.width  + "px";
-    screen_canvas.style.height  = screen_bounding_box.height + "px";
+    line_numbers.style.height   = (code_in_bounding_box.height  - (parseFloat(getComputedStyle(highlight).fontSize)) * .5) + "px";
 }
 
 export function update_debug_buttons(new_state) {
