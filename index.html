@@ -9,7 +9,7 @@
         <title>URCL-rs</title>
     </head>
     <body>
-        <nav>
+        <nav id="navbar">
             <button class="symbol red debug_only">DEBUG TOOLS</button>
             <button class="symbol green" id="emulate">COMPILE/RUN</button>
             <button class="symbol yellow" id="pause">DONE</button>
@@ -18,7 +18,7 @@
             <button class="symbol magenta" id="settings">SETTINGS</button>
             <button class="symbol" id="clear">CLEAR</button>
         </nav>
-        <main>
+        <main id="mainarea">
             <textarea name="code_input" id="code_input" spellcheck="false"></textarea><canvas id="screen"></canvas><div id="stdout"></div>
         </main>
         <div id="line-numbers"></div><div id="highlight"></div>

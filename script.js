@@ -132,14 +132,18 @@ export async function clear_span() {
 
 export function resync_element_size() {
     const code_in_bounding_box  = code_input.getBoundingClientRect();
+    const rem = parseFloat(getComputedStyle(document.body).fontSize);
     highlight.style.top         = code_in_bounding_box.top + "px";
-    highlight.style.left        = (code_in_bounding_box.left    + (parseFloat(getComputedStyle(highlight).fontSize)) * 2.5) + "px";
-    highlight.style.width       = (code_in_bounding_box.width   - (parseFloat(getComputedStyle(highlight).fontSize)) * 4.25) + "px";
-    highlight.style.height      = (code_in_bounding_box.height  - (parseFloat(getComputedStyle(highlight).fontSize)) * .5) + "px";
+    highlight.style.left        = (code_in_bounding_box.left    + rem * 2   ) + "px";
+    highlight.style.width       = (code_in_bounding_box.width   - rem * 4.25) + "px";
+    highlight.style.height      = (code_in_bounding_box.height  - rem * 3.5 + 2) + "px";
     
     line_numbers.style.top      = code_in_bounding_box.top  + "px";
-    line_numbers.style.width    = parseFloat(getComputedStyle(highlight).fontSize) * 4 + "px";
-    line_numbers.style.height   = (code_in_bounding_box.height  - (parseFloat(getComputedStyle(highlight).fontSize)) * .5) + "px";
+    line_numbers.style.width    = rem * 3.25 + "px";
+    line_numbers.style.height   = (code_in_bounding_box.height - rem * 3.5 + 2) + "px";
+
+    const navbar_height = parseFloat(getComputedStyle(by_id(HTMLElement, "navbar")).height);
+    document.getElementsByTagName("main")[0].style.height = document.body.clientHeight - navbar_height + "px";
 }
 
 export function update_debug_buttons(new_state) {
