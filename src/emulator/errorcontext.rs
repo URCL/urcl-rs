@@ -47,7 +47,7 @@ impl <'a> ErrorContext<'a> {
                 format!("{}", error.level).to_lowercase(), error.level, error.kind
             ).unwrap();
             writeln!(&mut output, "{}| {}", 
-                lineno, html_esacape::encode_text(line.split_at(get_indent_level(line)).1.replace("\t", " "))
+                lineno, html_escape::encode_text(line.split_at(get_indent_level(line)).1.replace("\t", " "))
             ).unwrap();
             writeln!(&mut output, "{}| {}<span class=\"error_line\">{}</span>",
                 " ".repeat(lineno_width),
