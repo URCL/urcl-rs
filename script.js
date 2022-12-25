@@ -130,17 +130,23 @@ export async function clear_span() {
     line_numbers.innerHTML = "";
 }
 
-export function resync_element_size() {
+export function resync_element_size(is_chromium) {
     const code_in_bounding_box  = code_input.getBoundingClientRect();
     const rem = parseFloat(getComputedStyle(document.body).fontSize);
-    highlight.style.top         = code_in_bounding_box.top + "px";
     highlight.style.left        = (code_in_bounding_box.left    + rem * 2   ) + "px";
     highlight.style.width       = (code_in_bounding_box.width   - rem * 4.25) + "px";
     highlight.style.height      = (code_in_bounding_box.height  - rem * 3.5 + 2) + "px";
     
-    line_numbers.style.top      = code_in_bounding_box.top  + "px";
     line_numbers.style.width    = rem * 3.25 + "px";
-    line_numbers.style.height   = (code_in_bounding_box.height - rem * 3.5 + 2) + "px";
+    line_numbers.style.height   = (code_in_bounding_box.height  - rem * 3.5 + 2) + "px";
+    
+    if (!is_chromium) {
+        highlight.style.top         = code_in_bounding_box.top  + "px";
+        line_numbers.style.top      = code_in_bounding_box.top  + "px";
+    } else {
+        highlight.style.top         = code_in_bounding_box.top + rem * .4 + "px";
+        line_numbers.style.top      = code_in_bounding_box.top + rem * .4 + "px";
+    }
 
     const navbar_height = parseFloat(getComputedStyle(by_id(HTMLElement, "navbar")).height);
     document.getElementsByTagName("main")[0].style.height = document.body.clientHeight - navbar_height + "px";
@@ -192,14 +198,10 @@ function cancel_emulation() {
     }
 }
 
-export function patch_chromium_ui() {
-    alert("a");
-}
-
 init().then(() => { // all code should go in here
     init_panic_hook();
 
-    if (!!window.chrome) patch_chromium_ui();
+    const is_chromium = !!window.chrome;
 
     pause_button.onclick = () => {
         console.log(frame_id, emulator);
@@ -292,7 +294,7 @@ init().then(() => { // all code should go in here
     document.getElementById("screen_width") .value = localStorage.getItem("screen_width")  == null ? 32 : localStorage.getItem("screen_width");
     document.getElementById("screen_height").value = localStorage.getItem("screen_height") == null ? 32 : localStorage.getItem("screen_height");
 
-    resync_element_size();
+    resync_element_size(is_chromium);
     output_highlight_span(code_input.value);
 
     const params = new URLSearchParams(window.location.search);
