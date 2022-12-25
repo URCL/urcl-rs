@@ -130,8 +130,7 @@ export async function clear_span() {
     line_numbers.innerHTML = "";
 }
 
-export async function resync_element_size(is_chromium) {
-    await new Promise(r => setTimeout(r, 300));
+export function resync_element_size(is_chromium) {
     const code_in_bounding_box  = code_input.getBoundingClientRect();
     const rem = parseFloat(getComputedStyle(document.body).fontSize);
     highlight.style.left        = (code_in_bounding_box.left    + rem * 2   ) + "px";
@@ -242,7 +241,6 @@ init().then(() => { // all code should go in here
     document.getElementById("debug_option").onchange    = function() { update_debug_buttons(this.checked); };
     document.getElementById("tab_size").onchange        = function() { document.querySelector(":root").style.setProperty("--tab-size", this.value); };
     document.getElementsByTagName("body")[0].onresize   = function() { resync_element_size(); };
-
 
     document.getElementById("settings").onclick = function() {
         document.getElementById("settings_sec").style.opacity       = 1;
