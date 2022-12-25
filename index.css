@@ -28,9 +28,8 @@ input[type="checkbox"]:hover                { accent-color: var(--color); }
 input[type="number"], input[type="text"]    { background-color: transparent; color: #fff; border: none; outline: none; appearance: textfield; font-size: 1rem; border-bottom: solid .125rem var(--color); }
 input::-webkit-outer-spin-button, input::-webkit-inner-spin-button  { -webkit-appearance: none; margin: none; }
 
-#code_input     { height: calc(100% - 4rem); border-radius: .35rem; text-align: left; background-color: #1d1d1d; margin: 2rem 0 2rem 2rem; padding: .5rem; padding-left: 3rem; font: 1rem 'Fira Code', monospace; grid-area: c; overflow: auto; overflow-wrap: normal; white-space: pre; color: transparent; border: none; outline: none; }
+#code_input     { border-radius: .35rem; text-align: left; background-color: #1d1d1d; margin: 2rem 0 2rem 2rem; padding: .5rem; padding-left: 3rem; font: 1rem 'Fira Code', monospace; grid-area: c; overflow: auto; overflow-wrap: normal; white-space: pre; color: transparent; border: none; outline: none; }
 #code_input::selection  { color: transparent; }
-/* #code_input::-webkit-scrollbar  { z-index: 1; } */
 #highlight      { font: 1rem 'Fira Code', monospace; position: absolute; padding: .5rem .5rem 0; pointer-events: none; white-space: pre; tab-size: var(--tab-size); overflow: hidden; word-break: break-all; }
 #line-numbers   { font: 1rem 'Fira Code', monospace; position: absolute; padding: .5rem .5rem 0; pointer-events: none; white-space: pre; tab-size: var(--tab-size); overflow: hidden; word-break: break-all; left: 0; text-align: right; }
 

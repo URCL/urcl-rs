@@ -192,8 +192,14 @@ function cancel_emulation() {
     }
 }
 
+export function patch_chromium_ui() {
+    alert("a");
+}
+
 init().then(() => { // all code should go in here
     init_panic_hook();
+
+    if (!!window.chrome) patch_chromium_ui();
 
     pause_button.onclick = () => {
         console.log(frame_id, emulator);
