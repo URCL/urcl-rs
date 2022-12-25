@@ -130,8 +130,7 @@ export async function clear_span() {
     line_numbers.innerHTML = "";
 }
 
-export async function resync_element_size(is_chromium) {
-    if (is_chromium) await new Promise(r => setTimeout(r, 300));;
+export function resync_element_size(is_chromium) {
     const code_in_bounding_box  = code_input.getBoundingClientRect();
     const rem = parseFloat(getComputedStyle(document.body).fontSize);
     highlight.style.left        = (code_in_bounding_box.left    + rem * 2   ) + "px";
