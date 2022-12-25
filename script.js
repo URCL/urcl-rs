@@ -130,7 +130,8 @@ export async function clear_span() {
     line_numbers.innerHTML = "";
 }
 
-export function resync_element_size(is_chromium) {
+export async function resync_element_size(is_chromium) {
+    if (is_chromium) await new Promise(r => setTimeout(r, 300));;
     const code_in_bounding_box  = code_input.getBoundingClientRect();
     const rem = parseFloat(getComputedStyle(document.body).fontSize);
     highlight.style.left        = (code_in_bounding_box.left    + rem * 2   ) + "px";
@@ -144,8 +145,8 @@ export function resync_element_size(is_chromium) {
         highlight.style.top         = code_in_bounding_box.top  + "px";
         line_numbers.style.top      = code_in_bounding_box.top  + "px";
     } else {
-        highlight.style.top         = code_in_bounding_box.top + rem * .4 + "px";
-        line_numbers.style.top      = code_in_bounding_box.top + rem * .4 + "px";
+        highlight.style.top         = code_in_bounding_box.top + rem * .1 + "px";
+        line_numbers.style.top      = code_in_bounding_box.top + rem * .1 + "px";
     }
 
     const navbar_height = parseFloat(getComputedStyle(by_id(HTMLElement, "navbar")).height);
