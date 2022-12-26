@@ -52,7 +52,7 @@ impl <'a> ErrorContext<'a> {
             writeln!(&mut output, "{}| {}<span class=\"error_line\">{}</span>",
                 " ".repeat(lineno_width),
                 &" ".repeat(col - get_indent_level(line)),
-                &"\u{203E}".repeat(str_width(error.span).max(1))
+                &"^".repeat(str_width(error.span).max(1))
             ).unwrap();
         }
         output

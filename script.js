@@ -134,10 +134,10 @@ export function resync_element_size(is_chromium) {
     const code_in_bounding_box  = code_input.getBoundingClientRect();
     const rem = parseFloat(getComputedStyle(document.body).fontSize);
     highlight.style.left        = (code_in_bounding_box.left    + rem * 2   ) + "px";
-    highlight.style.width       = (code_in_bounding_box.width   - rem * 4.25) + "px";
+    highlight.style.width       = (code_in_bounding_box.width   - rem * 2.75) + "px";
     highlight.style.height      = (code_in_bounding_box.height  - rem * 3.5 + 2) + "px";
     
-    line_numbers.style.width    = rem * 3.25 + "px";
+    line_numbers.style.width    = rem * 3 + "px";
     line_numbers.style.height   = (code_in_bounding_box.height  - rem * 3.5 + 2) + "px";
     
     if (!is_chromium) {
@@ -180,11 +180,11 @@ function continue_emulation() {
     const result = emulator.run_for_ms(16);
     if (result === StepResult.Continue) {
         frame_id = requestAnimationFrame(continue_emulation);
-        pause_button.disabled = false;
         pause_button.textContent = "PAUSE";
+        pause_button.disabled = false;
     } else {
-        pause_button.disabled = true;
         pause_button.textContent = "DONE";
+        pause_button.disabled = true;
         if (emulator) {
             emulator.free();
         } 
@@ -204,13 +204,15 @@ init().then(() => { // all code should go in here
     const is_chromium = !!window.chrome;
 
     pause_button.onclick = () => {
-        console.log(frame_id, emulator);
         if (frame_id) {
             pause_button.textContent = "CONTINUE";
             pause_button.disabled = false;
             cancel_emulation();
         } else if (emulator) {
             continue_emulation();
+        } else {
+            pause_button.textContent = "DONE";
+            pause_button.disabled = true;
         }
     }
     
@@ -298,8 +300,11 @@ init().then(() => { // all code should go in here
 
     const params = new URLSearchParams(window.location.search);
 
-    if (params.has("from-examples")) {
-        alert("Examples are not done yet!");
-        window.history.replaceState("", "urcl-rs", location.href.replace(window.location.search, ""));
-    };
+    if (params.has("src-url")) {
+        fetch(params.get("src-url")).then(res => res.text().then(text => {code_input.value = text; output_highlight_span(text);}));
+    } else if (params.has("src-example")) {
+        fetch("./examples/"+params.get("src-example") + ".urcl").then(res => res.text().then(text => {code_input.value = text; output_highlight_span(text);}));
+    } else if (params.has("src-raw")) {
+        code_input.value = atob(params.get("src-raw")); output_highlight_span(atob(params.get("src-raw")));
+    }
 });

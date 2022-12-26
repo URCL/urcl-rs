@@ -1,0 +1,17 @@
+mov r1 .str
+cal .print
+hlt
+
+.print
+psh r2
+lod r2 r1
+brz .print_a r2
+out %text 2
+inc r1 r1
+jmp .print
+.print_a
+pop r2
+ret
+
+.str
+dw ["Hello world!\n" 0]

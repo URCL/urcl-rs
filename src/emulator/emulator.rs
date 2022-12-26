@@ -403,9 +403,9 @@ impl EmulatorState {
         match &self.error {
             EmulatorError(Some(err)) => {
                 jsprintln!(
-                    "<span class=\"error\">Emulator Error: {} at PC: {}</span>",
+                    "<span class=\"error\">Emulator Error: {} at line {}</span>",
                     err,
-                    self.pc - 1
+                    self.program.debug.pc_to_line_start[self.pc-1]
                 );
                 StepResult::Error
             }

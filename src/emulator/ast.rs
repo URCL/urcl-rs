@@ -50,14 +50,15 @@ impl <'a> TokenBuffer<'a> {
 pub struct Parser<'a> {
     buf: TokenBuffer<'a>,
     pub err: ErrorContext<'a>,
-    pub ast: Program
+    pub ast: Program,
+    pub at_line: usize
 }
 
 pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
     let err = ErrorContext::new();
     let ast = Program::new(src);
     let buf = TokenBuffer::new(toks);
-    let mut p = Parser {buf, err, ast};
+    let mut p = Parser {buf, err, ast, at_line: 1};
 
     while p.buf.has_next() {
         match p.buf.current().kind {
@@ -153,6 +154,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
                     "yomamma" => { p.err.error(&p.buf.current(), ErrorKind::YoMamma); p.buf.advance(); },
                     _ => { p.err.error(&p.buf.current(), ErrorKind::UnknownInstruction); p.buf.advance(); },
                 }
+                p.ast.debug.pc_to_line_start.push(p.at_line);
             },
             Kind::Label => {
                 match p.ast.labels.get(p.buf.current().str) {
@@ -233,7 +235,8 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
                 }
                 p.buf.advance();
             },
-            Kind::White | Kind::Comment | Kind::LF | Kind::Char | Kind::String => p.buf.advance(),
+            Kind::White | Kind::Comment | Kind::Char | Kind::String => p.buf.advance(),
+            Kind::LF => {p.at_line += 1; p.buf.advance()},
             _ => { logprintln!("Unhandled token type: {:#?}", p.buf.current()); p.buf.advance(); },
         }
     }
@@ -495,11 +498,11 @@ impl Program {
 #[derive(Debug)]
 pub struct DebugInfo {
     pub src: Rc<str>,
-    pub pc_to_line_start: HashMap<u64, usize>
+    pub pc_to_line_start: Vec<usize>
 }
 impl DebugInfo {
     pub fn new(src: Rc<str>) -> Self {
-        Self {src, pc_to_line_start: HashMap::new()}
+        Self {src, pc_to_line_start: Vec::new()}
     }
 }
 
