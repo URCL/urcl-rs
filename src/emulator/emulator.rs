@@ -175,7 +175,8 @@ impl EmulatorState {
                     Operand::Reg(v) => match *v {
                         PC => self.pc as u64,
                         SP => self.stack.data.len() as u64,
-                        _ => self.regs[*v as usize],
+                        0  => 0,
+                        _  => self.regs[*v as usize - 1],
                     },
                     _ => panic!("Unsupported operand {:?}", $operand),
                 }
@@ -188,7 +189,8 @@ impl EmulatorState {
                     Operand::Reg(v) => match *v {
                         PC => self.pc = $value as usize,
                         SP => self.stack.sp = $value as i64,
-                        _ => self.regs[*v as usize] = $value,
+                        0  => {},
+                        _  => self.regs[*v as usize - 1] = $value,
                     },
                     _ => panic!("Unsupported target operand {:?}", $operand),
                 }
