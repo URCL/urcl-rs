@@ -6,10 +6,12 @@
         <meta content="A 🚀blazingly fast🚀 URCL emulator" property="og:description"/>
         <link rel="stylesheet" href="index.css" />
         <script src="script.js" type="module"></script>
+        <script src="src/web/editor/editor.js" type="module"></script>
+        <link rel="stylesheet" href="src/web/editor/editor.css">
         <title>URCL-rs</title>
     </head>
-    <body>
-        <nav>
+    <body class="rows">
+        <nav style="height: fit-content; flex-basis: 0px">
             <button class="symbol red debug_only">DEBUG TOOLS</button>
             <button class="symbol green" id="emulate">COMPILE/RUN</button>
             <button class="symbol yellow" id="pause">DONE</button>
@@ -18,10 +20,17 @@
             <button class="symbol magenta" id="settings">SETTINGS</button>
             <button class="symbol" id="clear">CLEAR</button>
         </nav>
-        <main>
-            <textarea name="code_input" id="code_input" spellcheck="false"></textarea><canvas id="screen"></canvas><div id="stdout"></div>
+        <main class="cols">
+            <div class="rows">
+                <editor-window name="code_input" id="code_input"></editor-window>
+            </div>
+            <div class="rows">
+                <div style="height: fit-content; flex-basis: 0px;">
+                    <canvas id="screen"></canvas>
+                </div>
+                <div id="stdout"></div>
+            </div>
         </main>
-        <div id="line-numbers"></div><div id="highlight"></div>
         <div id="settings_sec" class="section">
             <nav>
                 <button class="symbol red" id="exit_settings">Exit Settings</button>

@@ -1,0 +1,83 @@
+editor-window {
+    display: flex;
+    overflow-x: hidden;
+    overflow-y: auto;
+    font-family: monospace, monospace;
+    font-size: 1rem;
+    white-space: pre;
+}
+
+editor-window * {
+    font-family: monospace, monospace;
+    font-size: 1rem;
+    white-space: pre;
+    padding: 0px;
+    margin: 0px;
+    color: white;
+}
+
+editor-window .line-nrs {
+    margin-left: 1ch;
+    text-align: right;
+}
+
+
+editor-window .code {
+    position: relative;
+    width: 100%;
+    height: max-content;
+    overflow-y: hidden;
+    overflow-x: auto;
+}
+
+editor-window .colors {
+    padding-left: 0.5rem;
+    position: absolute;
+    overflow: hidden;
+    left: 0px;
+    pointer-events: none;
+    color: #4ec9b0;
+    counter-reset: line;
+    white-space: pre;
+}
+
+editor-window textarea {
+    padding-left: 0.5rem;
+    caret-color: white;
+
+    height: max-content;
+    min-width: calc(100% - 2ch);
+    overflow: hidden;
+    white-space: pre;
+
+    resize: none;
+    background-color: black;
+    color: red;
+    caret-color: white;
+    outline: none;
+    border: none;
+}
+
+editor-window .pc-line {
+    color: greenyellow;
+    width: max-content;
+    position: relative;
+}
+
+editor-window .pc-line::before {
+    content: ">";
+    position: absolute;
+    right: 100%;
+}
+
+.c1 {
+    color: red;
+}
+
+.c2 {
+    color: green;
+}
+
+.c3 {
+    color: blue;
+}
