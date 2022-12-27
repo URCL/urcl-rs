@@ -345,8 +345,6 @@ impl EmulatorState {
             BRP(a: usize, b: i64) => branch!(a if b >= 0),
             BRN(a: usize, b: i64) => branch!(a if b < 0),
 
-            // semicolon exists purely to disambiguate the macro when assigning to a value
-            // square brackets are used for memory access
             MOV(a, b); a => b,
             STR(a, b); [b] => a,
             CPY(a, [b]); [a] => b,

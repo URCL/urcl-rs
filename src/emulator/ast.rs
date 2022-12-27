@@ -300,7 +300,7 @@ impl <'a> Parser<'a> {
     fn get_jmp(&mut self) -> Operand {
         let (ast, op) = self.get_ast_op();
         match ast {
-            AstOp::Reg(_) | AstOp::Label(_) | AstOp::Unknown => {},
+            AstOp::Reg(_) | AstOp::Label(_) | AstOp::JumpLocation(_) | AstOp::Unknown => {},
             actual => {
                 self.err.warn(self.buf.cur(), ErrorKind::InvalidOperandType{
                     expected: "jump target", actual
@@ -337,6 +337,7 @@ impl <'a> Parser<'a> {
             AstOp::Label(_v) => {
                 label_tok_to_operand(&self.buf.current(), self)
             },
+            AstOp::JumpLocation(v) => Operand::Imm(*v),
         }
     }
     fn get_ast_op(&mut self) -> (AstOp, Operand){
@@ -394,11 +395,19 @@ impl <'a> Parser<'a> {
                 AstOp::String(text)
             }
             Kind::Relative(v) => {
-                AstOp::Int((self.ast.instructions.len() as i64 + v) as u64)
+                AstOp::JumpLocation((self.ast.instructions.len() as i64 + v) as u64)
             }
             Kind::EOF | Kind::LF => {
                 self.err.error(&self.buf.current(), ErrorKind::NotEnoughOperands);
                 AstOp::Unknown
+            }
+            Kind::Macro => {
+                match self.buf.current().str.to_lowercase().as_str() {
+                    "@max" => AstOp::Int(u64::MAX),
+                    "@msb" => AstOp::Int(1 << 63),
+                    "@smax" => AstOp::Int(i64::MAX as u64),
+                    _ => AstOp::Unknown
+                }
             }
             _ => {
                 self.err.error(&self.buf.current(), ErrorKind::InvalidOperand);
@@ -420,27 +429,6 @@ impl <'a> Parser<'a> {
                 } 
             }
         }
-    }
-}
-
-
-#[allow(dead_code)]
-fn get_operand(p: &mut Parser) -> Option<Operand> {
-    match p.buf.current().kind {
-        Kind::Reg(v) => Some(Operand::Reg(v)),
-        Kind::Int(v) => Some(Operand::Imm(v as u64)),
-        Kind::PortNum(v) => Some(Operand::Imm(v)),
-        Kind::Port => {
-            match IOPort::from_str(&p.buf.current().str[1..].to_uppercase()) {
-                Ok(port) => {Some(Operand::Imm(port as u64))},
-                Err(_err) => {
-                    p.err.error(&p.buf.current(), ErrorKind::UnknownPort);
-                    None
-                }
-            }
-        }
-        Kind::Label  => Some(label_tok_to_operand(&p.buf.current(), p)),
-        _ => None
     }
 }
 
@@ -516,6 +504,7 @@ pub enum AstOp {
     Char(char),
     String(String),
     Label(String),
+    JumpLocation(u64),
 }
 
 #[derive(Debug, Clone)] // cant copy because of the String
