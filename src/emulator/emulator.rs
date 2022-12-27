@@ -175,7 +175,8 @@ impl EmulatorState {
                     Operand::Reg(v) => match *v {
                         PC => self.pc as u64,
                         SP => self.stack.data.len() as u64,
-                        _ => self.regs[*v as usize],
+                        0  => 0,
+                        _  => self.regs[*v as usize - 1],
                     },
                     _ => panic!("Unsupported operand {:?}", $operand),
                 }
@@ -188,7 +189,8 @@ impl EmulatorState {
                     Operand::Reg(v) => match *v {
                         PC => self.pc = $value as usize,
                         SP => self.stack.sp = $value as i64,
-                        _ => self.regs[*v as usize] = $value,
+                        0  => {},
+                        _  => self.regs[*v as usize - 1] = $value,
                     },
                     _ => panic!("Unsupported target operand {:?}", $operand),
                 }
@@ -343,8 +345,6 @@ impl EmulatorState {
             BRP(a: usize, b: i64) => branch!(a if b >= 0),
             BRN(a: usize, b: i64) => branch!(a if b < 0),
 
-            // semicolon exists purely to disambiguate the macro when assigning to a value
-            // square brackets are used for memory access
             MOV(a, b); a => b,
             STR(a, b); [b] => a,
             CPY(a, [b]); [a] => b,
@@ -401,9 +401,9 @@ impl EmulatorState {
         match &self.error {
             EmulatorError(Some(err)) => {
                 jsprintln!(
-                    "<span class=\"error\">Emulator Error: {} at PC: {}</span>",
+                    "<span class=\"error\">Emulator Error: {} at line {}</span>",
                     err,
-                    self.pc - 1
+                    self.program.debug.pc_to_line_start[self.pc-1]
                 );
                 StepResult::Error
             }

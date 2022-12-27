@@ -2,12 +2,13 @@
 @import url("https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300&display=swap");
 @import url("https://cdn.jsdelivr.net/gh/tonsky/FiraCode@1.207/distr/fira_code.css");
 
-html                    { overflow-y: hidden; scrollbar-width: none; }
-body::-webkit-scrollbar { display: none; }
+/* html                    { overflow-y: hidden; scrollbar-width: none; }
+body::-webkit-scrollbar { display: none; } */
+html                    { margin: 0; height: 100%; }
 *::selection            { background-color: #1b5754; }
 :root                   { --tab-size: 4; --color: #fff; caret-color: #fff; }
 
-body            { background-color: #121212; font: 1.25rem "Source Sans Pro", sans-serif; line-height: 1.5; color: #fff; margin: 0px; overflow: hidden; }
+body            { background-color: #121212; font: 1.25rem "Source Sans Pro", sans-serif; line-height: 1.5; color: #fff; margin: 0px; overflow: hidden; height: 100%; }
 h1              { color: #fff; font: 3rem   "Inter Tight", sans-serif; }
 h2              { color: #fff; font: 2.5rem "Inter Tight", sans-serif; }
 h3              { color: #fff; font: 2rem   "Inter Tight", sans-serif; }
@@ -18,7 +19,8 @@ p               { color: #fff; margin: .3rem;}
 hr              { border: none; border-top: 2px solid #202124; box-shadow: 0px 2px 10px #202124; }
 button          { background-color: var(--color); color: #000; padding: 10px; border-radius: 7px; font-family: "Inter Tight", sans-serif; border: 2.5px solid var(--color); transition: 0.25s; cursor: pointer; }
 button:hover    { color: #fff; background-color: transparent; }
-button:disabled { backdrop-filter: brightness(.5); }
+button:disabled { filter: brightness(50%); cursor: default; }
+button:disabled:hover   { color: #000 !important; background-color: var(--color) !important; }
 textarea        { resize: none; tab-size: var(--tab-size); }
 input[type="checkbox"]                      { accent-color: #fff; transition: 0.25s; width: .85rem; height: .85rem; }
 input[type="checkbox"]:checked              { accent-color: #202124; }
@@ -27,19 +29,19 @@ input[type="checkbox"]:hover                { accent-color: var(--color); }
 input[type="number"], input[type="text"]    { background-color: transparent; color: #fff; border: none; outline: none; appearance: textfield; font-size: 1rem; border-bottom: solid .125rem var(--color); }
 input::-webkit-outer-spin-button, input::-webkit-inner-spin-button  { -webkit-appearance: none; margin: none; }
 
-#code_input     { box-sizing: border-box; height: calc(100% - 4rem); border-radius: .35rem; text-align: left; background-color: #1d1d1d; margin: 2rem 0 2rem 2rem; padding: .5rem; padding-left: 3rem; font: 1rem 'Fira Code', monospace; grid-area: c; overflow: auto; overflow-wrap: normal; white-space: pre; color: transparent; border: none; outline: none; }
+#code_input     { border-radius: .35rem; text-align: left; background-color: #1d1d1d; margin: 2rem 0 2rem 2rem; padding: .5rem; padding-left: 3rem; font: 1rem 'Fira Code', monospace; grid-area: c; overflow: auto; overflow-wrap: normal; white-space: pre; color: transparent; border: none; outline: none; }
 #code_input::selection  { color: transparent; }
-#code_input::-webkit-scrollbar  { z-index: 1; }
-#highlight      { font: 1rem 'Fira Code', monospace; position: absolute; padding: .5rem; pointer-events: none; white-space: pre; tab-size: var(--tab-size); overflow: hidden; word-break: break-all; }
-#line-numbers   { font: 1rem 'Fira Code', monospace; position: absolute; padding: .5rem; pointer-events: none; white-space: pre; tab-size: var(--tab-size); overflow: hidden; word-break: break-all; left: 0; text-align: right; }
+#highlight      { font: 1rem 'Fira Code', monospace; position: absolute; padding: .5rem .5rem 0; pointer-events: none; white-space: pre; tab-size: var(--tab-size); overflow: hidden; word-break: break-all; }
+#line-numbers   { font: 1rem 'Fira Code', monospace; position: absolute; padding: .5rem .5rem 0; pointer-events: none; white-space: pre; tab-size: var(--tab-size); overflow: hidden; word-break: break-all; left: 0; text-align: right; }
 
-#stdout      { border-radius: .35rem; text-align: left; background-color: #1d1d1d; margin: 0rem 2rem 2rem 0; padding: .5rem; height: calc(83vh - 150px - 2rem); font: 1rem 'Fira Code', monospace; grid-area: o; overflow: auto; word-break: break-all; white-space: pre-wrap; tab-size: var(--tab-size); }
-#screen      { grid-area: s; margin: 2rem 2rem 0 0; padding: calc(.5rem - 4px); image-rendering: crisp-edges; border: 2.5px solid #202124; border-radius: .35rem; min-width: 0; min-height: 0; }
+#stdout      { border-radius: .35rem; text-align: left; background-color: #1d1d1d; margin: 0rem 2rem 2rem 0; padding: .5rem; font: 1rem 'Fira Code', monospace; grid-area: o; overflow: auto; word-break: break-all; white-space: pre-wrap; tab-size: var(--tab-size); }
+#screen      { grid-area: s; margin: 2rem 2rem 0 0; padding: calc(.5rem - 4px); image-rendering: crisp-edges; border: 2.5px solid #202124; border-radius: .35rem; min-width: 0; min-height: 0; box-sizing: border-box; aspect-ratio: 1/1; height: 150px; }
 
-nav          { background-color: #202124; padding: 10px; text-align: center; }
-main         { background-color: #121212; text-align: center; padding: 0; display: grid; grid-template: "c s" "c o"; grid-auto-columns: 1fr 1fr; grid-auto-rows: 150px .100%; margin: 0; align-items: center; gap: 2rem; justify-items: stretch; }
+nav          { background-color: #202124; padding: 10px; text-align: center; position: sticky; top: 0; box-sizing: border-box; }
+main         { background-color: #121212; text-align: center; padding: 0; display: grid; grid-template: "c s" "c o"; grid-template-columns: 1fr 1fr; grid-template-rows: calc(150px + 2rem) auto; margin: 0; gap: 2rem; justify-items: stretch; align-items: stretch; height: 100%; }
 
-.section     { opacity: 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #121212; z-index: -999; pointer-events: none; transition: .25s; margin: 0; }
+.section     { opacity: 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #121212; z-index: -999; pointer-events: none; transition: .25s; margin: 0; overflow: auto; }
+.section-seperater  { margin: 2rem; padding: 1rem; border-bottom: 1px solid #fff; }
 .card        { background-color: #202124; margin: 2rem; padding: 1rem; border-radius: .25rem; }
 .card-title  { display: flex; align-items: center; }
 .card-option { margin-left: auto; }
