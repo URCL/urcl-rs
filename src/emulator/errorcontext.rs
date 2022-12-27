@@ -1,4 +1,4 @@
-use std::{fmt::{Debug, Write, Display}, collections::HashMap};
+use std::{fmt::{Debug, Display}, collections::HashMap};
 
 use strum_macros::Display;
 
@@ -41,23 +41,14 @@ impl <'a> ErrorContext<'a> {
             let (line, col) = line(src, error.span);
             let lineno = linenos.get(&line.as_ptr()).map_or(0, |i|*i);
             let lineno = format!("{} ", lineno);
-            let lineno_width = str_width(&lineno);
-        
-            writeln!(&mut output, "<span class=\"{}\">{}: {}</span>",
-                format!("{}", error.level).to_lowercase(), error.level, error.kind
-            ).unwrap();
-            writeln!(&mut output, "{}| {}", 
-                lineno, html_escape::encode_text(&line.split_at(get_indent_level(line)).1.replace("\t", " "))
-            ).unwrap();
-            writeln!(&mut output, "{}| {}<span class=\"error_line\">{}</span>",
-                " ".repeat(lineno_width),
-                &" ".repeat(col - get_indent_level(line)),
-                &"^".repeat(str_width(error.span).max(1))
-            ).unwrap();
+
+            crate::out_err(&mut output, error, &lineno, line, col);
         }
         output
     }
 }
+
+
 
 pub fn get_indent_level(src: &str) -> usize {
     let mut tabs = 0;
@@ -68,15 +59,15 @@ pub fn get_indent_level(src: &str) -> usize {
 }
 
 #[derive(Debug, Display)]
-enum ErrorLevel {
+pub enum ErrorLevel {
     Info, Warning, Error
 }
 
 #[allow(dead_code)]
 pub struct Error<'a> {
-    kind: ErrorKind<'a>,
-    span: &'a str, // start and end of code that caused the error
-    level: ErrorLevel
+    pub kind: ErrorKind<'a>,
+    pub span: &'a str, // start and end of code that caused the error
+    pub level: ErrorLevel
 }
 
 #[allow(dead_code)]
@@ -115,7 +106,7 @@ impl <'a> Display for ErrorKind<'a> {
 }
 const LF_B: u8 = '\n' as u8;
 
-fn str_width(src: &str) -> usize {
+pub fn str_width(src: &str) -> usize {
     src.chars().count()
 }
 

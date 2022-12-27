@@ -3,8 +3,26 @@ mod emulator;
 use std::time::Instant;
 
 fn main() {
-    let mut emu = emulator::emulator::emulate("OUT 10 'h'\nHLT".to_owned()).unwrap();
-    println!("{:?}", emu.run());
+    let args: Vec<String> = std::env::args().collect();
+    if args.len() < 1 {
+        println!("\x1b[1;31mError: Not enough arguments.\x1b[0;0m");
+        return;
+    }
+    let fname = &args[1];
+    let src = std::fs::read_to_string(fname);
+    match &src {Err(err) => {
+        println!("\x1b[1;31mError: Cannot read file {} (Returns error \"{}\")\x1b[0;0m", fname, err);
+        return;
+    }, _ => ()}
+    let emu = emulator::emulator::emulate(src.unwrap());
+    match emu {
+        None => {
+            println!("\x1b[1;31mError: Compilation failed\x1b[0;0m");
+            return;
+        }
+        _ => (),
+    } 
+    println!("{:?}", emu.unwrap().run());
 }
 
 pub fn clear_text() {
@@ -19,8 +37,24 @@ pub fn out_text(text: &str) {
     println!("{}", text);
 }
 
-pub fn out_err(text: &str) {
-    eprintln!("{}", text);
+pub fn out_err(out: &mut String, error: &emulator::errorcontext::Error, lineno: &String, line: &str, col: usize) {
+    use std::fmt::Write;
+    use crate::emulator::errorcontext::*;
+    writeln!(out, "\x1b[1;{}m{}: {}\x1b[0;0m",
+        match error.level {
+            ErrorLevel::Info    => 96,
+            ErrorLevel::Warning => 93,
+            ErrorLevel::Error   => 91,
+        }, error.level, error.kind
+    ).unwrap();
+    writeln!(out, "{}| {}", 
+        lineno, html_escape::encode_text(&line.split_at(get_indent_level(line)).1.replace("\t", " "))
+    ).unwrap();
+    writeln!(out, "{}| {}{}",
+        " ".repeat(str_width(lineno)),
+        &" ".repeat(col - get_indent_level(line)),
+        &"^".repeat(str_width(error.span).max(1))
+    ).unwrap();
 }
 
 pub fn out_span(text: &str, _class_name: &str) {

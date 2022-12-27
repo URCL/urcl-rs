@@ -12,8 +12,6 @@ extern {
     pub fn clear_text();
     pub fn in_text() -> String;
     pub fn out_text(text: &str);
-
-    pub fn out_err(text: &str);
     
     pub fn out_span(text: &str, class_name: &str);
     pub fn clear_span();
@@ -50,4 +48,20 @@ macro_rules! logprintln {
 #[wasm_bindgen]
 pub fn init_panic_hook() {
     console_error_panic_hook::set_once();
+}
+
+pub fn out_err(out: &mut String, error: &emulator::errorcontext::Error, lineno: &String, line: &str, col: usize) {
+    use std::fmt::Write;
+    use crate::emulator::errorcontext::*;
+    writeln!(out, "<span class=\"{}\">{}: {}</span>",
+        format!("{}", error.level).to_lowercase(), error.level, error.kind
+    ).unwrap();
+    writeln!(out, "{}| {}", 
+        lineno, html_escape::encode_text(&line.split_at(get_indent_level(line)).1.replace("\t", " "))
+    ).unwrap();
+    writeln!(out, "{}| {}{}",
+        " ".repeat(str_width(lineno)),
+        &" ".repeat(col - get_indent_level(line)),
+        &"^".repeat(str_width(error.span).max(1))
+    ).unwrap();
 }

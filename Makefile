@@ -10,3 +10,6 @@ build:
 
 build_cli:
 	cargo build --release
+
+clean:
+	rm ./target -rf
