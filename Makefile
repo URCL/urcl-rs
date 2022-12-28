@@ -9,6 +9,12 @@ build:
 	rm ./pkg/.gitignore
 	rm ./pkg/urcl_rs_tmp.wasm
 
+FNAME = target/release/urcl-rs
+ifeq ($(OS), Windows_NT)
+	FNAME = target/release/urcl-rs.exe
+endif
+
 build_cli:
 	cargo clean -p urcl-rs --release
 	cargo build --release
+	mv $(FNAME) . -f

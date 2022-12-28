@@ -4,7 +4,7 @@ use std::time::Instant;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    if args.len() < 1 {
+    if args.len() <= 1 {
         println!("\x1b[1;31mError: Not enough arguments.\x1b[0;0m");
         return;
     }
