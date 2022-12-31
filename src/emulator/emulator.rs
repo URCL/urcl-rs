@@ -202,7 +202,7 @@ impl EmulatorState {
                 if $index >= self.program.headers.minheap {
                     self.heap[$index as usize]
                 } else {
-                    self.stack.data[$index as usize - self.program.headers.minheap]
+                    self.stack.data[($index as usize - self.program.headers.minheap) as usize]
                 }
             };
         }
@@ -211,7 +211,7 @@ impl EmulatorState {
                 if $index >= self.program.headers.minheap {
                     self.heap[$index as usize] = $value
                 } else {
-                    self.stack.data[$index as usize - self.program.headers.minheap] = $value
+                    self.stack.data[($index - self.program.headers.minheap) as usize] = $value
                 }
             };
         }
