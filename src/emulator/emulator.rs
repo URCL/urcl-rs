@@ -103,7 +103,7 @@ fn does_overflow(a: u64, b: u64) -> bool {
 impl EmulatorState {
     fn new(program: Program, devices: DeviceHost) -> Self {
         let regs = vec![0; program.headers.minreg as usize];
-        let heap = vec![0; (program.headers.minheap + program.headers.minstack) as usize];
+        let heap = vec![0; (program.headers.minheap /* + program.headers.minstack*/) as usize];
         EmulatorState {
             regs,
             heap,
@@ -134,7 +134,7 @@ impl EmulatorState {
     pub fn show(&mut self) {
         clear_text();
         self.devices.show();
-        jsprintln!("Regs: {:?}", self.regs);
+        jsprintln!("Regs: {:?},\nMem: {:?},\nStack: {:?}", self.regs, self.heap, self.stack.data);
     }
 
     pub fn run_for_ms(&mut self, max_time_ms: f64) -> StepResult {
@@ -199,7 +199,7 @@ impl EmulatorState {
 
         macro_rules! get_mem {
             ($index:expr) => {
-                if $index >= self.program.headers.minheap {
+                if $index < self.program.headers.minheap {
                     self.heap[$index as usize]
                 } else {
                     self.stack.data[($index - self.program.headers.minheap) as usize]
@@ -208,7 +208,7 @@ impl EmulatorState {
         }
         macro_rules! set_mem {
             ($index:expr, $value:expr) => {
-                if $index >= self.program.headers.minheap {
+                if $index < self.program.headers.minheap {
                     self.heap[$index as usize] = $value
                 } else {
                     self.stack.data[($index - self.program.headers.minheap) as usize] = $value
@@ -218,7 +218,7 @@ impl EmulatorState {
 
         macro_rules! getm {
             ($operand:expr) => {
-                if get!($operand) >= self.program.headers.minheap {
+                if get!($operand) < self.program.headers.minheap {
                     self.heap[get!($operand) as usize]
                 } else {
                     self.stack.data[(get!($operand) - self.program.headers.minheap) as usize]
@@ -227,7 +227,7 @@ impl EmulatorState {
         }
         macro_rules! setm {
             ($operand:expr, $value:expr) => {
-                if get!($operand) >= self.program.headers.minheap {
+                if get!($operand) < self.program.headers.minheap {
                     self.heap[get!($operand) as usize] = $value
                 } else {
                     self.stack.data[(get!($operand) - self.program.headers.minheap) as usize] = $value
@@ -362,7 +362,7 @@ impl EmulatorState {
             BRN(a: usize, b: i64) => branch!(a if b < 0),
 
             MOV(a, b); a => b,
-            STR(a, b); [b] => a,
+            STR(a, b); [a] => b,
             CPY(a, [b]); [a] => b,
             LOD(a, [b]); a => b,
             LLOD(a, b, c); a => get_mem!(b + c),
