@@ -218,19 +218,19 @@ impl EmulatorState {
 
         macro_rules! getm {
             ($operand:expr) => {
-                if $index >= self.program.headers.minheap {
-                    self.heap[get!($index) as usize]
+                if $operand >= self.program.headers.minheap {
+                    self.heap[get!($operand) as usize]
                 } else {
-                    self.stack.data[(get!($index) - self.program.headers.minheap) as usize]
+                    self.stack.data[(get!($operand) - self.program.headers.minheap) as usize]
                 }
             };
         }
         macro_rules! setm {
             ($operand:expr, $value:expr) => {
-                if $index >= self.program.headers.minheap {
-                    self.heap[get!($index) as usize] = $value
+                if $operand >= self.program.headers.minheap {
+                    self.heap[get!($operand) as usize] = $value
                 } else {
-                    self.stack.data[(get!($index) - self.program.headers.minheap) as usize] = $value
+                    self.stack.data[(get!($operand) - self.program.headers.minheap) as usize] = $value
                 }
             };
         }
