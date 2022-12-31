@@ -218,7 +218,7 @@ impl EmulatorState {
 
         macro_rules! getm {
             ($operand:expr) => {
-                if $operand >= self.program.headers.minheap {
+                if get!($operand) >= self.program.headers.minheap {
                     self.heap[get!($operand) as usize]
                 } else {
                     self.stack.data[(get!($operand) - self.program.headers.minheap) as usize]
@@ -227,7 +227,7 @@ impl EmulatorState {
         }
         macro_rules! setm {
             ($operand:expr, $value:expr) => {
-                if $operand >= self.program.headers.minheap {
+                if get!($operand) >= self.program.headers.minheap {
                     self.heap[get!($operand) as usize] = $value
                 } else {
                     self.stack.data[(get!($operand) - self.program.headers.minheap) as usize] = $value
