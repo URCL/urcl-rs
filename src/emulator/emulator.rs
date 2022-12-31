@@ -174,7 +174,7 @@ impl EmulatorState {
                     Operand::Imm(v) => *v,
                     Operand::Reg(v) => match *v {
                         PC => self.pc as u64,
-                        SP => self.stack.data.len() as u64,
+                        SP => self.stack.sp as u64,
                         0  => 0,
                         _  => self.regs[*v as usize - 1],
                     },
