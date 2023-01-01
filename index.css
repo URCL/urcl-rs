@@ -140,10 +140,6 @@ input::-webkit-inner-spin-button {
     margin-right: 0px;
 }
 
-#code_input::selection {
-    color: yellow;
-}
-
 #stdout {
     border-radius: .35rem;
     text-align: left;
@@ -172,6 +168,8 @@ input::-webkit-inner-spin-button {
 }
 
 nav {
+    position: sticky;
+    top: 0px;
     background-color: #202124;
     padding: 10px;
     text-align: center;
@@ -205,7 +203,15 @@ main {
     pointer-events: none;
     transition: .25s;
     margin: 0;
+    overflow-y: auto;
 }
+
+.section-seperater  {
+    margin: 2rem;
+    padding: 1rem;
+    border-bottom: 1px solid #fff;
+}
+
 
 .card {
     background-color: #202124;

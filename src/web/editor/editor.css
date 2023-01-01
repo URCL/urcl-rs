@@ -70,15 +70,3 @@ editor-window .pc-line::before {
     position: absolute;
     right: 100%;
 }
-
-.c1 {
-    color: red;
-}
-
-.c2 {
-    color: green;
-}
-
-.c3 {
-    color: blue;
-}

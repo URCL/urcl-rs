@@ -94,7 +94,6 @@ export function clear_screen() {
  * @param {Uint32Array} pixels 
  */
 export function out_screen(width, height, pixels) {
-    const s = screen_canvas.getBoundingClientRect();
     screen_canvas.width         = width;
     screen_canvas.height        = height;
     const image_data = new ImageData(new Uint8ClampedArray(pixels.buffer, pixels.byteOffset, pixels.byteLength), width, height);
