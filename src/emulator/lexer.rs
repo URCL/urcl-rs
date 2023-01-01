@@ -87,7 +87,7 @@ pub fn lex(src: &str) -> Vec<Token<Kind>>{
             '>' => {if s._if(|c|c=='=') {s.create(GE);} else {s.create(Error);}}
             '<' => {if s._if(|c|c=='=') {s.create(LE);} else {s.create(Error);}}
             '=' => {if s._if(|c|c=='=') {s.create(Eq);} else {s.create(Error);}}
-            '.' => {s._while(|c|c != ' ' && c != '\n' && c != '\t'); s.create(Label)},
+            '.' => {s._while(|c| !c.is_whitespace()); s.create(Label)},
             '/' => {if s._if(|c| c == '/') {
                 s._while(|c| c != '\n');
                 s.create(Comment);

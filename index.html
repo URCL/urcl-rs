@@ -11,16 +11,16 @@
         <title>URCL-rs</title>
     </head>
     <body>
-        <nav style="height: fit-content; flex-basis: 0px">
+        <nav id="navbar">
             <button class="symbol red debug_only">DEBUG TOOLS</button>
             <button class="symbol green" id="emulate">COMPILE/RUN</button>
-            <button class="symbol yellow" id="pause">DONE</button>
+            <button class="symbol yellow" id="pause" disabled>DONE</button>
             <button class="symbol blue" id="document_link">DOCUMENTATION</button>
             <button class="symbol yellow" id="examples">EXAMPLES</button>
             <button class="symbol magenta" id="settings">SETTINGS</button>
             <button class="symbol" id="clear">CLEAR</button>
         </nav>
-        <main >
+        <main>
             <editor-window name="code_input" id="code_input"></editor-window>
             <canvas id="screen"></canvas>
             <div id="stdout"></div>
@@ -29,6 +29,17 @@
             <nav>
                 <button class="symbol red" id="exit_settings">Exit Settings</button>
             </nav>
+            <div class="section-seperater">Emulator</div>
+            <div class="card">
+                <div class="card-title">
+                    <h4>Screen size</h4>
+                    <span class="card-option">
+                        <input class="green" id="screen_width" type="number"> x <input class="green" id="screen_height" type="number">
+                    </span>
+                </div>
+                <p>Set the emulator's screen size</p>
+            </div>
+            <div class="section-seperater">Editor</div>
             <div class="card">
                 <div class="card-title">
                     <h4>Auto emulating</h4>
@@ -39,10 +50,11 @@
             <div class="card">
                 <div class="card-title">
                     <h4>Tab size</h4>
-                    <input class="card-option green" class="green" id="tab_size" type="number">
+                    <input class="card-option green" id="tab_size" type="number">
                 </div>
                 <p>Adjust the tab size in characters.</p>
             </div>
+            <div class="section-seperater">Miscellaneous</div>
             <div class="card">
                 <div class="card-title">
                     <h4>Debug options</h4>
@@ -58,7 +70,7 @@
             <div class="card">
                 <div class="card-title">
                     <h4>Hello World</h4>
-                    <button class="example_link card-option green" data-link=".?from-examples">Open</button>
+                    <button class="example_link card-option green" data-link=".?src-example=hello_world">Open</button>
                 </div>
                 <p>Prints "Hello World!" to the console.</p>
             </div>

@@ -50,14 +50,15 @@ impl <'a> TokenBuffer<'a> {
 pub struct Parser<'a> {
     buf: TokenBuffer<'a>,
     pub err: ErrorContext<'a>,
-    pub ast: Program
+    pub ast: Program,
+    pub at_line: usize
 }
 
 pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
     let err = ErrorContext::new();
     let ast = Program::new(src);
     let buf = TokenBuffer::new(toks);
-    let mut p = Parser {buf, err, ast};
+    let mut p = Parser {buf, err, ast, at_line: 1};
 
     while p.buf.has_next() {
         match p.buf.current().kind {
@@ -126,19 +127,19 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
                     "ssetge"  => inst(Inst::SSETGE(p.get_reg(), p.get_op(), p.get_op()),&mut p),
                     "ssetl"   => inst(Inst::SSETL(p.get_reg(), p.get_op(), p.get_op()),&mut p),
                     "ssetle"  => inst(Inst::SSETLE(p.get_reg(), p.get_op(), p.get_op()),&mut p),
-                    "brl"     => inst(Inst::BRL(p.get_op(), p.get_op(), p.get_op()),   &mut p),
-                    "brg"     => inst(Inst::BRG(p.get_op(), p.get_op(), p.get_op()),   &mut p),
-                    "ble"     => inst(Inst::BLE(p.get_op(), p.get_op(), p.get_op()),   &mut p),
-                    "brz"     => inst(Inst::BRZ(p.get_op(), p.get_op())            ,   &mut p),
-                    "bnz"     => inst(Inst::BNZ(p.get_op(), p.get_op())            ,   &mut p),
-                    "setc"    => inst(Inst::SETC(p.get_reg(), p.get_op(), p.get_op()), &mut p),
+                    "brl"     => inst(Inst::BRL(p.get_op(), p.get_op(), p.get_op()),  &mut p),
+                    "brg"     => inst(Inst::BRG(p.get_op(), p.get_op(), p.get_op()),  &mut p),
+                    "ble"     => inst(Inst::BLE(p.get_op(), p.get_op(), p.get_op()),  &mut p),
+                    "brz"     => inst(Inst::BRZ(p.get_op(), p.get_op())            ,  &mut p),
+                    "bnz"     => inst(Inst::BNZ(p.get_op(), p.get_op())            ,  &mut p),
+                    "setc"    => inst(Inst::SETC(p.get_reg(), p.get_op(), p.get_op()),&mut p),
                     "setnc"   => inst(Inst::SETNC(p.get_reg(), p.get_op(), p.get_op()), &mut p),
-                    "bnc"     => inst(Inst::BNC(p.get_op(), p.get_op(), p.get_op()), &mut p),
-                    "brc"     => inst(Inst::BRC(p.get_op(), p.get_op(), p.get_op()), &mut p),
-                    "sbrl"    => inst(Inst::SBRL(p.get_op(), p.get_op(), p.get_op()),  &mut p),
-                    "sbrg"    => inst(Inst::SBRG(p.get_op(), p.get_op(), p.get_op()),   &mut p),
-                    "sble"    => inst(Inst::SBLE(p.get_op(), p.get_op(), p.get_op()),   &mut p),
-                    "sbge"    => inst(Inst::SBGE(p.get_op(), p.get_op(), p.get_op()),   &mut p),
+                    "bnc"     => inst(Inst::BNC(p.get_op(), p.get_op(), p.get_op()),  &mut p),
+                    "brc"     => inst(Inst::BRC(p.get_op(), p.get_op(), p.get_op()),  &mut p),
+                    "sbrl"    => inst(Inst::SBRL(p.get_op(), p.get_op(), p.get_op()), &mut p),
+                    "sbrg"    => inst(Inst::SBRG(p.get_op(), p.get_op(), p.get_op()), &mut p),
+                    "sble"    => inst(Inst::SBLE(p.get_op(), p.get_op(), p.get_op()), &mut p),
+                    "sbge"    => inst(Inst::SBGE(p.get_op(), p.get_op(), p.get_op()), &mut p),
                     "bod"     => inst(Inst::BOD(p.get_op(), p.get_op())             , &mut p),
                     "bev"     => inst(Inst::BEV(p.get_op(), p.get_op())             , &mut p),
                     "brn"     => inst(Inst::BRN(p.get_op(), p.get_op()),              &mut p),
@@ -153,13 +154,14 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
                     "yomamma" => { p.err.error(&p.buf.current(), ErrorKind::YoMamma); p.buf.advance(); },
                     _ => { p.err.error(&p.buf.current(), ErrorKind::UnknownInstruction); p.buf.advance(); },
                 }
+                p.ast.debug.pc_to_line_start.push(p.at_line);
             },
             Kind::Label => {
                 match p.ast.labels.get(p.buf.current().str) {
                     Some(Label::Defined(_)) => p.err.error(&p.buf.current(), ErrorKind::DuplicatedLabelName),
                     Some(Label::Undefined(v)) => {
                         let label_name = p.buf.current().str; let pc = p.ast.instructions.len();
-                        for i in v.iter() {
+                        for i in v.references.iter() {
                             p.ast.instructions[*i] = match &p.ast.instructions[*i] {
                                 Inst::PSH(a) => Inst::PSH(a.clone().transform_label(label_name, pc)),
                                 Inst::JMP(a) => Inst::JMP(a.clone().transform_label(label_name, pc)),
@@ -233,8 +235,20 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
                 }
                 p.buf.advance();
             },
-            Kind::White | Kind::Comment | Kind::LF | Kind::Char | Kind::String => p.buf.advance(),
+            Kind::White | Kind::Comment | Kind::Char | Kind::String => p.buf.advance(),
+            Kind::LF => {p.at_line += 1; p.buf.advance()},
             _ => { logprintln!("Unhandled token type: {:#?}", p.buf.current()); p.buf.advance(); },
+        }
+    }
+
+    for (_, el) in p.ast.labels.iter() {
+        match el {
+            Label::Undefined(a) => {
+                for i in a.referenced_tokens.iter() {
+                    p.err.error(&p.buf.toks[*i], ErrorKind::UndefinedLabel);
+                }
+            },
+            _ => (),
         }
     }
 
@@ -286,7 +300,7 @@ impl <'a> Parser<'a> {
     fn get_jmp(&mut self) -> Operand {
         let (ast, op) = self.get_ast_op();
         match ast {
-            AstOp::Reg(_) | AstOp::Label(_) | AstOp::Unknown => {},
+            AstOp::Reg(_) | AstOp::Label(_) | AstOp::JumpLocation(_) | AstOp::Unknown => {},
             actual => {
                 self.err.warn(self.buf.cur(), ErrorKind::InvalidOperandType{
                     expected: "jump target", actual
@@ -323,6 +337,7 @@ impl <'a> Parser<'a> {
             AstOp::Label(_v) => {
                 label_tok_to_operand(&self.buf.current(), self)
             },
+            AstOp::JumpLocation(v) => Operand::Imm(*v),
         }
     }
     fn get_ast_op(&mut self) -> (AstOp, Operand){
@@ -346,10 +361,11 @@ impl <'a> Parser<'a> {
             Kind::Char => {
                 match self.buf.next().kind {
                     Kind::Text => {
+                        let a = self.buf.current();
                         if !matches!(self.buf.next().kind, Kind::Char) {
                             self.err.error(&self.buf.current(), ErrorKind::EOFBeforeEndOfString);
                         }
-                        AstOp::Char(self.buf.current().str.chars().next().unwrap())
+                        AstOp::Char(a.str.chars().next().unwrap())
                     }
                     Kind::Escape(c) => {
                         if !matches!(self.buf.next().kind, Kind::Char) {
@@ -378,9 +394,20 @@ impl <'a> Parser<'a> {
 
                 AstOp::String(text)
             }
+            Kind::Relative(v) => {
+                AstOp::JumpLocation((self.ast.instructions.len() as i64 + v) as u64)
+            }
             Kind::EOF | Kind::LF => {
                 self.err.error(&self.buf.current(), ErrorKind::NotEnoughOperands);
                 AstOp::Unknown
+            }
+            Kind::Macro => {
+                match self.buf.current().str.to_lowercase().as_str() {
+                    "@max" => AstOp::Int(u64::MAX),
+                    "@msb" => AstOp::Int(1 << 63),
+                    "@smax" => AstOp::Int(i64::MAX as u64),
+                    _ => AstOp::Unknown
+                }
             }
             _ => {
                 self.err.error(&self.buf.current(), ErrorKind::InvalidOperand);
@@ -405,30 +432,15 @@ impl <'a> Parser<'a> {
     }
 }
 
-
-#[allow(dead_code)]
-fn get_operand(p: &mut Parser) -> Option<Operand> {
-    match p.buf.current().kind {
-        Kind::Reg(v) => Some(Operand::Reg(v)),
-        Kind::Int(v) => Some(Operand::Imm(v as u64)),
-        Kind::PortNum(v) => Some(Operand::Imm(v)),
-        Kind::Port => {
-            match IOPort::from_str(&p.buf.current().str[1..].to_uppercase()) {
-                Ok(port) => {Some(Operand::Imm(port as u64))},
-                Err(_err) => {
-                    p.err.error(&p.buf.current(), ErrorKind::UnknownPort);
-                    None
-                }
-            }
-        }
-        Kind::Label  => Some(label_tok_to_operand(&p.buf.current(), p)),
-        _ => None
-    }
+#[derive(Debug, PartialEq, Clone)]
+pub struct UndefinedLabel {
+    references: Vec<usize>,
+    referenced_tokens: Vec<usize>,
 }
 
 #[derive(Debug, PartialEq)]
 pub enum Label {
-    Undefined(Vec<usize>),
+    Undefined(UndefinedLabel),
     Defined(usize),
 }
 
@@ -438,15 +450,19 @@ fn label_tok_to_operand<'a>(tok: &UToken<'a>, p: &mut Parser) -> Operand {
     match p.ast.labels.get(tok.str) {
         Some(Label::Undefined(v)) => {
             let mut a = v.clone();
-            a.push(p.ast.instructions.len());
+            a.references         .push(p.ast.instructions.len());
+            a.referenced_tokens  .push(p.buf.index);
             p.ast.labels.insert((*tok).str.to_string(), Label::Undefined(a));
             Operand::Label(tok.str.to_string())
         },
         Some(Label::Defined(v)) => Operand::Imm(*v as u64),
         None => {
-            let mut a = Vec::new();
-            a.push(p.ast.instructions.len());
-            p.ast.labels.insert((*tok).str.to_string(), Label::Undefined(a));
+            p.ast.labels.insert((*tok).str.to_string(), Label::Undefined(
+                UndefinedLabel{
+                    references: vec![p.ast.instructions.len()],
+                    referenced_tokens: vec![p.buf.index]
+                }
+            ));
             Operand::Label(tok.str.to_string())
         }
     }
@@ -470,11 +486,11 @@ impl Program {
 #[derive(Debug)]
 pub struct DebugInfo {
     pub src: Rc<str>,
-    pub pc_to_line_start: HashMap<u64, usize>
+    pub pc_to_line_start: Vec<usize>
 }
 impl DebugInfo {
     pub fn new(src: Rc<str>) -> Self {
-        Self {src, pc_to_line_start: HashMap::new()}
+        Self {src, pc_to_line_start: Vec::new()}
     }
 }
 
@@ -488,6 +504,7 @@ pub enum AstOp {
     Char(char),
     String(String),
     Label(String),
+    JumpLocation(u64),
 }
 
 #[derive(Debug, Clone)] // cant copy because of the String
