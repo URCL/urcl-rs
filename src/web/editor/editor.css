@@ -1,24 +1,27 @@
 editor-window {
     display: flex;
-    overflow-x: hidden;
-    overflow-y: auto;
-    font-family: monospace, monospace;
-    font-size: 1rem;
+    gap: 0.5rem;
+    overflow: auto;
     white-space: pre;
+    text-align: left;
+    position: relative;
+    padding: 0;
 }
 
 editor-window * {
-    font-family: monospace, monospace;
-    font-size: 1rem;
     white-space: pre;
     padding: 0px;
     margin: 0px;
-    color: white;
 }
 
 editor-window .line-nrs {
-    margin-left: 1ch;
+    position: sticky;
+    left: 0px;
+    padding-inline: 1ch;
     text-align: right;
+    background-color: inherit;
+    height: fit-content;
+    z-index: 1;
 }
 
 
@@ -26,14 +29,11 @@ editor-window .code {
     position: relative;
     width: 100%;
     height: max-content;
-    overflow-y: hidden;
-    overflow-x: auto;
 }
 
 editor-window .colors {
     padding-left: 0.5rem;
     position: absolute;
-    overflow: hidden;
     left: 0px;
     pointer-events: none;
     color: #4ec9b0;
@@ -42,8 +42,10 @@ editor-window .colors {
 }
 
 editor-window textarea {
+    font-size: inherit;
+    tab-size: inherit;
+    line-height: inherit;
     padding-left: 0.5rem;
-    caret-color: white;
 
     height: max-content;
     min-width: calc(100% - 2ch);
@@ -51,9 +53,8 @@ editor-window textarea {
     white-space: pre;
 
     resize: none;
-    background-color: black;
-    color: red;
-    caret-color: white;
+    background-color: inherit;
+    color: transparent;
     outline: none;
     border: none;
 }

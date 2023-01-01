@@ -30,7 +30,6 @@ export class EditorWindow extends HTMLElement {
         l(this, {}, this.#line_nrs = l("div", { className: "line-nrs" }), this.#code = l("div", { className: "code" }, this.#input = l("textarea", { spellcheck: false }), this.#colors = l("code", { className: "colors" })));
         this.#input.addEventListener("keydown", this.#keydown_cb.bind(this));
         this.#input.addEventListener("input", this.#input_cb.bind(this));
-        this.onscroll = () => this.render_end();
         const resize_observer = new ResizeObserver(() => this.#layout());
         resize_observer.observe(this);
         this.render_end();
@@ -91,7 +90,7 @@ export class EditorWindow extends HTMLElement {
     #layout() {
         this.#input.style.height = "0px";
         this.#input.style.width = "0px";
-        const height = Math.max(this.#input.scrollHeight, this.scrollHeight);
+        const height = Math.max(this.#input.scrollHeight, this.scrollHeight - 2);
         this.#input.style.height = height + "px";
         this.#input.style.width = this.#input.scrollWidth + "px";
     }

@@ -237,9 +237,6 @@ init().then(() => { // all code should go in here
     document.getElementById("debug_option").checked = localStorage.getItem("debug_option") == "t";
     update_debug_buttons(document.getElementById("debug_option").checked);
 
-    resync_element_size();
-    output_highlight_span(code_input.value);
-
     const params = new URLSearchParams(window.location.search);
 
     if (params.has("from-examples")) {

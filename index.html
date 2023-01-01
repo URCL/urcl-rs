@@ -10,7 +10,7 @@
         <link rel="stylesheet" href="src/web/editor/editor.css">
         <title>URCL-rs</title>
     </head>
-    <body class="rows">
+    <body>
         <nav style="height: fit-content; flex-basis: 0px">
             <button class="symbol red debug_only">DEBUG TOOLS</button>
             <button class="symbol green" id="emulate">COMPILE/RUN</button>
@@ -20,16 +20,10 @@
             <button class="symbol magenta" id="settings">SETTINGS</button>
             <button class="symbol" id="clear">CLEAR</button>
         </nav>
-        <main class="cols">
-            <div class="rows">
-                <editor-window name="code_input" id="code_input"></editor-window>
-            </div>
-            <div class="rows">
-                <div style="height: fit-content; flex-basis: 0px;">
-                    <canvas id="screen"></canvas>
-                </div>
-                <div id="stdout"></div>
-            </div>
+        <main >
+            <editor-window name="code_input" id="code_input"></editor-window>
+            <canvas id="screen"></canvas>
+            <div id="stdout"></div>
         </main>
         <div id="settings_sec" class="section">
             <nav>
