@@ -16,6 +16,8 @@ strum_macros = "0.24"
 num-traits = "0.2.15"
 num-derive = "0.3.3"
 html-escape = "0.2.13"
+serenity = { version = "0.11", optional = true }
+tokio = { version = "1.21.2", features = ["macros", "rt-multi-thread"], optional = true }
 
 [profile.release]
 lto = true
@@ -23,3 +25,7 @@ overflow-checks = false
 
 [profile.dev]
 overflow-checks = false
+
+[features]
+default = []
+bot = ["dep:serenity", "dep:tokio"]

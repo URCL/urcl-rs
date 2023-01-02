@@ -3,28 +3,35 @@ mod emulator;
 
 use std::time::Instant;
 
+
 fn main() {
-    let args: Vec<String> = std::env::args().collect();
-    if args.len() <= 1 {
-        println!("\x1b[1;31mError: Not enough arguments.\x1b[0;0m");
-        return;
-    }
-    let fname = &args[1];
-    let src = std::fs::read_to_string(fname);
-    match &src {Err(err) => {
-        println!("\x1b[1;31mError: Cannot read file {} (Returns error \"{}\")\x1b[0;0m", fname, err);
-        return;
-    }, _ => ()}
-    let emu = emulator::emulator::emulate(src.unwrap());
-    match emu {
-        None => {
-            println!("\x1b[1;31mError: Compilation failed\x1b[0;0m");
+    if !cfg!(features = "bot") {
+        let args: Vec<String> = std::env::args().collect();
+        if args.len() <= 1 {
+            println!("\x1b[1;31mError: Not enough arguments.\x1b[0;0m");
             return;
         }
-        _ => (),
-    } 
-    println!("{:?}", emu.unwrap().run());
+        let fname = &args[1];
+        let src = std::fs::read_to_string(fname);
+        match &src {Err(err) => {
+            println!("\x1b[1;31mError: Cannot read file {} (Returns error \"{}\")\x1b[0;0m", fname, err);
+            return;
+        }, _ => ()}
+        let emu = emulator::emulator::emulate(src.unwrap());
+        match emu {
+            None => {
+                println!("\x1b[1;31mError: Compilation failed\x1b[0;0m");
+                return;
+            }
+            _ => (),
+        } 
+        println!("{:?}", emu.unwrap().run());
+    } else {
+        // bot goes here
+    }
+
 }
+
 
 pub fn clear_text() {
 
