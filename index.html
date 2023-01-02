@@ -6,6 +6,8 @@
         <meta content="A 🚀blazingly fast🚀 URCL emulator" property="og:description"/>
         <link rel="stylesheet" href="index.css" />
         <script src="script.js" type="module"></script>
+        <script src="src/web/editor/editor.js" type="module"></script>
+        <link rel="stylesheet" href="src/web/editor/editor.css">
         <title>URCL-rs</title>
     </head>
     <body>
@@ -18,10 +20,11 @@
             <button class="symbol magenta" id="settings">SETTINGS</button>
             <button class="symbol" id="clear">CLEAR</button>
         </nav>
-        <main id="mainarea">
-            <textarea name="code_input" id="code_input" spellcheck="false"></textarea><canvas id="screen"></canvas><div id="stdout"></div>
+        <main>
+            <editor-window name="code_input" id="code_input"></editor-window>
+            <canvas id="screen"></canvas>
+            <div id="stdout"></div>
         </main>
-        <div id="line-numbers"></div><div id="highlight"></div>
         <div id="settings_sec" class="section">
             <nav>
                 <button class="symbol red" id="exit_settings">Exit Settings</button>

@@ -1,5 +1,6 @@
 import init, {output_highlight_span, init_panic_hook, emulate, EmulatorState}  from "./pkg/urcl_rs.js"
 import { StepResult } from "./pkg/urcl_rs.js";
+import { EditorWindow } from "./src/web/editor/editor.js";
 
 /**
  * @template T
@@ -27,9 +28,7 @@ function by_id(clazz, name) {
 
 const stdout = by_id(HTMLElement, "stdout");
 const pause_button = by_id(HTMLButtonElement, "pause");
-const highlight = by_id(HTMLElement, "highlight");
-const line_numbers = by_id(HTMLElement, "line-numbers")
-const code_input = by_id(HTMLTextAreaElement, "code_input");
+const code_input = by_id(EditorWindow, "code_input");
 const auto_emulate = by_id(HTMLInputElement, "auto_emulate");
 
 export function now() {
@@ -70,32 +69,15 @@ export function out_debug(text) {
 }
 /**
  * @param {string} text 
- * @param {string} clazz 
+ * @param {string} class_name 
  */
 
-let linenum = 1;
 export function out_span(text, class_name) {
-    if (text !== "\n") {
-        const span = document.createElement("span");
-        span.textContent = text;
-        span.className = class_name;
-        highlight.appendChild(span);
-    } else {
-        out_linenumber(text);
-        const span = document.createElement("span");
-        span.textContent = text;
-        span.className = class_name;
-        highlight.appendChild(span);
-    }
+    code_input.render(text, class_name);
 }
 
 export function out_linenumber(text) {
-    if (text === "")  linenum = 1;
-    const a = document.createElement("span");
-    a.textContent = text !== "e" ? text + linenum : "\n\n";
-    a.className = "line-number";
-    line_numbers.appendChild(a);
-    linenum++;
+    // TODO: remove this function
 }
 
 const screen_canvas = by_id(HTMLCanvasElement, "screen");
@@ -112,11 +94,8 @@ export function clear_screen() {
  * @param {Uint32Array} pixels 
  */
 export function out_screen(width, height, pixels) {
-    const s = screen_canvas.getBoundingClientRect();
-    screen_canvas.width         = s.width / (s.height / height);
+    screen_canvas.width         = width;
     screen_canvas.height        = height;
-    screen_canvas.style.width   = s.width  + "px";
-    screen_canvas.style.height  = s.height + "px";
     const image_data = new ImageData(new Uint8ClampedArray(pixels.buffer, pixels.byteOffset, pixels.byteLength), width, height);
     screen_ctx.putImageData(image_data, 0, 0);
 }
@@ -126,30 +105,13 @@ export function output_registers(regs) {
 }
 
 export async function clear_span() {
-    highlight.innerHTML = "";
-    line_numbers.innerHTML = "";
+    // TODO: remove this function
+
 }
 
-export function resync_element_size(is_chromium) {
-    const code_in_bounding_box  = code_input.getBoundingClientRect();
-    const rem = parseFloat(getComputedStyle(document.body).fontSize);
-    highlight.style.left        = (code_in_bounding_box.left    + rem * 2   ) + "px";
-    highlight.style.width       = (code_in_bounding_box.width   - rem * 2.75) + "px";
-    highlight.style.height      = (code_in_bounding_box.height  - rem * 3.5 + 2) + "px";
-    
-    line_numbers.style.width    = rem * 3 + "px";
-    line_numbers.style.height   = (code_in_bounding_box.height  - rem * 3.5 + 2) + "px";
-    
-    if (!is_chromium) {
-        highlight.style.top         = code_in_bounding_box.top  + "px";
-        line_numbers.style.top      = code_in_bounding_box.top  + "px";
-    } else {
-        highlight.style.top         = code_in_bounding_box.top + rem * .1 + "px";
-        line_numbers.style.top      = code_in_bounding_box.top + rem * .1 + "px";
-    }
+export function resync_element_size() {
+    // TODO: remove this function
 
-    const navbar_height = parseFloat(getComputedStyle(by_id(HTMLElement, "navbar")).height);
-    document.getElementsByTagName("main")[0].style.height = document.body.clientHeight - navbar_height + "px";
 }
 
 export function update_debug_buttons(new_state) {
@@ -215,26 +177,12 @@ init().then(() => { // all code should go in here
             pause_button.disabled = true;
         }
     }
-    
-    code_input.onkeydown = e => {
-        if (e.key == 'Tab') {
-            e.preventDefault();
-            let a = code_input.selectionStart+1;
-            code_input.value = code_input.value.substring(0, code_input.selectionStart) + "\t" + code_input.value.substring(code_input.selectionEnd);
-            code_input.setSelectionRange(a, a);
-            output_highlight_span(code_input.value);
-            if (auto_emulate.checked) start_emulation(code_input.value);
-        };
-    };
 
-    code_input.oninput = () => {
-        output_highlight_span(code_input.value);
+    code_input.highlighter = editor => {
+        editor.render_start();
+        output_highlight_span(editor.value);
+        editor.render_end();
         if (auto_emulate.checked) start_emulation(code_input.value);
-    };
-
-    code_input.onscroll = () => {
-        highlight.scrollTo(code_input.scrollLeft, code_input.scrollTop);
-        line_numbers.scrollTo(0, code_input.scrollTop);
     };
 
     document.getElementById("document_link").onclick    = function() { window.open("https://github.com/ModPunchtree/URCL/releases/latest", "_blank"); };
@@ -294,9 +242,6 @@ init().then(() => { // all code should go in here
 
     document.getElementById("screen_width") .value = localStorage.getItem("screen_width")  == null ? 32 : localStorage.getItem("screen_width");
     document.getElementById("screen_height").value = localStorage.getItem("screen_height") == null ? 32 : localStorage.getItem("screen_height");
-
-    resync_element_size(is_chromium);
-    output_highlight_span(code_input.value);
 
     const params = new URLSearchParams(window.location.search);
 

@@ -1,0 +1,72 @@
+editor-window {
+    display: flex;
+    gap: 0.5rem;
+    overflow: auto;
+    white-space: pre;
+    text-align: left;
+    position: relative;
+    padding: 0;
+}
+
+editor-window * {
+    white-space: pre;
+    padding: 0px;
+    margin: 0px;
+}
+
+editor-window .line-nrs {
+    position: sticky;
+    left: 0px;
+    padding-inline: 1ch;
+    text-align: right;
+    background-color: inherit;
+    height: fit-content;
+    z-index: 1;
+}
+
+
+editor-window .code {
+    position: relative;
+    width: 100%;
+    height: max-content;
+}
+
+editor-window .colors {
+    padding-left: 0.5rem;
+    position: absolute;
+    left: 0px;
+    pointer-events: none;
+    color: #4ec9b0;
+    counter-reset: line;
+    white-space: pre;
+}
+
+editor-window textarea {
+    font-size: inherit;
+    tab-size: inherit;
+    line-height: inherit;
+    padding-left: 0.5rem;
+
+    height: max-content;
+    min-width: calc(100% - 2ch);
+    overflow: hidden;
+    white-space: pre;
+
+    resize: none;
+    background-color: inherit;
+    color: transparent;
+    outline: none;
+    border: none;
+}
+
+editor-window .pc-line {
+    color: greenyellow;
+    width: max-content;
+    position: relative;
+}
+
+editor-window .pc-line::before {
+    content: ">";
+    position: absolute;
+    right: 100%;
+}
