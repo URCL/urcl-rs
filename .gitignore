@@ -1,3 +1,6 @@
 /target
 /Cargo.lock
 /pkg
+/urcl-rs
+/urcl-rs.exe
+/a.urcl
