@@ -1,3 +1,4 @@
+#![cfg(not(target_family = "wasm"))]
 mod emulator;
 
 use std::time::Instant;
