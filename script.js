@@ -246,10 +246,10 @@ init().then(() => { // all code should go in here
     const params = new URLSearchParams(window.location.search);
 
     if (params.has("src-url")) {
-        fetch(params.get("src-url")).then(res => res.text().then(text => {code_input.value = text; output_highlight_span(text);}));
+        fetch(params.get("src-url")).then(res => res.text().then(text => {code_input.value = text;}));
     } else if (params.has("src-example")) {
-        fetch("./examples/"+params.get("src-example") + ".urcl").then(res => res.text().then(text => {code_input.value = text; output_highlight_span(text);}));
+        fetch("./examples/"+params.get("src-example") + ".urcl").then(res => res.text().then(text => {code_input.value = text;}));
     } else if (params.has("src-raw")) {
-        code_input.value = atob(params.get("src-raw")); output_highlight_span(atob(params.get("src-raw")));
+        code_input.value = atob(params.get("src-raw"));
     }
 });
