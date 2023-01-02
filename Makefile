@@ -14,7 +14,12 @@ ifeq ($(OS), Windows_NT)
 	FNAME = target/release/urcl-rs.exe
 endif
 
-build_cli:
-	cargo clean -p urcl-rs --release
+RMNAME = urcl-rs
+ifeq ($(OS), Windows_NT)
+	FNAME = urcl-rs.exe
+endif
+
+cli:
 	cargo build --release
+	rm $(RMNAME)
 	mv $(FNAME) . -f
