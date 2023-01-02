@@ -56,7 +56,7 @@ impl Stack {
     fn new(size: usize) -> Self {
         let mut data = Vec::new();
         data.resize(size, 0);
-        Stack { data, sp: size as i64, size }
+        Stack { data, sp: size as i64 - 1, size }
     }
 
     fn push(&mut self, data: u64) -> Result<(), EmulatorError> {
@@ -69,7 +69,7 @@ impl Stack {
         }
     }
     fn pop(&mut self) -> Result<u64, EmulatorError> {
-        if self.sp < self.size as i64 {
+        if self.sp < self.size as i64 - 1 {
             self.sp += 1;
             Ok(self.data[self.sp as usize])
         } else {
