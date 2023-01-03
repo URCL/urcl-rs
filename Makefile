@@ -16,10 +16,15 @@ endif
 
 RMNAME = urcl-rs
 ifeq ($(OS), Windows_NT)
-	FNAME = urcl-rs.exe
+	RMNAME = urcl-rs.exe
 endif
 
 cli:
 	cargo build --release
-	rm $(RMNAME)
+	rm $(RMNAME) -f
+	mv $(FNAME) . -f
+
+discord:
+	cargo build --release --features "bot"
+	rm $(RMNAME) -f
 	mv $(FNAME) . -f

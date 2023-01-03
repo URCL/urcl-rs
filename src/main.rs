@@ -1,5 +1,6 @@
 #![cfg(not(target_family = "wasm"))]
 mod emulator;
+mod discord_bot;
 
 use std::time::Instant;
 
@@ -27,7 +28,12 @@ fn main() {
         } 
         println!("{:?}", emu.unwrap().run());
     } else {
-        // bot goes here
+        let args: Vec<String> = std::env::args().collect();
+        if args.len() <= 1 {
+            println!("\x1b[1;31mError: Not enough arguments.\x1b[0;0m");
+            return;
+        }
+        discord_bot::init_bot(&args[1]);
     }
 
 }
