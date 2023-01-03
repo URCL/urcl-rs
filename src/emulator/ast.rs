@@ -236,6 +236,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
                 p.buf.advance();
             },
             Kind::White | Kind::Comment | Kind::Char | Kind::String => p.buf.advance(),
+            Kind::EOF => break,
             Kind::LF => {p.at_line += 1; p.buf.advance()},
             _ => { logprintln!("Unhandled token type: {:#?}", p.buf.current()); p.buf.advance(); },
         }

@@ -2,14 +2,17 @@ use devices::DeviceHost;
 use std::{rc::Rc, time::Duration};
 
 use crate::emulator::ast::Parser;
+
+#[allow(unused_imports)]
 use wasm_bindgen::prelude::*;
 
-use super::{
+pub use super::{
     ast::{self, Inst, Operand, Program},
     lexer, *,
 };
 
-#[derive(Debug)]
+#[wasm_bindgen]
+#[derive(Debug, Copy, Clone)]
 pub enum EmulatorErrorKind {
     StackOverflow,
     StackUnderflow,
@@ -24,7 +27,8 @@ impl<'a> std::fmt::Display for EmulatorErrorKind {
     }
 }
 
-#[derive(Debug)]
+#[wasm_bindgen]
+#[derive(Debug, Copy, Clone)]
 pub struct EmulatorError(Option<EmulatorErrorKind>);
 
 impl EmulatorError {
@@ -42,7 +46,7 @@ pub struct EmulatorState {
     pc: usize,
     program: Program,
     devices: DeviceHost,
-    error: EmulatorError,
+    pub error: EmulatorError,
 }
 
 #[derive(Debug)]
@@ -97,6 +101,8 @@ fn does_overflow(a: u64, b: u64) -> bool {
     }
 }
 
+unsafe impl Send for EmulatorState {}
+
 // you cant bindgen impls i dont think
 #[wasm_bindgen]
 #[allow(dead_code)]
@@ -113,6 +119,10 @@ impl EmulatorState {
             devices,
             error: EmulatorError::new(),
         }
+    }
+
+    pub fn get_output(&self) -> String {
+        self.devices.console.get_output().to_string()
     }
 
     pub fn run(&mut self) -> StepResult {
@@ -157,6 +167,8 @@ impl EmulatorState {
         self.show();
         StepResult::Continue
     }
+
+
     // or maybe we just run on a sepperate thread 🤔 good idea
     // lets implement that
 
@@ -416,14 +428,22 @@ impl EmulatorState {
 
         match &self.error {
             EmulatorError(Some(err)) => {
-                jsprintln!(
-                    "<span class=\"error\">Emulator Error: {} at line {}</span>",
-                    err,
-                    self.program.debug.pc_to_line_start[self.pc-1]
-                );
+                let mut out = String::new();
+                out_emu_err(&mut out, err, &self.program.debug.pc_to_line_start[self.pc-1].to_string(), "No Preview Yet!");
                 StepResult::Error
             }
             EmulatorError(None) => StepResult::Continue,
+        }
+    }
+
+    pub fn get_err(&mut self) -> Option<String> {
+        match &self.error {
+            EmulatorError(Some(err)) => {
+                let mut out = String::new();
+                out_emu_err(&mut out, err, &self.program.debug.pc_to_line_start[self.pc-1].to_string(), "No Preview Yet!");
+                Some(out)
+            }
+            EmulatorError(None) => None,
         }
     }
 }
@@ -449,4 +469,17 @@ pub fn emulate(src: String) -> Option<EmulatorState> {
     let emu = EmulatorState::new(program, host);
 
     return Some(emu);
+}
+
+#[allow(dead_code)]
+pub fn silence_emulate(body: String) -> Result<EmulatorState, String> {
+    let src = Rc::from(body);
+    let toks = lexer::lex(&src);
+    let Parser {ast: program, err, ..} = ast::gen_ast(toks, src.clone());
+
+    if err.has_error() {
+        return Err(err.to_string(&src));
+    }
+
+    Ok(EmulatorState::new(program, DeviceHost::new()))
 }

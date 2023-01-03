@@ -1,12 +1,12 @@
 #![cfg(not(target_family = "wasm"))]
 mod emulator;
-mod discord_bot;
 
-use std::time::Instant;
+#[cfg(feature = "bot")]
+mod discord_bot;
 
 
 fn main() {
-    if !cfg!(feature = "bot") {
+    #[cfg(not(feature = "bot"))] {
         let args: Vec<String> = std::env::args().collect();
         if args.len() <= 1 {
             println!("\x1b[1;31mError: Not enough arguments.\x1b[0;0m");
@@ -27,15 +27,19 @@ fn main() {
             _ => (),
         } 
         println!("{:?}", emu.unwrap().run());
-    } else {
+    }
+
+    #[cfg(feature = "bot")] {
         let args: Vec<String> = std::env::args().collect();
         if args.len() <= 1 {
             println!("\x1b[1;31mError: Not enough arguments.\x1b[0;0m");
             return;
         }
-        discord_bot::init_bot(&args[1]);
-    }
 
+        if let Err(err) = discord_bot::init_bot(&args[1]) {
+            println!("\x1b[1;31mError: Bot exited with error {err}.\x1b[0;0m");
+        }
+    }
 }
 
 
@@ -54,22 +58,57 @@ pub fn out_text(text: &str) {
 pub fn out_err(out: &mut String, error: &emulator::errorcontext::Error, lineno: &String, line: &str, col: usize) {
     use std::fmt::Write;
     use crate::emulator::errorcontext::*;
-    writeln!(out, "\x1b[1;{}m{}: {}\x1b[0;0m",
-        match error.level {
-            ErrorLevel::Info    => 96,
-            ErrorLevel::Warning => 93,
-            ErrorLevel::Error   => 91,
-        }, error.level, error.kind
-    ).unwrap();
-    writeln!(out, "{}| {}", 
-        lineno, html_escape::encode_text(&line.split_at(get_indent_level(line)).1.replace("\t", " "))
-    ).unwrap();
-    writeln!(out, "{}| {}{}",
-        " ".repeat(str_width(lineno)),
-        &" ".repeat(col - get_indent_level(line)),
-        &"^".repeat(str_width(error.span).max(1))
-    ).unwrap();
+    if !cfg!(feature = "bot") {
+        writeln!(out, "\x1b[1;{}m{}: {}\x1b[0;0m",
+            match error.level {
+                ErrorLevel::Info    => 96,
+                ErrorLevel::Warning => 93,
+                ErrorLevel::Error   => 91,
+            }, error.level, error.kind
+        ).unwrap();
+        writeln!(out, "\t{}| {}", 
+            lineno, html_escape::encode_text(&line.split_at(get_indent_level(line)).1.replace("\t", " "))
+        ).unwrap();
+        writeln!(out, "\t{}| {}{}",
+            " ".repeat(str_width(lineno)),
+            &" ".repeat(col - get_indent_level(line)),
+            &"^".repeat(str_width(error.span).max(1))
+        ).unwrap();
+    } else {
+        writeln!(out, "\x1b[1;{}m{}: {}\x1b[0;0m",
+            match error.level {
+                ErrorLevel::Info    => 96,
+                ErrorLevel::Warning => 93,
+                ErrorLevel::Error   => 91,
+            }, error.level, error.kind
+        ).unwrap();
+        writeln!(out, "\t{}| {}", 
+            lineno, html_escape::encode_text(&line.split_at(get_indent_level(line)).1.replace("\t", " "))
+        ).unwrap();
+        writeln!(out, "\t{}| {}{}",
+            " ".repeat(str_width(lineno)),
+            &" ".repeat(col - get_indent_level(line)),
+            &"^".repeat(str_width(error.span).max(1))
+        ).unwrap();
+    }
 }
+
+pub fn out_emu_err(out: &mut String, error: &emulator::emulator::EmulatorErrorKind, lineno: &String, line: &str) {
+    use std::fmt::Write;
+    use crate::emulator::errorcontext::*;
+    if !cfg!(feature = "bot") {
+        writeln!(out, "\x1b[1;91mError: {}\x1b[0;0m", error).unwrap();
+        writeln!(out, "\t{}| {}", 
+            lineno, &line.split_at(get_indent_level(line)).1.replace("\t", " ")
+        ).unwrap();
+    } else {
+        writeln!(out, "\x1b[1;91mError: {}\x1b[0;0m", error).unwrap();
+        writeln!(out, "\t{}| {}", 
+            lineno, &line.split_at(get_indent_level(line)).1.replace("\t", " ")
+        ).unwrap();
+    }
+}
+
 
 pub fn out_span(text: &str, _class_name: &str) {
     println!(">{}", text);
@@ -80,7 +119,8 @@ pub fn clear_span() {
 }
 
 pub fn now() -> f64 {
-    Instant::now().elapsed().as_secs_f64() * 1000.
+    use std::time::{SystemTime, UNIX_EPOCH};
+    SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as f64
 }
 
 pub fn out_debug(text: &str) {
