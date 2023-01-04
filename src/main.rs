@@ -91,7 +91,7 @@ pub fn clear_screen() {
 
 pub fn out_linenumber(_: &str) {}
 
-fn log(s: &str) {
+fn _log(s: &str) {
     println!("{}", s);
 }
 
