@@ -1,3 +1,5 @@
+#![cfg(feature = "bot")]
+
 use serenity::async_trait;
 use serenity::prelude::*;
 use serenity::model::channel::Message;
@@ -12,13 +14,25 @@ struct Handler {}
 impl EventHandler for Handler {
     async fn message(&self, ctx: Context, msg: Message) {
         if msg.content.starts_with("!emu") {
-            let body = reqwest::get(msg.attachments[0].url.clone()).await.unwrap().text().await.unwrap();
+            let body;
+            if msg.attachments.len() > 0 {
+                body = reqwest::get(msg.attachments[0].url.clone()).await.unwrap().text().await.unwrap();
+            } else {
+                let tmp = msg.content.split("```").collect::<Vec<&str>>();
+                if tmp.len() < 3 {
+                    if let Err(err) = msg.channel_id.say(&ctx.http, "Expected file or codeblock with URCL source.").await {
+                        println!("\x1b[1;93mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err)
+                    };
+                    return;
+                }
+                body = tmp[1].to_string();
+            }
 
             let mut emu = match emulator::silence_emulate(body) {
                 Ok(emu) => emu,
                 Err(err) => {
                     if let Err(err) = msg.channel_id.say(&ctx.http, format!("Cannot compile URCL code: ```ansi\n{}\n```", err)).await {
-                        println!("\x1b[1;33mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err)
+                        println!("\x1b[1;93mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err)
                     };
                     return;
                 }
@@ -29,13 +43,13 @@ impl EventHandler for Handler {
                 StepResult::HLT => {
                     let output = emu.get_output();
                     if let Err(err) = msg.channel_id.say(&ctx.http, format!("Program exited: ```\n{}\n```", output)).await {
-                        println!("\x1b[1;33mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err)
+                        println!("\x1b[1;93mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err)
                     };
                 },
                 StepResult::Continue => {
                     let output = emu.get_output();
                     if let Err(err) = msg.channel_id.say(&ctx.http, format!("Program ran for more than 1000ms: ```\n{}\n```", output)).await {
-                        println!("\x1b[1;33mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err)
+                        println!("\x1b[1;93mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err)
                     };
                 },
                 StepResult::Error => {
@@ -43,7 +57,7 @@ impl EventHandler for Handler {
                     if let Err(err) = msg.channel_id.say(&ctx.http, format!("Program exited with error: ```ansi\n{}\n```Output: ```\n{}\n```",
                         emu.get_err().unwrap(), output)
                     ).await {
-                        println!("\x1b[1;33mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err)
+                        println!("\x1b[1;93mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err)
                     };
                 },
                 _ => (),
