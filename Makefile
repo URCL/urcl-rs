@@ -21,7 +21,7 @@ endif
 
 cli:
 	cargo build --release
-	rm $(RMNAME) -f
+	-rm $(RMNAME)
 	mv $(FNAME) . -f
 
 discord:

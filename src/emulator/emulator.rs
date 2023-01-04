@@ -459,7 +459,6 @@ pub fn emulate(src: String) -> Option<EmulatorState> {
     let Parser {
         ast: program, err, ..
     } = ast::gen_ast(toks, src.clone());
-    jsprintln!("{:#?}", program);
     jsprintln!("{}", err.to_string(&src));
     if err.has_error() {
         return None;

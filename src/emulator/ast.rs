@@ -51,14 +51,15 @@ pub struct Parser<'a> {
     buf: TokenBuffer<'a>,
     pub err: ErrorContext<'a>,
     pub ast: Program,
-    pub at_line: usize
+    pub at_line: usize,
+    pub macros: HashMap<&'a str, UToken<'a>>
 }
 
 pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
     let err = ErrorContext::new();
     let ast = Program::new(src);
     let buf = TokenBuffer::new(toks);
-    let mut p = Parser {buf, err, ast, at_line: 1};
+    let mut p = Parser {buf, err, ast, at_line: 1, macros: HashMap::new() };
 
     while p.buf.has_next() {
         match p.buf.current().kind {
@@ -235,10 +236,19 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
                 }
                 p.buf.advance();
             },
+            Kind::Macro => {
+                match p.buf.current().str {
+                    "@define" => {
+                        let to_replace = p.buf.next().str;
+                        p.macros.insert(to_replace, p.buf.next());
+                    },
+                    _ => {p.err.error(&p.buf.current(), ErrorKind::UnexpectedMacro); p.buf.advance()},
+                }
+            }
             Kind::White | Kind::Comment | Kind::Char | Kind::String => p.buf.advance(),
             Kind::EOF => break,
             Kind::LF => {p.at_line += 1; p.buf.advance()},
-            _ => { logprintln!("Unhandled token type: {:#?}", p.buf.current()); p.buf.advance(); },
+            _ => { p.buf.advance(); },
         }
     }
 
@@ -409,6 +419,88 @@ impl <'a> Parser<'a> {
                     "@smax" => AstOp::Int(i64::MAX as u64),
                     _ => AstOp::Unknown
                 }
+            }
+            Kind::Name => {
+                self.get_ast_op_from_token(self.macros[current.str].clone()).0
+            }
+            _ => {
+                self.err.error(&self.buf.current(), ErrorKind::InvalidOperand);
+                AstOp::Unknown
+            }
+        };
+        let op = self.trans_op(&ast);
+        (ast, op)
+    }
+
+    fn get_ast_op_from_token(&mut self, current: UToken<'a>) -> (AstOp, Operand) {
+        let ast = match current.kind {
+            Kind::Reg(v) => AstOp::Reg(v),
+            Kind::Int(v) => AstOp::Int(v as u64),
+            Kind::Memory(m) => AstOp::Mem(m),
+            Kind::PortNum(v) => AstOp::Port(v),
+            Kind::Port => {
+                match IOPort::from_str(&current.str[1..].to_uppercase()) {
+                    Ok(port) => {AstOp::Port(port as u64)},
+                    Err(_err) => {
+                        self.err.error(&self.buf.current(), ErrorKind::UnknownPort);
+                        AstOp::Port(0)
+                    }
+                }
+            }
+            Kind::Label  => AstOp::Label(current.str[1..].to_owned()),
+            Kind::Char => {
+                match self.buf.next().kind {
+                    Kind::Text => {
+                        let a = self.buf.current();
+                        if !matches!(self.buf.next().kind, Kind::Char) {
+                            self.err.error(&self.buf.current(), ErrorKind::EOFBeforeEndOfString);
+                        }
+                        AstOp::Char(a.str.chars().next().unwrap())
+                    }
+                    Kind::Escape(c) => {
+                        if !matches!(self.buf.next().kind, Kind::Char) {
+                            self.err.error(&self.buf.current(), ErrorKind::EOFBeforeEndOfString);
+                        }
+                        AstOp::Char(c)
+                    }
+                    _ => {
+                        self.err.error(&self.buf.current(), ErrorKind::EOFBeforeEndOfString);
+                        AstOp::Char('\x00')
+                    },
+                }
+            }
+            Kind::String => {
+                let mut text = String::new();
+                while self.buf.has_next() {match self.buf.next().kind {
+                    Kind::String => break,
+                    Kind::Text => text += self.buf.cur().str,
+                    Kind::Escape(c) => text.push(c),
+                    _ => {
+                        self.err.error(&self.buf.current(), ErrorKind::EOFBeforeEndOfString);
+                        break;
+                    }
+                }}
+
+
+                AstOp::String(text)
+            }
+            Kind::Relative(v) => {
+                AstOp::JumpLocation((self.ast.instructions.len() as i64 + v) as u64)
+            }
+            Kind::EOF | Kind::LF => {
+                self.err.error(&self.buf.current(), ErrorKind::NotEnoughOperands);
+                AstOp::Unknown
+            }
+            Kind::Macro => {
+                match self.buf.current().str.to_lowercase().as_str() {
+                    "@max" => AstOp::Int(u64::MAX),
+                    "@msb" => AstOp::Int(1 << 63),
+                    "@smax" => AstOp::Int(i64::MAX as u64),
+                    _ => AstOp::Unknown
+                }
+            }
+            Kind::Name => {
+                self.get_ast_op_from_token(self.macros[current.str].clone()).0
             }
             _ => {
                 self.err.error(&self.buf.current(), ErrorKind::InvalidOperand);

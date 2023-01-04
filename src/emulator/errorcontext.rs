@@ -73,6 +73,7 @@ pub struct Error<'a> {
 #[allow(dead_code)]
 #[derive(Debug)]
 pub enum ErrorKind<'a> {
+    UnexpectedMacro,
     NotEnoughOperands,
     ToManyOperands,
     InvalidOperandType{expected: &'a str, actual: AstOp},
@@ -89,6 +90,7 @@ pub enum ErrorKind<'a> {
 impl <'a> Display for ErrorKind<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            ErrorKind::UnexpectedMacro => write!(f, "Unexpected macro"),
             ErrorKind::NotEnoughOperands => write!(f, "Not enough operands"),
             ErrorKind::ToManyOperands => write!(f, "Too many operands"),
             ErrorKind::InvalidOperandType { expected, actual } => write!(f, "Expected operand {} but got {:?}", expected, actual),
