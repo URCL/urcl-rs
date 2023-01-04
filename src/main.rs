@@ -7,10 +7,10 @@ mod discord_bot;
 #[allow(unused_imports)]
 use toml::*;
 
-use serde::Deserialize;
+use serde::*;
 
 #[allow(dead_code)]
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 struct SecretTOMLConfig {
     bot_key: String
 }
@@ -52,7 +52,7 @@ fn main() {
                     return;
                 }
                 
-                match std::fs::write("Secret.toml", &args[1]) {
+                match std::fs::write("Secret.toml", toml::to_string(&SecretTOMLConfig {bot_key: args[1].clone()}).unwrap()) {
                     Ok(_) => println!("\x1b[1;36mNote: URCL-rs sucessfully automatically added the Secret.toml file that stores your bot API key. DO NOT SHARE this file to other people\x1b[0;0m"),
                     _ => (),
                 };
