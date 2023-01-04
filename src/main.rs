@@ -58,12 +58,12 @@ pub fn out_text(text: &str) {
 pub fn out_err(out: &mut String, error: &emulator::errorcontext::Error, lineno: &String, line: &str, col: usize) {
     use std::fmt::Write;
     use crate::emulator::errorcontext::*;
-    if !cfg!(feature = "bot") {
+    #[cfg(not(feature = "bot"))] {
         writeln!(out, "\x1b[1;{}m{}: {}\x1b[0;0m",
             match error.level {
-                ErrorLevel::Info    => 96,
-                ErrorLevel::Warning => 93,
-                ErrorLevel::Error   => 91,
+                ErrorLevel::Info    => 36,
+                ErrorLevel::Warning => 33,
+                ErrorLevel::Error   => 31,
             }, error.level, error.kind
         ).unwrap();
         writeln!(out, "\t{}| {}", 
@@ -74,12 +74,13 @@ pub fn out_err(out: &mut String, error: &emulator::errorcontext::Error, lineno: 
             &" ".repeat(col - get_indent_level(line)),
             &"^".repeat(str_width(error.span).max(1))
         ).unwrap();
-    } else {
+    }
+    #[cfg(feature = "bot")] {
         writeln!(out, "\x1b[1;{}m{}: {}\x1b[0;0m",
             match error.level {
-                ErrorLevel::Info    => 96,
-                ErrorLevel::Warning => 93,
-                ErrorLevel::Error   => 91,
+                ErrorLevel::Info    => 36,
+                ErrorLevel::Warning => 33,
+                ErrorLevel::Error   => 31,
             }, error.level, error.kind
         ).unwrap();
         writeln!(out, "\t{}| {}", 
@@ -97,12 +98,12 @@ pub fn out_emu_err(out: &mut String, error: &emulator::emulator::EmulatorErrorKi
     use std::fmt::Write;
     use crate::emulator::errorcontext::*;
     if !cfg!(feature = "bot") {
-        writeln!(out, "\x1b[1;91mError: {}\x1b[0;0m", error).unwrap();
+        writeln!(out, "\x1b[1;31mError: {}\x1b[0;0m", error).unwrap();
         writeln!(out, "\t{}| {}", 
             lineno, &line.split_at(get_indent_level(line)).1.replace("\t", " ")
         ).unwrap();
     } else {
-        writeln!(out, "\x1b[1;91mError: {}\x1b[0;0m", error).unwrap();
+        writeln!(out, "\x1b[1;31mError: {}\x1b[0;0m", error).unwrap();
         writeln!(out, "\t{}| {}", 
             lineno, &line.split_at(get_indent_level(line)).1.replace("\t", " ")
         ).unwrap();
