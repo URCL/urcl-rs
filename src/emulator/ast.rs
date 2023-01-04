@@ -1,6 +1,6 @@
 use std::{collections::HashMap, str::FromStr, rc::Rc};
 
-use super::{*, lexer::{Token, Kind, UToken}, errorcontext::{ErrorContext, ErrorKind}, devices::IOPort};
+use super::{lexer::{Token, Kind, UToken}, errorcontext::{ErrorContext, ErrorKind}, devices::IOPort};
 
 struct TokenBuffer<'a> {
     index: usize,

@@ -4,6 +4,16 @@ mod emulator;
 #[cfg(feature = "bot")]
 mod discord_bot;
 
+#[allow(unused_imports)]
+use toml::*;
+
+use serde::Deserialize;
+
+#[allow(dead_code)]
+#[derive(Deserialize)]
+struct SecretTOMLConfig {
+    bot_key: String
+}
 
 fn main() {
     #[cfg(not(feature = "bot"))] {
@@ -30,13 +40,27 @@ fn main() {
     }
 
     #[cfg(feature = "bot")] {
-        let args: Vec<String> = std::env::args().collect();
-        if args.len() <= 1 {
-            println!("\x1b[1;31mError: Not enough arguments.\x1b[0;0m");
-            return;
-        }
+        let apikey = match std::fs::read_to_string("Secret.toml") {
+            Ok(content) => {
+                let toml_c: SecretTOMLConfig = toml::from_str(&content).unwrap();
+                toml_c.bot_key.to_string()
+            },
+            _ => {
+                let args: Vec<String> = std::env::args().collect();
+                if args.len() <= 1 {
+                    println!("\x1b[1;31mError: Not enough arguments.\x1b[0;0m");
+                    return;
+                }
+                
+                match std::fs::write("Secret.toml", &args[1]) {
+                    Ok(_) => println!("\x1b[1;36mNote: URCL-rs sucessfully automatically added the Secret.toml file that stores your bot API key. DO NOT SHARE this file to other people\x1b[0;0m"),
+                    _ => (),
+                };
+                args[1].clone()
+            }
+        };
 
-        if let Err(err) = discord_bot::init_bot(&args[1]) {
+        if let Err(err) = discord_bot::init_bot(&apikey) {
             println!("\x1b[1;31mError: Bot exited with error {err}.\x1b[0;0m");
         }
     }
@@ -138,6 +162,7 @@ pub fn clear_screen() {
 
 pub fn out_linenumber(_: &str) {}
 
+#[allow(dead_code)]
 fn log(s: &str) {
     println!("{}", s);
 }

@@ -19,6 +19,7 @@ impl EventHandler for Handler {
                 body = reqwest::get(msg.attachments[0].url.clone()).await.unwrap().text().await.unwrap();
             } else {
                 let tmp = msg.content.split("```").collect::<Vec<&str>>();
+
                 if tmp.len() < 3 {
                     if let Err(err) = msg.channel_id.say(&ctx.http, "Expected file or codeblock with URCL source.").await {
                         println!("\x1b[1;93mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err)
@@ -31,7 +32,7 @@ impl EventHandler for Handler {
             let mut emu = match emulator::silence_emulate(body) {
                 Ok(emu) => emu,
                 Err(err) => {
-                    if let Err(err) = msg.channel_id.say(&ctx.http, format!("Cannot compile URCL code: ```ansi\n{}\n```", err)).await {
+                    if let Err(err) = msg.channel_id.say(&ctx.http, format!("Cannot compile URCL code: ```ansi\n{}```", err)).await {
                         println!("\x1b[1;93mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err)
                     };
                     return;
@@ -42,19 +43,19 @@ impl EventHandler for Handler {
             match silence_run_for_ms(&mut emu, 1000.0) {
                 StepResult::HLT => {
                     let output = emu.get_output();
-                    if let Err(err) = msg.channel_id.say(&ctx.http, format!("Program exited: ```\n{}\n```", output)).await {
+                    if let Err(err) = msg.channel_id.say(&ctx.http, format!("Program exited: ```\n{}```", output)).await {
                         println!("\x1b[1;93mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err)
                     };
                 },
                 StepResult::Continue => {
                     let output = emu.get_output();
-                    if let Err(err) = msg.channel_id.say(&ctx.http, format!("Program ran for more than 1000ms: ```\n{}\n```", output)).await {
+                    if let Err(err) = msg.channel_id.say(&ctx.http, format!("Program ran for more than 1000ms: ```\n{}```", output)).await {
                         println!("\x1b[1;93mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err)
                     };
                 },
                 StepResult::Error => {
                     let output = emu.get_output();
-                    if let Err(err) = msg.channel_id.say(&ctx.http, format!("Program exited with error: ```ansi\n{}\n```Output: ```\n{}\n```",
+                    if let Err(err) = msg.channel_id.say(&ctx.http, format!("Program exited with error: ```ansi\n{}```Output: ```\n{}```",
                         emu.get_err().unwrap(), output)
                     ).await {
                         println!("\x1b[1;93mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err)
