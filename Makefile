@@ -21,5 +21,5 @@ endif
 
 cli:
 	cargo build --release
-	rm $(RMNAME)
+	-rm $(RMNAME)
 	mv $(FNAME) . -f
