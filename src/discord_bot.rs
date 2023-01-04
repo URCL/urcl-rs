@@ -18,7 +18,7 @@ impl EventHandler for Handler {
                 Ok(emu) => emu,
                 Err(err) => {
                     if let Err(err) = msg.channel_id.say(&ctx.http, format!("Cannot compile URCL code: ```ansi\n{}\n```", err)).await {
-                        println!("\x1b[1;93mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err)
+                        println!("\x1b[1;33mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err)
                     };
                     return;
                 }
@@ -29,13 +29,13 @@ impl EventHandler for Handler {
                 StepResult::HLT => {
                     let output = emu.get_output();
                     if let Err(err) = msg.channel_id.say(&ctx.http, format!("Program exited: ```\n{}\n```", output)).await {
-                        println!("\x1b[1;93mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err)
+                        println!("\x1b[1;33mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err)
                     };
                 },
                 StepResult::Continue => {
                     let output = emu.get_output();
                     if let Err(err) = msg.channel_id.say(&ctx.http, format!("Program ran for more than 1000ms: ```\n{}\n```", output)).await {
-                        println!("\x1b[1;93mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err)
+                        println!("\x1b[1;33mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err)
                     };
                 },
                 StepResult::Error => {
@@ -43,7 +43,7 @@ impl EventHandler for Handler {
                     if let Err(err) = msg.channel_id.say(&ctx.http, format!("Program exited with error: ```ansi\n{}\n```Output: ```\n{}\n```",
                         emu.get_err().unwrap(), output)
                     ).await {
-                        println!("\x1b[1;93mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err)
+                        println!("\x1b[1;33mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err)
                     };
                 },
                 _ => (),
