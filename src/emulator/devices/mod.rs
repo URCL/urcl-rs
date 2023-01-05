@@ -41,7 +41,7 @@ pub trait Device {
 }
 
 pub struct DeviceHost {
-    console: console::Console,
+    pub console: console::Console,
     screen: screen::Screen,
 }//rip
 // we could take a break from ports and add other bits than 64
