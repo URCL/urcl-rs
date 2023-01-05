@@ -6,8 +6,6 @@ use crate::emulator::ast::Parser;
 #[allow(unused_imports)]
 use wasm_bindgen::prelude::*;
 
-use self::devices::Device;
-
 pub use super::{
     ast::{self, Inst, Operand, Program},
     lexer, *,
