@@ -52,7 +52,15 @@ impl Debug for DeviceHost {
     }
 }
 
-impl DeviceHost {        
+impl DeviceHost {
+    pub fn in_port(&mut self, _port: u64) -> u64 {
+        let Some(port) = FromPrimitive::from_u64(_port) else {return 0;};
+        match port {
+            IOPort::RNG => crate::rand(),
+            _ => {todo!("unsupported port {:?}", port)}
+        }
+    }
+
     pub fn out(&mut self, _port: u64, value: u64) {
         let Some(port) = FromPrimitive::from_u64(_port) else {return;};
         match port {
@@ -63,6 +71,7 @@ impl DeviceHost {
             IOPort::X => self.screen.out_x(value),
             IOPort::Y => self.screen.out_y(value),
             IOPort::COLOR => self.screen.out_color(value),
+            IOPort::RNG => crate::srand(value),
             _ => {todo!("unsupported port {:?}", port)}
         }
     }

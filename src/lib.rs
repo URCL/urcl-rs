@@ -74,3 +74,23 @@ pub fn out_emu_err(out: &mut String, error: &emulator::emulator::EmulatorErrorKi
         lineno, html_escape::encode_text(&line.split_at(get_indent_level(line)).1.replace("\t", " "))
     ).unwrap();
 }
+
+static mut RAND_SEED: u64 = 0;
+
+pub fn rand() -> u64 {
+    unsafe {
+        let mut x = RAND_SEED;
+        if x == 0 {x = 1;}
+        x ^= x << 13;
+        x ^= x >> 7;
+        x ^= x << 17;
+        RAND_SEED = x;
+        x
+    }
+}
+
+pub fn srand(seed: u64) {
+    unsafe {
+        RAND_SEED = seed;
+    }
+}

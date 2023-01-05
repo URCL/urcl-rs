@@ -347,7 +347,7 @@ impl EmulatorState {
                 }
             },
 
-            IN(a, b) => todo!(),
+            IN(a, b); a => self.devices.in_port(b),
             OUT(a, b) => self.devices.out(a, b),
 
             JMP(a: usize) => branch!(a),

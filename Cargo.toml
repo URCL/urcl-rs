@@ -24,7 +24,6 @@ reqwest = { version = "0.11.13", optional = true }
 png = { version = "0.17.7", optional = true }
 serde = { version = "1.0", features = ["derive"] }
 toml = "0.5.10"
-rand = { version = "0.8.5", optional = true }
 
 [profile.release]
 lto = true
@@ -35,4 +34,4 @@ overflow-checks = false
 
 [features]
 default = []
-bot = ["dep:serenity", "dep:tokio", "dep:reqwest", "dep:png", "dep:rand"]
+bot = ["dep:serenity", "dep:tokio", "dep:reqwest", "dep:png"]

@@ -66,7 +66,6 @@ fn main() {
     }
 }
 
-
 pub fn clear_text() {
 
 }
@@ -77,6 +76,27 @@ pub fn in_text() -> String {
 
 pub fn out_text(text: &str) {
     println!("{}", text);
+}
+
+
+static mut RAND_SEED: u64 = 0;
+
+pub fn rand() -> u64 {
+    unsafe {
+        let mut x = RAND_SEED;
+        if x == 0 {x = 1;}
+        x ^= x << 13;
+        x ^= x >> 7;
+        x ^= x << 17;
+        RAND_SEED = x;
+        x
+    }
+}
+
+pub fn srand(seed: u64) {
+    unsafe {
+        RAND_SEED = seed;
+    }
 }
 
 pub fn out_err(out: &mut String, error: &emulator::errorcontext::Error, lineno: &String, line: &str, col: usize) {

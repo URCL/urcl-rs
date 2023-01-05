@@ -1546,7 +1546,6 @@ dependencies = [
  "num-derive",
  "num-traits",
  "png",
- "rand",
  "reqwest",
  "serde",
  "serenity",

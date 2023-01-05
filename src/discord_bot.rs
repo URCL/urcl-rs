@@ -150,12 +150,11 @@ impl Image {
         &self.pixels[(y * self.height + x) as usize]
     }
     pub fn as_file(&self) -> String {
-        use rand::*;
         use std::fs::File;
         use std::path::Path;
         use std::io::{BufWriter, Write};
 
-        let file_id: u16 = random();
+        let file_id: u16 = crate::rand() as u16;
         let mut file = File::create(Path::new(&format!("tmp/{}.png", file_id))).expect("\x1b[1;93mDiscord bot error: Unable to create file.\x1b[0;0m");
         file.write_all(b"");
         let ref mut w = BufWriter::new(file);
