@@ -1,6 +1,7 @@
 #![cfg(feature = "bot")]
 
 use serenity::async_trait;
+use serenity::model::prelude::AttachmentType;
 use serenity::prelude::*;
 use serenity::model::channel::Message;
 use serenity::framework::standard::StandardFramework;
@@ -40,6 +41,7 @@ impl EventHandler for Handler {
             };
 
             let result = silence_run_for_ms(&mut emu, 1000.0);
+            let mut att = Vec::<AttachmentType>::new();
 
             let screen = emu.get_screen();
             let width  = screen.width();
@@ -49,9 +51,13 @@ impl EventHandler for Handler {
             for (i, el) in pixels.iter().enumerate() {
                 png.pixels[i] = RGBA24{r: (el >> 24) as u8, g: (el >> 16) as u8, b: (el >> 8) as u8, a: *el as u8}
             }
-            let bruh = png.as_file();
-            let fname = bruh.as_str();
-            let att = vec![fname];
+            let mut png_file = Vec::<u8>::new();
+            if let Err(err) = png.write_png(&mut png_file) {
+                println!("\x1b[1;93mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err);
+                drop(png_file);
+            } else {
+                att.push((png_file.as_slice(), "image.png").into());
+            }
 
             use emulator::emulator::StepResult;
             match result {
@@ -77,8 +83,6 @@ impl EventHandler for Handler {
                 },
                 _ => (),
             }
-
-            std::fs::remove_file(fname);
         }
     }
 
@@ -149,16 +153,9 @@ impl Image {
     pub fn get_pixel(&mut self, x: u32, y: u32) -> &RGBA24 {
         &self.pixels[(y * self.height + x) as usize]
     }
-    pub fn as_file(&self) -> String {
-        use std::fs::File;
-        use std::path::Path;
-        use std::io::{BufWriter, Write};
 
-        let file_id: u16 = crate::rand() as u16;
-        let mut file = File::create(Path::new(&format!("tmp/{}.png", file_id))).expect("\x1b[1;93mDiscord bot error: Unable to create file.\x1b[0;0m");
-        file.write_all(b"");
-        let ref mut w = BufWriter::new(file);
-        let mut encoder = png::Encoder::new(w, self.width, self.height);
+    pub fn write_png<W: std::io::Write>(&self, target: &mut W) -> std::io::Result<()> {
+        let mut encoder = png::Encoder::new(target, self.width, self.height);
 
         encoder.set_color(png::ColorType::Rgba);
         encoder.set_depth(png::BitDepth::Eight);
@@ -171,9 +168,8 @@ impl Image {
             raw_color.push(c.a);
         }
 
-        let mut writer = encoder.write_header().unwrap();
-        writer.write_image_data(&raw_color).unwrap();
-
-        format!("tmp/{}.png", file_id)
+        let mut writer = encoder.write_header()?;
+        writer.write_image_data(&raw_color)?;
+        Ok(())
     }
 }
