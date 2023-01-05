@@ -65,3 +65,12 @@ pub fn out_err(out: &mut String, error: &emulator::errorcontext::Error, lineno: 
         &"^".repeat(str_width(error.span).max(1))
     ).unwrap();
 }
+
+pub fn out_emu_err(out: &mut String, error: &emulator::emulator::EmulatorErrorKind, lineno: &String, line: &str) {
+    use std::fmt::Write;
+    use crate::emulator::errorcontext::*;
+    writeln!(out, "<span class=\"error\">Error: {}</span>", error).unwrap();
+    writeln!(out, "{}| {}", 
+        lineno, html_escape::encode_text(&line.split_at(get_indent_level(line)).1.replace("\t", " "))
+    ).unwrap();
+}

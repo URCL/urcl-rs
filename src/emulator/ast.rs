@@ -246,6 +246,7 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
                 }
             }
             Kind::White | Kind::Comment | Kind::Char | Kind::String => p.buf.advance(),
+            Kind::EOF => break,
             Kind::LF => {p.at_line += 1; p.buf.advance()},
             _ => { p.buf.advance(); },
         }
