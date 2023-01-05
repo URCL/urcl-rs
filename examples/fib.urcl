@@ -1,0 +1,17 @@
+MINHEAP 0
+MINREG  2
+BITS   64
+
+IMM R1 1
+
+.loop
+    ADD R1 R1 R2
+    OUT %NUMB R1
+    OUT %TEXT '\n'
+    BRC .stop R1 R2
+    ADD R2 R1 R2
+    OUT %NUMB R2
+    OUT %TEXT '\n'
+    BNC .loop R1 R2
+.stop
+HLT
