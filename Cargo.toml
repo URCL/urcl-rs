@@ -21,8 +21,10 @@ html-escape = "0.2.13"
 serenity = { version = "0.11", optional = true }
 tokio = { version = "1.21.2", features = ["macros", "rt-multi-thread"], optional = true }
 reqwest = { version = "0.11.13", optional = true }
+png = { version = "0.17.7", optional = true }
 serde = { version = "1.0", features = ["derive"] }
 toml = "0.5.10"
+rand = "0.8.5"
 
 [profile.release]
 lto = true
@@ -33,4 +35,4 @@ overflow-checks = false
 
 [features]
 default = []
-bot = ["dep:serenity", "dep:tokio", "dep:reqwest"]
+bot = ["dep:serenity", "dep:tokio", "dep:reqwest", "dep:png"]

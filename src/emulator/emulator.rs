@@ -6,6 +6,8 @@ use crate::emulator::ast::Parser;
 #[allow(unused_imports)]
 use wasm_bindgen::prelude::*;
 
+use self::devices::Device;
+
 pub use super::{
     ast::{self, Inst, Operand, Program},
     lexer, *,
@@ -445,6 +447,10 @@ impl EmulatorState {
             }
             EmulatorError(None) => None,
         }
+    }
+
+    pub fn get_screen(&self) -> crate::emulator::devices::screen::Screen {
+        self.devices.screen.clone()
     }
 }
 

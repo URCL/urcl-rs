@@ -1,5 +1,5 @@
-mod console;
-mod screen;
+pub mod console;
+pub mod screen;
 use console::Console;
 use self::screen::Screen;
 use super::super::*;
@@ -42,7 +42,7 @@ pub trait Device {
 
 pub struct DeviceHost {
     pub console: console::Console,
-    screen: screen::Screen,
+    pub screen: screen::Screen,
 }//rip
 // we could take a break from ports and add other bits than 64
 use std::fmt::{Formatter, Result, Debug};

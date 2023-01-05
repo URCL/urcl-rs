@@ -1,3 +1,5 @@
+#[wasm_bindgen::prelude::wasm_bindgen]
+#[derive(Clone)]
 pub struct Screen {
     pixels: Vec<u32>, // RGBA
     width: usize,

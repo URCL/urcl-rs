@@ -39,30 +39,47 @@ impl EventHandler for Handler {
                 }
             };
 
+            let result = silence_run_for_ms(&mut emu, 1000.0);
+
+            let screen = emu.get_screen();
+            let width  = screen.width();
+            let height = screen.height();
+            let pixels = screen.pixels();
+            let mut png = Image::new(width as u32, height as u32);
+            for (i, el) in pixels.iter().enumerate() {
+                println!("{:#06x}", el);
+                png.pixels[i] = RGB24{r: (el >> 16) as u8, g: (el >> 8) as u8, b: *el as u8}
+            }
+            let bruh = png.as_file();
+            let fname = bruh.as_str();
+            let att = vec![fname];
+
             use emulator::emulator::StepResult;
-            match silence_run_for_ms(&mut emu, 1000.0) {
+            match result {
                 StepResult::HLT => {
                     let output = emu.get_output();
-                    if let Err(err) = msg.channel_id.say(&ctx.http, format!("Program exited: ```\n{}```", output)).await {
+                    if let Err(err) = msg.channel_id.send_files(&ctx.http, att, |m| m.content(format!("Program exited: ```\n{}```", output))).await {
                         println!("\x1b[1;93mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err)
                     };
                 },
                 StepResult::Continue => {
                     let output = emu.get_output();
-                    if let Err(err) = msg.channel_id.say(&ctx.http, format!("Program ran for more than 1000ms: ```\n{}```", output)).await {
+                    if let Err(err) = msg.channel_id.send_files(&ctx.http, att, |m| m.content(format!("Program ran for more than 1000ms: ```\n{}```", output))).await {
                         println!("\x1b[1;93mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err)
                     };
                 },
                 StepResult::Error => {
                     let output = emu.get_output();
-                    if let Err(err) = msg.channel_id.say(&ctx.http, format!("Program exited with error: ```ansi\n{}```Output: ```\n{}```",
-                        emu.get_err().unwrap(), output)
+                    if let Err(err) = msg.channel_id.send_files(&ctx.http, att, |m| m.content(format!("Program exited with error: ```ansi\n{}```Output: ```\n{}```",
+                        emu.get_err().unwrap(), output))
                     ).await {
                         println!("\x1b[1;93mDiscord bot warning: Unable to send message, reason: {}\x1b[0;0m", err)
                     };
                 },
                 _ => (),
             }
+
+            std::fs::remove_file(fname);
         }
     }
 
@@ -78,6 +95,8 @@ pub async fn init_bot(token: &str) -> Result<(), SerenityError> {
         | GatewayIntents::MESSAGE_CONTENT;
 
     let mut client = Client::builder(&token, intents).event_handler(Handler{}).framework(StandardFramework::new()).await.expect("Err creating client");
+
+    std::fs::create_dir("tmp");
 
     client.start().await
 }
@@ -101,4 +120,60 @@ pub fn silence_run_for_ms(emu: &mut emulator::emulator::EmulatorState, max_time_
         }
     }
     return StepResult::Continue
+}
+
+#[derive(Clone)]
+pub struct RGB24 {
+    pub r: u8,
+    pub g: u8,
+    pub b: u8
+}
+
+#[derive(Clone)]
+pub struct Image {
+    pub pixels: Vec<RGB24>,
+    pub width : u32,
+    pub height: u32
+}
+
+impl Image {
+    pub fn new(width: u32, height: u32) -> Self {
+        Image {
+            pixels: vec![RGB24{r: 0, g: 0, b: 0}; (width*height) as usize],
+            width, height
+        }
+    }
+    pub fn set_pixel(&mut self, x: u32, y: u32, c: RGB24) {
+        self.pixels[(y * self.height + x) as usize] = c
+    }
+    pub fn get_pixel(&mut self, x: u32, y: u32) -> &RGB24 {
+        &self.pixels[(y * self.height + x) as usize]
+    }
+    pub fn as_file(&self) -> String {
+        use rand::*;
+        use std::fs::File;
+        use std::path::Path;
+        use std::io::{BufWriter, Write};
+
+        let file_id: u16 = random();
+        let mut file = File::create(Path::new(&format!("tmp/{}.png", file_id))).expect("\x1b[1;93mDiscord bot error: Unable to create file.\x1b[0;0m");
+        file.write_all(b"");
+        let ref mut w = BufWriter::new(file);
+        let mut encoder = png::Encoder::new(w, self.width, self.height);
+
+        encoder.set_color(png::ColorType::Rgb);
+        encoder.set_depth(png::BitDepth::Eight);
+
+        let mut raw_color: Vec<u8> = Vec::new();
+        for c in self.pixels.iter() {
+            raw_color.push(c.r);
+            raw_color.push(c.g);
+            raw_color.push(c.b);
+        }
+
+        let mut writer = encoder.write_header().unwrap();
+        writer.write_image_data(&raw_color).unwrap();
+
+        format!("tmp/{}.png", file_id)
+    }
 }
