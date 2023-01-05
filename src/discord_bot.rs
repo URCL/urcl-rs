@@ -47,8 +47,7 @@ impl EventHandler for Handler {
             let pixels = screen.pixels();
             let mut png = Image::new(width as u32, height as u32);
             for (i, el) in pixels.iter().enumerate() {
-                println!("{:#06x}", el);
-                png.pixels[i] = RGB24{r: (el >> 16) as u8, g: (el >> 8) as u8, b: *el as u8}
+                png.pixels[i] = RGBA24{r: (el >> 24) as u8, g: (el >> 16) as u8, b: (el >> 8) as u8, a: *el as u8}
             }
             let bruh = png.as_file();
             let fname = bruh.as_str();
@@ -123,15 +122,16 @@ pub fn silence_run_for_ms(emu: &mut emulator::emulator::EmulatorState, max_time_
 }
 
 #[derive(Clone)]
-pub struct RGB24 {
+pub struct RGBA24 {
     pub r: u8,
     pub g: u8,
-    pub b: u8
+    pub b: u8,
+    pub a: u8
 }
 
 #[derive(Clone)]
 pub struct Image {
-    pub pixels: Vec<RGB24>,
+    pub pixels: Vec<RGBA24>,
     pub width : u32,
     pub height: u32
 }
@@ -139,14 +139,14 @@ pub struct Image {
 impl Image {
     pub fn new(width: u32, height: u32) -> Self {
         Image {
-            pixels: vec![RGB24{r: 0, g: 0, b: 0}; (width*height) as usize],
+            pixels: vec![RGBA24{r: 0, g: 0, b: 0, a: 255}; (width*height) as usize],
             width, height
         }
     }
-    pub fn set_pixel(&mut self, x: u32, y: u32, c: RGB24) {
+    pub fn set_pixel(&mut self, x: u32, y: u32, c: RGBA24) {
         self.pixels[(y * self.height + x) as usize] = c
     }
-    pub fn get_pixel(&mut self, x: u32, y: u32) -> &RGB24 {
+    pub fn get_pixel(&mut self, x: u32, y: u32) -> &RGBA24 {
         &self.pixels[(y * self.height + x) as usize]
     }
     pub fn as_file(&self) -> String {
@@ -161,7 +161,7 @@ impl Image {
         let ref mut w = BufWriter::new(file);
         let mut encoder = png::Encoder::new(w, self.width, self.height);
 
-        encoder.set_color(png::ColorType::Rgb);
+        encoder.set_color(png::ColorType::Rgba);
         encoder.set_depth(png::BitDepth::Eight);
 
         let mut raw_color: Vec<u8> = Vec::new();
@@ -169,6 +169,7 @@ impl Image {
             raw_color.push(c.r);
             raw_color.push(c.g);
             raw_color.push(c.b);
+            raw_color.push(c.a);
         }
 
         let mut writer = encoder.write_header().unwrap();
