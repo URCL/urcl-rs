@@ -26,5 +26,5 @@ cli:
 
 discord:
 	cargo build --release --features "bot"
-	rm $(RMNAME) -f
+	-rm $(RMNAME) -f
 	mv $(FNAME) . -f
