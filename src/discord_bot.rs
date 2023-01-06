@@ -99,8 +99,6 @@ pub async fn init_bot(token: &str) -> Result<(), SerenityError> {
 
     let mut client = Client::builder(&token, intents).event_handler(Handler{}).framework(StandardFramework::new()).await.expect("Err creating client");
 
-    std::fs::create_dir("tmp");
-
     client.start().await
 }
 
