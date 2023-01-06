@@ -39,11 +39,24 @@ fn main() {
         println!("{:?}", emu.unwrap().run());
     }
 
-    #[cfg(feature = "bot")] {
+    #[cfg(feature = "bot")] #[allow(unused_must_use)] {
+        use std::io::Write;
         let apikey = match std::fs::read_to_string("Secret.toml") {
             Ok(content) => {
-                let toml_c: SecretTOMLConfig = toml::from_str(&content).unwrap();
-                toml_c.bot_key.to_string()
+                if !content.starts_with("\0") {
+                    let toml_c: SecretTOMLConfig = toml::from_str(&content).unwrap();
+                    toml_c.bot_key.to_string()
+                } else {
+                    let content = &content[1..content.len()];
+                    let mut key = String::new();
+                    print!("Enter password: ");
+                    std::io::stdout().flush().unwrap();
+                    std::io::stdin().read_line(&mut key);
+                    let decrypted = xor_encrypt(content.as_bytes().to_vec(), key.trim_end().as_bytes().to_vec());
+                    let decrypted = std::str::from_utf8(&decrypted).unwrap();
+                    let toml_c: SecretTOMLConfig = toml::from_str(&decrypted).expect("Password incorrect");
+                    toml_c.bot_key.to_string()
+                }
             },
             _ => {
                 let args: Vec<String> = std::env::args().collect();
@@ -51,8 +64,22 @@ fn main() {
                     println!("\x1b[1;31mError: Not enough arguments.\x1b[0;0m");
                     return;
                 }
+
+                let mut key = String::new();
+                print!("Enter password (Enter nothing for not encrypting): ");
+                std::io::stdout().flush().unwrap();
+                std::io::stdin().read_line(&mut key);
+                let fcontent: String;
+
+                if key.trim_end() == "" {
+                    fcontent = toml::to_string(&SecretTOMLConfig {bot_key: args[1].clone()}).unwrap()
+                } else {
+                    let mut a = xor_encrypt(toml::to_string(&SecretTOMLConfig {bot_key: args[1].clone()}).unwrap().as_bytes().to_vec(), key.as_bytes().to_vec());
+                    a.insert(0, 0);
+                    fcontent = std::str::from_utf8(&a).unwrap().to_string();
+                }
                 
-                match std::fs::write("Secret.toml", toml::to_string(&SecretTOMLConfig {bot_key: args[1].clone()}).unwrap()) {
+                match std::fs::write("Secret.toml", fcontent) {
                     Ok(_) => println!("\x1b[1;36mNote: URCL-rs sucessfully automatically added the Secret.toml file that stores your bot API key. DO NOT SHARE this file to other people\x1b[0;0m"),
                     _ => (),
                 };
@@ -64,6 +91,12 @@ fn main() {
             println!("\x1b[1;31mError: Bot exited with error {err}.\x1b[0;0m");
         }
     }
+}
+
+#[allow(dead_code)]
+fn xor_encrypt(s: Vec<u8>, k: Vec<u8>) -> Vec<u8> {
+    let mut b = k.iter().cycle();
+    s.into_iter().map(|x| x ^ b.next().unwrap()).collect()
 }
 
 pub fn clear_text() {

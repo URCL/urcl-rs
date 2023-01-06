@@ -138,6 +138,7 @@ pub struct Image {
     pub height: u32
 }
 
+#[allow(dead_code)]
 impl Image {
     pub fn new(width: u32, height: u32) -> Self {
         Image {
