@@ -16,6 +16,7 @@ struct SecretTOMLConfig {
 }
 
 fn main() {
+    srand(now() as u64);
     #[cfg(not(feature = "bot"))] {
         let args: Vec<String> = std::env::args().collect();
         if args.len() <= 1 {
