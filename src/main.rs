@@ -75,7 +75,7 @@ fn main() {
                 if key.trim_end() == "" {
                     fcontent = toml::to_string(&SecretTOMLConfig {bot_key: args[1].clone()}).unwrap()
                 } else {
-                    let mut a = xor_encrypt(toml::to_string(&SecretTOMLConfig {bot_key: args[1].clone()}).unwrap().as_bytes().to_vec(), key.as_bytes().to_vec());
+                    let mut a = xor_encrypt(toml::to_string(&SecretTOMLConfig {bot_key: args[1].clone()}).unwrap().as_bytes().to_vec(), key.trim_end().as_bytes().to_vec());
                     a.insert(0, 0);
                     fcontent = std::str::from_utf8(&a).unwrap().to_string();
                 }
