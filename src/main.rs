@@ -78,7 +78,8 @@ fn main() {
                 }
                 let fcontent: String;
                 #[cfg(feature = "password")] {
-                    let key = rpassword::prompt_password("Enter password (Enter nothing for not encrypting): ").unwrap().trim_end();
+                    let key = rpassword::prompt_password("Enter password (Enter nothing for not encrypting): ").unwrap();
+                    let key = key.trim_end();
 
                     if key == "" {
                         fcontent = toml::to_string(&SecretTOMLConfig {bot_key: args[1].clone()}).unwrap()
