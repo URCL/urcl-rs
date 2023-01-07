@@ -71,16 +71,14 @@ fn main() {
                 }
             },
             _ => {
+                let args: Vec<String> = std::env::args().collect();
+                if args.len() <= 1 {
+                    println!("\x1b[1;31mError: Not enough arguments.\x1b[0;0m");
+                    return;
+                }
+                let fcontent: String;
                 #[cfg(feature = "password")] {
-                    let args: Vec<String> = std::env::args().collect();
-                    if args.len() <= 1 {
-                        println!("\x1b[1;31mError: Not enough arguments.\x1b[0;0m");
-                        return;
-                    }
-
-                    let key = rpassword::prompt_password("Enter password (Enter nothing for not encrypting): ").unwrap();
-                    let fcontent: String;
-                    let key = key.trim_end();
+                    let key = rpassword::prompt_password("Enter password (Enter nothing for not encrypting): ").unwrap().trim_end();
 
                     if key == "" {
                         fcontent = toml::to_string(&SecretTOMLConfig {bot_key: args[1].clone()}).unwrap()
@@ -98,21 +96,16 @@ fn main() {
                         a.insert(0, 0);
                         fcontent = std::str::from_utf8(&a).unwrap().to_string();
                     }
-                    
-                    match std::fs::write("Secret.toml", fcontent) {
-                        Ok(_) => println!("\x1b[1;36mNote: URCL-rs sucessfully automatically added the Secret.toml file that stores your bot API key. DO NOT SHARE this file to other people\x1b[0;0m"),
-                        _ => (),
-                    };
-                    args[1].clone()
                 }
                 #[cfg(not(feature = "password"))] {
                     fcontent = toml::to_string(&SecretTOMLConfig {bot_key: args[1].clone()}).unwrap();
-                    match std::fs::write("Secret.toml", fcontent) {
-                        Ok(_) => println!("\x1b[1;36mNote: URCL-rs sucessfully automatically added the Secret.toml file that stores your bot API key. DO NOT SHARE this file to other people\x1b[0;0m"),
-                        _ => (),
-                    };
-                    args[1].clone()
                 }
+
+                match std::fs::write("Secret.toml", fcontent) {
+                    Ok(_) => println!("\x1b[1;36mNote: URCL-rs sucessfully automatically added the Secret.toml file that stores your bot API key. DO NOT SHARE this file to other people\x1b[0;0m"),
+                    _ => (),
+                };
+                args[1].clone()
             }
         };
 
