@@ -28,3 +28,8 @@ discord:
 	cargo build --release --features "bot"
 	-rm $(RMNAME) -f
 	mv $(FNAME) . -f
+
+discord_with_password:
+	cargo build --release --features "password"
+	-rm $(RMNAME) -f
+	mv $(FNAME) . -f
