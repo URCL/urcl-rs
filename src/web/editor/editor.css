@@ -12,12 +12,14 @@ editor-window * {
     white-space: pre;
     padding: 0px;
     margin: 0px;
+    font: 1rem 'Fira Code', monospace;
 }
 
 editor-window .line-nrs {
     position: sticky;
     left: 0px;
     padding-inline: 1ch;
+    padding-right: 0 !important;
     text-align: right;
     background-color: inherit;
     height: fit-content;
