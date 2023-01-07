@@ -44,7 +44,6 @@ fn main() {
     }
     
     #[cfg(feature = "bot")] #[allow(unused_must_use)] {
-        use std::io::Write;
         use std::process::exit;
         let apikey = match std::fs::read_to_string("Secret.toml") {
             Ok(content) => {
@@ -54,17 +53,14 @@ fn main() {
                 } else {
                     #[cfg(feature = "password")] {
                         let content = &content[1..content.len()];
-                        let mut key = String::new();
-                        print!("Enter password: ");
-                        std::io::stdout().flush().unwrap();
-                        std::io::stdin().read_line(&mut key);
+                        let key = rpassword::prompt_password("Enter password: ").unwrap();
                         let offset = (key.chars().next().unwrap() as u16 % 3) + 1;
                         let decrypted = xor_encrypt(content.as_bytes().to_vec(), key.trim_end().as_bytes().to_vec(), 0);
                         let decrypted = std::str::from_utf8(&decrypted).unwrap();
                         let toml_c: SecretTOMLConfig = toml::from_str(&decrypted).expect("Password incorrect");
-                        let bot_key = String::from_utf8(xor_encrypt(base64::decode(toml_c.bot_key).unwrap(),
+                        let bot_key = String::from_utf8(xor_encrypt(base64::decode(toml_c.bot_key).expect("Password incorrect"),
                             key.trim_end().as_bytes().to_vec(), offset
-                        )).unwrap();
+                        )).expect("Password incorrect");
 
                         bot_key
                     }
@@ -82,10 +78,7 @@ fn main() {
                         return;
                     }
 
-                    let mut key = String::new();
-                    print!("Enter password (Enter nothing for not encrypting): ");
-                    std::io::stdout().flush().unwrap();
-                    std::io::stdin().read_line(&mut key);
+                    let key = rpassword::prompt_password("Enter password (Enter nothing for not encrypting): ").unwrap();
                     let fcontent: String;
                     let key = key.trim_end();
 
