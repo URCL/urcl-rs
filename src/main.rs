@@ -76,13 +76,13 @@ fn main() {
                     println!("\x1b[1;31mError: Not enough arguments.\x1b[0;0m");
                     return;
                 }
-                let fcontent: String;
+                let fcontent: Vec<u8>;
                 #[cfg(feature = "password")] {
                     let key = rpassword::prompt_password("Enter password (Enter nothing for not encrypting): ").unwrap();
                     let key = key.trim_end();
 
                     if key == "" {
-                        fcontent = toml::to_string(&SecretTOMLConfig {bot_key: args[1].clone()}).unwrap()
+                        fcontent = toml::to_string(&SecretTOMLConfig {bot_key: args[1].clone()}).unwrap().as_bytes().to_vec()
                     } else if key.len() < 8 {
                         println!("Password is too short! Password must be at lease 8 characters long!");
                         exit(1);
@@ -95,11 +95,11 @@ fn main() {
                             }
                         ).unwrap().as_bytes().to_vec(), key.as_bytes().to_vec(), 0);
                         a.insert(0, 0);
-                        fcontent = std::str::from_utf8(&a).unwrap().to_string();
+                        fcontent = a;
                     }
                 }
                 #[cfg(not(feature = "password"))] {
-                    fcontent = toml::to_string(&SecretTOMLConfig {bot_key: args[1].clone()}).unwrap();
+                    fcontent = toml::to_string(&SecretTOMLConfig {bot_key: args[1].clone()}).unwrap().as_bytes().to_vec();
                 }
 
                 match std::fs::write("Secret.toml", fcontent) {
@@ -120,7 +120,7 @@ fn main() {
 fn xor_encrypt(s: Vec<u8>, k: Vec<u8>, offset: u16) -> Vec<u8> {
     let mut b = k.iter().cycle();
     for _ in 0..offset {b.next();}
-    s.into_iter().map(|x| x ^ (b.next().unwrap() + (b.next().unwrap() * offset as u8))).collect()
+    s.into_iter().map(|x| x ^ (b.next().unwrap() + (b.next().unwrap() << offset as u8) + (b.next().unwrap() >> (b.next().unwrap() % (offset as u8 + 1))))).collect()
 }
 
 pub fn clear_text() {
