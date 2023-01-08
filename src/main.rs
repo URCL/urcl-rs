@@ -45,17 +45,17 @@ fn main() {
     
     #[cfg(feature = "bot")] #[allow(unused_must_use)] {
         use std::process::exit;
-        let apikey = match std::fs::read("Secret.toml") {
+        let apikey = match std::fs::read_to_string("Secret.toml") {
             Ok(content) => {
-                if (*content.iter().next().unwrap() as char).is_ascii_alphanumeric() {
-                    let toml_c: SecretTOMLConfig = toml::from_str(std::str::from_utf8(&content).unwrap()).unwrap();
+                if content.chars().next().unwrap().is_ascii_alphanumeric() {
+                    let toml_c: SecretTOMLConfig = toml::from_str(&content).unwrap();
                     toml_c.bot_key.to_string()
                 } else {
                     #[cfg(feature = "password")] {
                         let content = &content[1..content.len()];
                         let key = rpassword::prompt_password("Enter password: ").unwrap();
                         let offset = (key.chars().next().unwrap() as u16 % 3) + 1;
-                        let decrypted = xor_encrypt(content.to_vec(), key.trim_end().as_bytes().to_vec(), 0);
+                        let decrypted = xor_encrypt(content.as_bytes().to_vec(), key.trim_end().as_bytes().to_vec(), 0);
                         let decrypted = std::str::from_utf8(&decrypted).unwrap();
                         let toml_c: SecretTOMLConfig = toml::from_str(&decrypted).expect("Password incorrect");
                         let bot_key = String::from_utf8(xor_encrypt(base64::decode(toml_c.bot_key).expect("Password incorrect"),
