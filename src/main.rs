@@ -4,9 +4,6 @@ mod emulator;
 #[cfg(feature = "bot")]
 mod discord_bot;
 
-#[cfg(feature = "password")]
-use base64;
-
 #[allow(unused_imports)]
 use toml::*;
 
@@ -19,7 +16,6 @@ struct SecretTOMLConfig {
 }
 
 fn main() {
-    srand(now() as u64);
     #[cfg(not(feature = "bot"))] {
         let args: Vec<String> = std::env::args().collect();
         if args.len() <= 1 {
@@ -42,77 +38,25 @@ fn main() {
         } 
         println!("{:?}", emu.unwrap().run());
     }
-    
-    #[cfg(feature = "bot")] #[allow(unused_must_use)] {
-        use std::process::exit;
+
+    #[cfg(feature = "bot")] {
         let apikey = match std::fs::read_to_string("Secret.toml") {
             Ok(content) => {
-                if content.chars().next().unwrap().is_ascii_alphanumeric() {
-                    let toml_c: SecretTOMLConfig = toml::from_str(&content).unwrap();
-                    toml_c.bot_key.to_string()
-                } else {
-                    #[cfg(feature = "password")] {
-                        let content = &content[1..content.len()];
-                        let key = rpassword::prompt_password("Enter password: ").unwrap();
-                        let offset = (key.chars().next().unwrap() as u16 % 3) + 1;
-                        let decrypted = xor_encrypt(content.as_bytes().to_vec(), key.trim_end().as_bytes().to_vec(), 0);
-                        let decrypted = std::str::from_utf8(&decrypted).unwrap();
-                        let toml_c: SecretTOMLConfig = toml::from_str(&decrypted).expect("Password incorrect");
-                        let bot_key = String::from_utf8(xor_encrypt(base64::decode(toml_c.bot_key).expect("Password incorrect"),
-                            key.trim_end().as_bytes().to_vec(), offset
-                        )).expect("Password incorrect");
-
-                        bot_key
-                    }
-                    #[cfg(not(feature = "password"))] {
-                        println!("Can't use passwords without password enabled!");
-                        exit(1)
-                    }
-                }
+                let toml_c: SecretTOMLConfig = toml::from_str(&content).unwrap();
+                toml_c.bot_key.to_string()
             },
             _ => {
-                #[cfg(feature = "password")] {
-                    let args: Vec<String> = std::env::args().collect();
-                    if args.len() <= 1 {
-                        println!("\x1b[1;31mError: Not enough arguments.\x1b[0;0m");
-                        return;
-                    }
-
-                    let key = rpassword::prompt_password("Enter password (Enter nothing for not encrypting): ").unwrap();
-                    let fcontent: String;
-                    let key = key.trim_end();
-
-                    if key == "" {
-                        fcontent = toml::to_string(&SecretTOMLConfig {bot_key: args[1].clone()}).unwrap()
-                    } else if key.len() < 8 {
-                        println!("Password is too short! Password must be at lease 8 characters long!");
-                        exit(1);
-                    } else {
-                        let offset = (key.chars().next().unwrap() as u16 % 3) + 1;
-                        let bot_key_encrypted = xor_encrypt(args[1].clone().as_bytes().to_vec(), key.as_bytes().to_vec(), offset);
-                        let mut a = xor_encrypt(toml::to_string(
-                            &SecretTOMLConfig {
-                                bot_key: base64::encode(bot_key_encrypted)
-                            }
-                        ).unwrap().as_bytes().to_vec(), key.as_bytes().to_vec(), 0);
-                        a.insert(0, 0);
-                        fcontent = std::str::from_utf8(&a).unwrap().to_string();
-                    }
-                    
-                    match std::fs::write("Secret.toml", fcontent) {
-                        Ok(_) => println!("\x1b[1;36mNote: URCL-rs sucessfully automatically added the Secret.toml file that stores your bot API key. DO NOT SHARE this file to other people\x1b[0;0m"),
-                        _ => (),
-                    };
-                    args[1].clone()
+                let args: Vec<String> = std::env::args().collect();
+                if args.len() <= 1 {
+                    println!("\x1b[1;31mError: Not enough arguments.\x1b[0;0m");
+                    return;
                 }
-                #[cfg(not(feature = "password"))] {
-                    fcontent = toml::to_string(&SecretTOMLConfig {bot_key: args[1].clone()}).unwrap();
-                    match std::fs::write("Secret.toml", fcontent) {
-                        Ok(_) => println!("\x1b[1;36mNote: URCL-rs sucessfully automatically added the Secret.toml file that stores your bot API key. DO NOT SHARE this file to other people\x1b[0;0m"),
-                        _ => (),
-                    };
-                    args[1].clone()
-                }
+                
+                match std::fs::write("Secret.toml", toml::to_string(&SecretTOMLConfig {bot_key: args[1].clone()}).unwrap()) {
+                    Ok(_) => println!("\x1b[1;36mNote: URCL-rs sucessfully automatically added the Secret.toml file that stores your bot API key. DO NOT SHARE this file to other people\x1b[0;0m"),
+                    _ => (),
+                };
+                args[1].clone()
             }
         };
 
@@ -120,13 +64,6 @@ fn main() {
             println!("\x1b[1;31mError: Bot exited with error {err}.\x1b[0;0m");
         }
     }
-}
-
-#[cfg(feature = "password")]
-fn xor_encrypt(s: Vec<u8>, k: Vec<u8>, offset: u16) -> Vec<u8> {
-    let mut b = k.iter().cycle();
-    for _ in 0..offset {b.next();}
-    s.into_iter().map(|x| x ^ (b.next().unwrap() + (b.next().unwrap() * offset as u8))).collect()
 }
 
 pub fn clear_text() {
