@@ -80,7 +80,7 @@ static mut RAND_SEED: u64 = 0;
 pub fn rand() -> u64 {
     unsafe {
         let mut x = RAND_SEED;
-        if x == 0 {x = 1;}
+        if x == 0 {x = now() as u64;}
         x ^= x << 13;
         x ^= x >> 7;
         x ^= x << 17;

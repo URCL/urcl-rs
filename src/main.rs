@@ -41,7 +41,7 @@ fn main() {
                 }
                 
                 match std::fs::write("token", args[1].clone()) {
-                    Ok(_) => println!("\x1b[1;36mNote: URCL-rs sucessfully automatically added the Secret.toml file that stores your bot API key. DO NOT SHARE this file to other people\x1b[0;0m"),
+                    Ok(_) => println!("\x1b[1;36mNote: URCL-rs sucessfully automatically added the 'token' file that stores your bot API key. DO NOT SHARE this file to other people\x1b[0;0m"),
                     _ => (),
                 };
                 args[1].clone()
@@ -72,7 +72,7 @@ static mut RAND_SEED: u64 = 0;
 pub fn rand() -> u64 {
     unsafe {
         let mut x = RAND_SEED;
-        if x == 0 {x = 1;}
+        if x == 0 {x = now() as u64;}
         x ^= x << 13;
         x ^= x >> 7;
         x ^= x << 17;
