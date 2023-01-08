@@ -4,17 +4,6 @@ mod emulator;
 #[cfg(feature = "bot")]
 mod discord_bot;
 
-#[allow(unused_imports)]
-use toml::*;
-
-use serde::*;
-
-#[allow(dead_code)]
-#[derive(Serialize, Deserialize)]
-struct SecretTOMLConfig {
-    bot_key: String
-}
-
 fn main() {
     #[cfg(not(feature = "bot"))] {
         let args: Vec<String> = std::env::args().collect();
@@ -40,10 +29,9 @@ fn main() {
     }
 
     #[cfg(feature = "bot")] {
-        let apikey = match std::fs::read_to_string("Secret.toml") {
+        let apikey = match std::fs::read_to_string("token") {
             Ok(content) => {
-                let toml_c: SecretTOMLConfig = toml::from_str(&content).unwrap();
-                toml_c.bot_key.to_string()
+                content
             },
             _ => {
                 let args: Vec<String> = std::env::args().collect();
@@ -52,7 +40,7 @@ fn main() {
                     return;
                 }
                 
-                match std::fs::write("Secret.toml", toml::to_string(&SecretTOMLConfig {bot_key: args[1].clone()}).unwrap()) {
+                match std::fs::write("token", args[1].clone()) {
                     Ok(_) => println!("\x1b[1;36mNote: URCL-rs sucessfully automatically added the Secret.toml file that stores your bot API key. DO NOT SHARE this file to other people\x1b[0;0m"),
                     _ => (),
                 };
