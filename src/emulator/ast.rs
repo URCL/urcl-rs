@@ -82,6 +82,14 @@ pub fn gen_ast<'a>(toks: Vec<UToken<'a>>, src: Rc<str>) -> Parser<'a> {
                         p.buf.advance();
                     },
 
+                    "dw" => {
+                        let mut data: Vec<u64> = match p.buf.next().kind {
+                            Kind::Int(v) => vec![v as u64],
+                            _ => {p.err.error(&p.buf.current(), ErrorKind::YoMamma); continue;},
+                        };
+                        p.ast.memory.append(&mut data);
+                    },
+
                     "imm"     => inst(Inst::MOV(p.get_reg(), p.get_imm())           , &mut p),
                     "mov"     => inst(Inst::MOV(p.get_reg(), p.get_op())            , &mut p),
                     "add"     => inst(Inst::ADD(p.get_reg(), p.get_op(), p.get_op()), &mut p),

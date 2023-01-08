@@ -109,7 +109,12 @@ unsafe impl Send for EmulatorState {}
 impl EmulatorState {
     fn new(program: Program, devices: DeviceHost) -> Self {
         let regs = vec![0; program.headers.minreg as usize];
-        let heap = vec![0; (program.headers.minheap /* + program.headers.minstack*/) as usize];
+        let mut heap = vec![0; (program.memory.len() as u64 + program.headers.minheap) as usize];
+
+        for (i, el) in program.memory.iter().enumerate() {
+            heap[i] = *el;
+        }
+
         EmulatorState {
             regs,
             heap,
